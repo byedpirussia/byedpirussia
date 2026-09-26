@@ -63,6 +63,7 @@ gradlew.bat assembleDebug
 - **[ByeDPIAndroid](https://github.com/dovecoteescapee/ByeDPIAndroid)** от dovecoteescapee — первоначальный Android-клиент и VPN-обертка для ByeDPI.
 - **[tg-ws-proxy-android](https://github.com/amurcanov/tg-ws-proxy-android)** от amurcanov — нативный MTProto-прокси для Telegram с транспортом через Cloudflare WebSocket.
 - **[AmneziaWG Android](https://github.com/amnezia-vpn/amneziawg-android)** от команды Amnezia VPN — модифицированный стек WireGuard с защитой от блокировок по сигнатурам (AWG 2.0) и библиотека `libwg-go.so`.
+- **[WG Tunnel Android](https://github.com/wgtunnel/android)** — реализация туннелирования WireGuard / AmneziaWG для Android.
 - **[hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)** от heiher — высокопроизводительный tun2socks туннель для перенаправления сетевого трафика.
 - **[warp-generation](https://github.com/warp-generation/warp-generation.github.io)** — генератор конфигураций Cloudflare WARP с поддержкой параметров AmneziaWG.
 
