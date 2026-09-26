@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ByeDPI Russia — Единый центр обхода блокировок</title>
+    <meta name="description" content="Универсальное Android-приложение для восстановления доступа к YouTube, Discord, Telegram без падения скорости и аренды VPS.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0c0d12;
+            --surface: #14161f;
+            --surface-hover: #1c1e2b;
+            --primary: #5c6eff;
+            --primary-glow: rgba(92, 110, 255, 0.35);
+            --primary-light: #808fff;
+            --accent-green: #2ecc71;
+            --text-main: #f0f2f8;
+            --text-muted: #959aa8;
+            --border: #222638;
+            --card-radius: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Фоновые градиенты и свечения */
+        .ambient-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+            filter: blur(80px);
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Навигация */
+        header {
+            padding: 24px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), #a27bfe);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 16px var(--primary-glow);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn.github {
+            background: var(--surface);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+
+        .nav-btn.github:hover {
+            background: var(--surface-hover);
+            border-color: #383e58;
+        }
+
+        .nav-btn.primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 20px var(--primary-glow);
+        }
+
+        .nav-btn.primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Hero секция */
+        .hero {
+            padding: 60px 0 80px;
+            text-align: center;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(92, 110, 255, 0.12);
+            border: 1px solid rgba(92, 110, 255, 0.3);
+            border-radius: 99px;
+            color: var(--primary-light);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #b3b9cf 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (min-width: 768px) {
+            h1 { font-size: 56px; }
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 680px;
+            margin: 0 auto 36px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 60px;
+        }
+
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary), #4758e6);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 8px 30px var(--primary-glow);
+            transition: all 0.2s ease;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(92, 110, 255, 0.5);
+        }
+
+        /* Витрина приложения (Phone Mockup) */
+        .showcase {
+            position: relative;
+            max-width: 340px;
+            margin: 0 auto;
+            border-radius: 40px;
+            padding: 10px;
+            background: linear-gradient(180deg, #2a2e42 0%, #151824 100%);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(92, 110, 255, 0.2);
+        }
+
+        .showcase img {
+            width: 100%;
+            height: auto;
+            border-radius: 32px;
+            display: block;
+        }
+
+        /* Карточки инструментов */
+        .features {
+            padding: 60px 0 100px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 48px;
+            font-size: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            padding: 32px 24px;
+            transition: all 0.25s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(92, 110, 255, 0.4);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 20px;
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feature-desc {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .feature-tag {
+            align-self: flex-start;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.06);
+            color: #d2d6e6;
+        }
+
+        /* Футер */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+
+    <div class="container">
+        <!-- Шапка -->
+        <header>
+            <a href="#" class="logo">
+                <div class="logo-icon">🛡️</div>
+                <span>ByeDPI Russia</span>
+            </a>
+            <div class="nav-links">
+                <a href="https://github.com/byedpirussia/byedpirussia" target="_blank" class="nav-btn github">
+                    GitHub ⭐
+                </a>
+                <a href="https://github.com/byedpirussia/byedpirussia/releases/tag/v1.0.0" target="_blank" class="nav-btn primary">
+                    Скачать APK
+                </a>
+            </div>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="badge-pill">
+                <span class="badge-dot"></span>
+                Релиз v1.0.0 доступен для Android
+            </div>
+            <h1>Свободный интернет<br>в 3 простых клика</h1>
+            <p>
+                Единый центр обхода блокировок. Прямой доступ к YouTube в 4K и Discord без зарубежных серверов, автономный Telegram MTProto-прокси и защищенный туннель Cloudflare WARP с AWG 2.0.
+            </p>
+            <div class="hero-actions">
+                <a href="https://github.com/byedpirussia/byedpirussia/releases/tag/v1.0.0" target="_blank" class="btn-download">
+                    <span>⚡ Скачать APK v1.0.0</span>
+                </a>
+                <a href="https://github.com/byedpirussia/byedpirussia" target="_blank" class="nav-btn github" style="padding: 16px 28px; font-size: 16px; border-radius: 16px;">
+                    Исходный код на GitHub
+                </a>
+            </div>
+
+            <!-- Скриншот приложения -->
+            <div class="showcase">
+                <img src="screenshot.png" alt="ByeDPI Russia UI">
+            </div>
+        </section>
+
+        <!-- 3 Главных инструмента -->
+        <section class="features">
+            <h2 class="section-title">Три независимых инструмента</h2>
+            <p class="section-subtitle">Всё необходимое собрано в одном легковесном приложении</p>
+
+            <div class="grid-3">
+                <!-- Карточка 1 -->
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3 class="feature-title">ByeDPI</h3>
+                    <p class="feature-desc">
+                        Десинхронизация пакетов на уровне DPI (ТСПУ). Прямой доступ к YouTube, Discord и сайтам без потери скорости и без передачи трафика третьим лицам. 32 готовые стратегии и бенчмарк автоподбора.
+                    </p>
+                    <span class="feature-tag">Без потери скорости</span>
+                </div>
+
+                <!-- Карточка 2 -->
+                <div class="feature-card">
+                    <div class="feature-icon">✈️</div>
+                    <h3 class="feature-title">Telegram Proxy</h3>
+                    <p class="feature-desc">
+                        Автономный сервис MTProto-прокси прямо на вашем телефоне. Использует защищенный WebSocket-транспорт через Cloudflare CDN, полностью маскируя трафик мессенджера от любых фильтраций.
+                    </p>
+                    <span class="feature-tag">127.0.0.1:1443 WS</span>
+                </div>
+
+                <!-- Карточка 3 -->
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3 class="feature-title">AmneziaWG WARP</h3>
+                    <p class="feature-desc">
+                        Полноценный туннель Cloudflare WARP на нативном ядре AmneziaWG (AWG 2.0). Обфускация заголовков WireGuard защищает соединение от сброса и блокировок провайдерами. Встроен генератор профилей.
+                    </p>
+                    <span class="feature-tag">WireGuard 2.0 Обфускация</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Футер -->
+        <footer>
+            <p>
+                ByeDPI Russia — Open Source проект под лицензией <a href="https://github.com/byedpirussia/byedpirussia/blob/main/LICENSE" target="_blank">MIT</a>.<br>
+                Посетите наш репозиторий на <a href="https://github.com/byedpirussia/byedpirussia" target="_blank">GitHub</a>.
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
