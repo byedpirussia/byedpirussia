@@ -48,6 +48,12 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
+        findPreferenceNotNull<DropDownPreference>("accent_color")
+            .setOnPreferenceChangeListener { _, _ ->
+                activity?.recreate()
+                true
+            }
+
         val switchCommandLineSettings = findPreferenceNotNull<SwitchPreference>(
             "byedpi_enable_cmd_settings"
         )

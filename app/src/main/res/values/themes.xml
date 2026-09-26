@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Базовая тема Material Design 3 -->
+    <!-- Базовая тема Material Design 3 (По умолчанию - Blue/Indigo) -->
     <style name="Theme.ByeDPI" parent="Theme.Material3.DayNight">
         <item name="colorPrimary">#3F51B5</item>
         <item name="colorOnPrimary">#FFFFFF</item>
@@ -18,6 +18,50 @@
     </style>
 
     <style name="Theme.ByeDPI.NoActionBar" parent="Theme.ByeDPI">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Тема Purple (Deep Purple) -->
+    <style name="Theme.ByeDPI.Purple" parent="Theme.ByeDPI">
+        <item name="colorPrimary">#7C3AED</item>
+        <item name="colorPrimaryContainer">#EDE9FE</item>
+        <item name="colorOnPrimaryContainer">#2E1065</item>
+    </style>
+    <style name="Theme.ByeDPI.Purple.NoActionBar" parent="Theme.ByeDPI.Purple">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Тема Green (Teal / Emerald) -->
+    <style name="Theme.ByeDPI.Green" parent="Theme.ByeDPI">
+        <item name="colorPrimary">#0D9488</item>
+        <item name="colorPrimaryContainer">#CCFBF1</item>
+        <item name="colorOnPrimaryContainer">#134E4A</item>
+    </style>
+    <style name="Theme.ByeDPI.Green.NoActionBar" parent="Theme.ByeDPI.Green">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Тема Orange (Sunset) -->
+    <style name="Theme.ByeDPI.Orange" parent="Theme.ByeDPI">
+        <item name="colorPrimary">#EA580C</item>
+        <item name="colorPrimaryContainer">#FFEDD5</item>
+        <item name="colorOnPrimaryContainer">#7C2D12</item>
+    </style>
+    <style name="Theme.ByeDPI.Orange.NoActionBar" parent="Theme.ByeDPI.Orange">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Тема Red (Crimson) -->
+    <style name="Theme.ByeDPI.Red" parent="Theme.ByeDPI">
+        <item name="colorPrimary">#E11D48</item>
+        <item name="colorPrimaryContainer">#FFE4E6</item>
+        <item name="colorOnPrimaryContainer">#881337</item>
+    </style>
+    <style name="Theme.ByeDPI.Red.NoActionBar" parent="Theme.ByeDPI.Red">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

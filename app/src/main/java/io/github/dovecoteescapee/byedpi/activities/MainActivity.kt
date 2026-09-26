@@ -35,6 +35,7 @@ import io.github.dovecoteescapee.byedpi.strategy.StrategyCatalog
 import io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService
 import io.github.dovecoteescapee.byedpi.utility.getPreferences
 import io.github.dovecoteescapee.byedpi.utility.mode
+import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
 import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessManager
@@ -154,7 +155,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var currentAccent: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyAccentTheme(noActionBar = true)
+        currentAccent = getPreferences().getString("accent_color", "blue")
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -206,6 +211,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        val savedAccent = getPreferences().getString("accent_color", "blue")
+        if (currentAccent != savedAccent) {
+            recreate()
+            return
+        }
         updateStatus()
         updateStrategyBadge()
         updateVlessSubtitle()

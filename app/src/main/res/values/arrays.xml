@@ -11,6 +11,21 @@
         <item name="dark">dark</item>
     </array>
 
+    <array name="accent_colors">
+        <item name="blue">Синий (Indigo)</item>
+        <item name="purple">Фиолетовый (Deep Purple)</item>
+        <item name="green">Изумрудный (Teal)</item>
+        <item name="orange">Оранжевый (Sunset)</item>
+        <item name="red">Красный (Crimson)</item>
+    </array>
+    <array name="accent_colors_entries">
+        <item name="blue">blue</item>
+        <item name="purple">purple</item>
+        <item name="green">green</item>
+        <item name="orange">orange</item>
+        <item name="red">red</item>
+    </array>
+
     <array name="byedpi_modes">
         <item name="vpn">VPN</item>
         <item name="proxy">Proxy</item>

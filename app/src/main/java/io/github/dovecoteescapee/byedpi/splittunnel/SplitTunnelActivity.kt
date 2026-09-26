@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.databinding.ActivitySplitTunnelBinding
+import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,6 +24,7 @@ class SplitTunnelActivity : AppCompatActivity() {
     private var adapter: AppSelectionAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyAccentTheme(noActionBar = true)
         super.onCreate(savedInstanceState)
         binding = ActivitySplitTunnelBinding.inflate(layoutInflater)
         setContentView(binding.root)

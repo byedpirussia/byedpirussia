@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.databinding.ActivityVlessListBinding
+import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,6 +28,7 @@ class VlessListActivity : AppCompatActivity() {
     private var selectedTabIndex = 0 // 0 = Все, 1 = Одиночные, далее подписки
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyAccentTheme(noActionBar = true)
         super.onCreate(savedInstanceState)
         binding = ActivityVlessListBinding.inflate(layoutInflater)
         setContentView(binding.root)

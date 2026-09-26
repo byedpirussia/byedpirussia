@@ -16,6 +16,14 @@
             app:useSimpleSummaryProvider="true" />
 
         <DropDownPreference
+            android:key="accent_color"
+            android:title="@string/accent_color_setting"
+            android:entries="@array/accent_colors"
+            android:entryValues="@array/accent_colors_entries"
+            android:defaultValue="blue"
+            app:useSimpleSummaryProvider="true" />
+
+        <DropDownPreference
             android:key="byedpi_mode"
             android:title="@string/mode_setting"
             android:entries="@array/byedpi_modes"

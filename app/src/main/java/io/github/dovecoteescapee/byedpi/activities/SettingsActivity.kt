@@ -10,10 +10,12 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.fragments.MainSettingsFragment
+import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
 import io.github.dovecoteescapee.byedpi.utility.getPreferences
 
 class SettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyAccentTheme(noActionBar = true)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
 
