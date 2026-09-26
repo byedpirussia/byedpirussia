@@ -10,11 +10,26 @@
 
 ## 📥 Скачать приложение (Download)
 
+### 📱 Android:
 [![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.1.2-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
 [![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F67%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/22e9a3063253810b1102b65a45722389e3b85e01e318da6a4b8c9e999abbfd6e?nocache=1)
 
-- **[Последняя стабильная версия (Releases v1.1.2)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
-- **[Отчёт VirusTotal (0/67)](https://www.virustotal.com/gui/file/22e9a3063253810b1102b65a45722389e3b85e01e318da6a4b8c9e999abbfd6e?nocache=1)** — проверка файла всеми антивирусными вендорами (файл полностью чист и безопасен).
+- **[APK v1.1.2 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[Отчёт VirusTotal Android (0/67)](https://www.virustotal.com/gui/file/22e9a3063253810b1102b65a45722389e3b85e01e318da6a4b8c9e999abbfd6e?nocache=1)** — проверка APK-файла (0 детектов, 100% чисто).
+
+### 💻 Windows (ПК):
+[![Скачать Windows Beta](https://img.shields.io/badge/Скачать_Windows-v1.1.2--Beta-blue?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.1.2/ByeDPI-Russia-Windows-v1.1.2-Beta.zip)
+[![VirusTotal Windows](https://img.shields.io/badge/VirusTotal-3%2F67%20(Ложные%20срабатывания)-orange?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection)
+
+- **[Скачать архив Windows v1.1.2-Beta (.ZIP)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.1.2/ByeDPI-Russia-Windows-v1.1.2-Beta.zip)** — портативная версия для Windows x64.
+- ⚠️ **Важное примечание по Windows-версии**: в версии `v1.1.2-Beta` **полноценно работает только режим ByeDPI** (прямой обход DPI, автоподбор стратегий, системный прокси). Режимы VLESS, Cloudflare WARP, Telegram Proxy и Wintun TUN временно отключены на доработку и будут включены в следующем релизе.
+- **[Отчёт VirusTotal Windows (3/67)](https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection)** — 3 ложных срабатывания (False Positive) из 67 антивирусов из-за включённых в поставку открытых сетевых утилит туннелирования:
+  - `AliCloud`: `Proxytool:Multi/tunSocks` (ложный детект сетевой утилиты tun2socks)
+  - `MaxSecure`: `Trojan.Malware.300983.susgen` (эвристика)
+  - `VirIT`: `Trojan.Win64.Sliver.AA` (ложная эвристика)
+  
+  Все крупные антивирусы (Kaspersky, Microsoft Defender, ESET, DrWeb, Avast, BitDefender и др.) подтверждают чистоту файла.
+
 - **[Промо-сайт проекта (GitHub Pages)](https://byedpirussia.github.io/byedpirussia/)** — веб-страница проекта с описанием функций.
 
 ---
