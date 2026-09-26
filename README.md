@@ -55,6 +55,19 @@ gradlew.bat assembleDebug
 
 ---
 
+## 🙏 Благодарности и используемые проекты (Credits & Upstream)
+
+Проект создан на основе и благодаря наработкам замечательных open-source проектов:
+
+- **[ByeDPI (ciadx)](https://github.com/hufrea/byedpi)** — оригинальное ядро утилиты для обхода глубокого анализа пакетов (DPI).
+- **[ByeDPIAndroid](https://github.com/dovecoteescapee/ByeDPIAndroid)** от dovecoteescapee — первоначальный Android-клиент и VPN-обертка для ByeDPI.
+- **[tg-ws-proxy-android](https://github.com/amurcanov/tg-ws-proxy-android)** от amurcanov — нативный MTProto-прокси для Telegram с транспортом через Cloudflare WebSocket.
+- **[AmneziaWG Android](https://github.com/amnezia-vpn/amneziawg-android)** от команды Amnezia VPN — модифицированный стек WireGuard с защитой от блокировок по сигнатурам (AWG 2.0) и библиотека `libwg-go.so`.
+- **[hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)** от heiher — высокопроизводительный tun2socks туннель для перенаправления сетевого трафика.
+- **[warp-generation](https://github.com/warp-generation/warp-generation.github.io)** — генератор конфигураций Cloudflare WARP с поддержкой параметров AmneziaWG.
+
+---
+
 ## 📄 Лицензия
 
 Распространяется на условиях лицензии MIT / GPL в соответствии с используемыми компонентами ByeDPI и AmneziaWG.
