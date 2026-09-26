@@ -45,6 +45,7 @@
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_settings"
+            android:theme="@style/Theme.ByeDPI.NoActionBar"
             android:exported="true"/>
 
         <service android:name=".services.ByeDpiVpnService"

@@ -70,10 +70,11 @@
         <Preference
             android:key="source_code"
             android:title="@string/source_code_link"
+            android:summary="https://github.com/byedpirussia/byedpirussia"
             android:icon="@drawable/ic_github_36">
             <intent
                 android:action="android.intent.action.VIEW"
-                android:data="https://github.com/dovecoteescapee/ByeDPIAndroid" />
+                android:data="https://github.com/byedpirussia/byedpirussia" />
         </Preference>
 
     </androidx.preference.PreferenceCategory>

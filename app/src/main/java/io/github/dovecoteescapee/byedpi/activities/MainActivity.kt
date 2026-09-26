@@ -206,6 +206,12 @@ class MainActivity : AppCompatActivity() {
         val (status, _) = appStatus
 
         return when (item.itemId) {
+            R.id.action_github -> {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/byedpirussia/byedpirussia"))
+                startActivity(intent)
+                true
+            }
+
             R.id.action_settings -> {
                 if (status == AppStatus.Halted) {
                     val intent = Intent(this, SettingsActivity::class.java)
