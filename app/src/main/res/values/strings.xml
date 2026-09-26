@@ -103,6 +103,7 @@
     <string name="warp_copied">Конфигурация AmneziaWG скопирована!</string>
     <string name="warp_generating">Генерация WARP профиля...</string>
     <string name="warp_generated_success">Новый WARP успешно сгенерирован!</string>
+    <string name="warp_generated_error">Ошибка генерации: %1$s</string>
     <string name="btn_advanced_settings">⚙️ Продвинутые настройки и стратегии</string>
     <string name="title_advanced_settings">Продвинутые настройки</string>
     <string name="app_subtitle_clean">Единый центр обхода блокировок</string>
@@ -120,5 +121,15 @@
     <string name="btn_select_strategy">Выбрать стратегию вручную</string>
     <string name="btn_autotune">Автоматический подбор стратегии</string>
     <string name="btn_stop_autotune">Остановить автоподбор</string>
-    <string name="warp_generated_error">Ошибка генерации WARP: %1$s</string>
+    <string name="split_tunnel_title">Раздельное туннелирование</string>
+    <string name="split_tunnel_subtitle">Выбор приложений, работающих через обход</string>
+    <string name="split_tunnel_mode_title">Режим фильтрации</string>
+    <string name="split_tunnel_mode_all">Весь трафик устройства (без исключений)</string>
+    <string name="split_tunnel_mode_whitelist">Туннелировать только выбранные</string>
+    <string name="split_tunnel_mode_blacklist">Туннелировать всё, кроме выбранных</string>
+    <string name="split_tunnel_select_apps">Выбрать приложения</string>
+    <string name="split_tunnel_apps_count">Выбрано приложений: %1$d</string>
+    <string name="split_tunnel_search_hint">Поиск приложения...</string>
+    <string name="split_tunnel_select_all">Выбрать все</string>
+    <string name="split_tunnel_deselect_all">Снять все</string>
 </resources>

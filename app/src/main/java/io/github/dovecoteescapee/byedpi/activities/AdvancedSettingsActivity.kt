@@ -87,13 +87,29 @@ class AdvancedSettingsActivity : AppCompatActivity() {
             }
         }
 
+        binding.cardSplitTunnel.setOnClickListener {
+            startActivity(Intent(this, io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelActivity::class.java))
+        }
+
         setupWarpCard()
         updateStrategyView()
+        updateSplitTunnelSummary()
     }
 
     override fun onResume() {
         super.onResume()
         updateStrategyView()
+        updateSplitTunnelSummary()
+    }
+
+    private fun updateSplitTunnelSummary() {
+        val mode = io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.getMode(this)
+        val count = io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.getSelectedPackages(this).size
+        binding.tvSplitTunnelSummary.text = when (mode) {
+            io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.MODE_WHITELIST -> "Только выбранные ($count прил.)"
+            io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.MODE_BLACKLIST -> "Все, кроме выбранных ($count прил.)"
+            else -> getString(R.string.split_tunnel_mode_all)
+        }
     }
 
     override fun onDestroy() {

@@ -178,7 +178,7 @@ class WarpVpnService : VpnService() {
                     builder.setMetered(false)
                 }
 
-                builder.addDisallowedApplication(applicationContext.packageName)
+                io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this@WarpVpnService)
 
                 // Establish TUN
                 val pfd = builder.establish() ?: throw IllegalStateException("Не удалось создать TUN интерфейс")
