@@ -11,8 +11,10 @@
 ## 📥 Скачать приложение (Download)
 
 [![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.0.2-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F67%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/474233f162b51de1c05c6a0dd2b778a5b822e58d02abe34145fb1453074530d8/detection)
 
 - **[Последняя стабильная версия (Releases v1.0.2)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[Отчёт VirusTotal (0/67)](https://www.virustotal.com/gui/file/474233f162b51de1c05c6a0dd2b778a5b822e58d02abe34145fb1453074530d8/detection)** — проверка файла всеми антивирусными вендорами (файл полностью чист и безопасен).
 - **[Промо-сайт проекта (GitHub Pages)](https://byedpirussia.github.io/byedpirussia/)** — веб-страница проекта с описанием функций.
 
 ---
