@@ -1,0 +1,24 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Тема Material Design 3 (Темная) -->
+    <style name="Theme.ByeDPI" parent="Theme.Material3.DayNight">
+        <item name="colorPrimary">#7A8FFF</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#28388F</item>
+        <item name="colorOnPrimaryContainer">#E0E4FF</item>
+        <item name="colorSecondary">#C5C6DC</item>
+        <item name="colorOnSecondary">#2E3042</item>
+        <item name="colorSecondaryContainer">#2B2D3A</item>
+        <item name="colorOnSecondaryContainer">#E1E1F9</item>
+        <item name="colorSurface">#131316</item>
+        <item name="colorOnSurface">#E3E2E6</item>
+        <item name="colorSurfaceVariant">#1E2028</item>
+        <item name="colorOnSurfaceVariant">#C5C6D0</item>
+        <item name="colorOutline">#8F909A</item>
+        <item name="colorOutlineVariant">#363842</item>
+    </style>
+
+    <style name="Theme.ByeDPI.NoActionBar" parent="Theme.ByeDPI">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

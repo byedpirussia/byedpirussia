@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:tag="byedpi_cmd_settings">
+
+    <Preference
+        android:key="byedpi_readme"
+        android:title="Documentation"
+        android:icon="@drawable/ic_github_36">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="@string/byedpi_docs" />
+    </Preference>
+
+    <androidx.preference.PreferenceCategory>
+
+        <com.takisoft.preferencex.EditTextPreference
+            android:key="byedpi_cmd_args"
+            android:title="@string/command_line_arguments"
+            android:dialogTitle="@string/command_line_arguments"
+            android:inputType="textMultiLine"
+            app:useSimpleSummaryProvider="true" />
+
+    </androidx.preference.PreferenceCategory>
+
+</PreferenceScreen>

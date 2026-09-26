@@ -1,0 +1,20 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+app/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Large APKs & binaries from reverse-engineering / temp builds
+*.apk
+*.zip
+*.tar.gz
+anddea_decompiled/
+temp_build/
+tg-ws-proxy-android-main/
+android-master/
