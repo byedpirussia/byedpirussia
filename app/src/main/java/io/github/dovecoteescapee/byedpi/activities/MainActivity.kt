@@ -37,6 +37,9 @@ import io.github.dovecoteescapee.byedpi.utility.getPreferences
 import io.github.dovecoteescapee.byedpi.utility.mode
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
 import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
+import io.github.dovecoteescapee.byedpi.vless.VlessManager
+import io.github.dovecoteescapee.byedpi.vless.VlessVpnService
+import io.github.dovecoteescapee.byedpi.vless.VlessListActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -74,6 +77,15 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 WarpVpnService.start(this)
+            } else {
+                Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    private val vlessVpnRegister =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                VlessVpnService.start(this)
             } else {
                 Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_SHORT).show()
             }
@@ -188,6 +200,7 @@ class MainActivity : AppCompatActivity() {
         setupByeDpiCard()
         setupTelegramProxyCard()
         setupWarpCard()
+        setupVlessCard()
         setupAdvancedSettingsCard()
     }
 
@@ -195,6 +208,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updateStatus()
         updateStrategyBadge()
+        updateVlessSubtitle()
     }
 
     override fun onDestroy() {
@@ -244,9 +258,12 @@ class MainActivity : AppCompatActivity() {
             val (status, _) = appStatus
             when (status) {
                 AppStatus.Halted -> {
-                    // Если активен WARP VPN, выключаем его во избежание коллизий VpnService
+                    // Если активен WARP или VLESS VPN, выключаем их во избежание коллизий VpnService
                     if (WarpVpnService.isRunning.value) {
                         WarpVpnService.stop(this)
+                    }
+                    if (VlessVpnService.isRunning.value) {
+                        VlessVpnService.stop(this)
                     }
                     when (getPreferences().mode()) {
                         Mode.VPN -> {
@@ -363,6 +380,9 @@ class MainActivity : AppCompatActivity() {
                 if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
                     ServiceManager.stop(this)
                 }
+                if (VlessVpnService.isRunning.value) {
+                    VlessVpnService.stop(this)
+                }
 
                 val intentPrepare = VpnService.prepare(this)
                 if (intentPrepare != null) {
@@ -392,6 +412,68 @@ class MainActivity : AppCompatActivity() {
                 val endpoint = WarpConfigManager.extractEndpoint(config)
                 binding.warpSubtitleText.text = "Cloudflare WARP ($endpoint)"
             }
+        }
+    }
+
+    private fun setupVlessCard() {
+        updateVlessSubtitle()
+
+        binding.btnVlessManage.setOnClickListener {
+            val intent = Intent(this, VlessListActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnActionVless.setOnClickListener {
+            if (VlessVpnService.isRunning.value) {
+                VlessVpnService.stop(this)
+            } else {
+                val selectedConfig = VlessManager.getSelectedConfig(this)
+                if (selectedConfig == null) {
+                    Toast.makeText(this, "Сначала добавьте VLESS сервер или подписку", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, VlessListActivity::class.java)
+                    startActivity(intent)
+                    return@setOnClickListener
+                }
+
+                // Отключаем ByeDPI и WARP во избежание коллизий VpnService
+                val (byedpiStatus, byedpiMode) = appStatus
+                if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
+                    ServiceManager.stop(this)
+                }
+                if (WarpVpnService.isRunning.value) {
+                    WarpVpnService.stop(this)
+                }
+
+                val intentPrepare = VpnService.prepare(this)
+                if (intentPrepare != null) {
+                    vlessVpnRegister.launch(intentPrepare)
+                } else {
+                    VlessVpnService.start(this)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            VlessVpnService.isRunning.collectLatest { running ->
+                if (running) {
+                    binding.vlessStatusBadge.text = "🟢 Подключен"
+                    binding.vlessStatusBadge.setTextColor(getColor(R.color.accent_green))
+                    binding.btnActionVless.text = getString(R.string.vless_active_btn)
+                } else {
+                    binding.vlessStatusBadge.text = "⚪ Отключено"
+                    binding.vlessStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
+                    binding.btnActionVless.text = getString(R.string.vless_inactive_btn)
+                }
+            }
+        }
+    }
+
+    private fun updateVlessSubtitle() {
+        val selected = VlessManager.getSelectedConfig(this)
+        if (selected != null) {
+            binding.vlessSubtitleText.text = "${selected.name} (${selected.address}:${selected.port})"
+        } else {
+            binding.vlessSubtitleText.text = getString(R.string.vless_no_servers)
         }
     }
 

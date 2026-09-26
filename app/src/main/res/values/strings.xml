@@ -132,4 +132,21 @@
     <string name="split_tunnel_search_hint">Поиск приложения...</string>
     <string name="split_tunnel_select_all">Выбрать все</string>
     <string name="split_tunnel_deselect_all">Снять все</string>
+    <string name="card_vless_title">VLESS / Reality</string>
+    <string name="card_vless_desc">Универсальный протокол Xray с маскировкой под реальные TLS сайты и Vision flow</string>
+    <string name="vless_active_btn">Отключить VLESS</string>
+    <string name="vless_inactive_btn">Включить VLESS</string>
+    <string name="vless_manage_btn">Подписки и серверы</string>
+    <string name="vless_no_servers">Нет добавленных VLESS серверов</string>
+    <string name="vless_servers_title">VLESS Профили и Подписки</string>
+    <string name="vless_add_single">Вставить vless:// ключ</string>
+    <string name="vless_add_subscription">Добавить ссылку на подписку</string>
+    <string name="vless_enter_key_hint">Вставьте ссылку vless://...</string>
+    <string name="vless_enter_sub_hint">https://example.com/sub/...</string>
+    <string name="vless_sub_updating">Обновление подписки...</string>
+    <string name="vless_sub_success">Успешно загружено серверов: %1$d</string>
+    <string name="vless_sub_error">Ошибка обновления: %1$s</string>
+    <string name="vless_added_success">Сервер успешно добавлен!</string>
+    <string name="vless_invalid_link">Некорректная ссылка VLESS</string>
+    <string name="vless_delete_confirm">Удалить этот сервер?</string>
 </resources>
