@@ -136,8 +136,9 @@ class VlessVpnService : VpnService() {
                 delay(300)
 
                 // 2. Setup TUN interface via Android VpnService
+                val protoTitle = if (activeConfig.protocol.equals("hysteria2", ignoreCase = true)) "Hysteria2" else "VLESS"
                 val builder = Builder()
-                builder.setSession("VLESS: ${activeConfig.name}")
+                builder.setSession("$protoTitle: ${activeConfig.name}")
                 builder.setConfigureIntent(
                     PendingIntent.getActivity(
                         this@VlessVpnService,

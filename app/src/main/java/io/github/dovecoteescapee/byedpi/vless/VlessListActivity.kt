@@ -168,7 +168,9 @@ class VlessListActivity : AppCompatActivity() {
     private fun showAddKeyDialog() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipText = clipboard.primaryClip?.getItemAt(0)?.text?.toString()?.trim() ?: ""
-        val initialText = if (clipText.startsWith("vless://", ignoreCase = true)) clipText else ""
+        val initialText = if (clipText.startsWith("vless://", ignoreCase = true) ||
+            clipText.startsWith("hy2://", ignoreCase = true) ||
+            clipText.startsWith("hysteria2://", ignoreCase = true)) clipText else ""
 
         val input = EditText(this).apply {
             hint = getString(R.string.vless_enter_key_hint)
@@ -185,7 +187,8 @@ class VlessListActivity : AppCompatActivity() {
                 if (config != null) {
                     VlessManager.addConfig(this, config)
                     loadServers()
-                    Toast.makeText(this, R.string.vless_added_success, Toast.LENGTH_SHORT).show()
+                    val protoName = if (config.protocol.equals("hysteria2", ignoreCase = true)) "Hysteria2" else "VLESS"
+                    Toast.makeText(this, "$protoName сервер успешно добавлен!", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(this, R.string.vless_invalid_link, Toast.LENGTH_LONG).show()
                 }

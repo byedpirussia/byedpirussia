@@ -26,7 +26,8 @@ class VlessServerAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
         holder.binding.tvServerName.text = item.name
-        holder.binding.tvServerDetails.text = "${item.address}:${item.port} | ${item.security} | ${item.transport}"
+        val protoTag = if (item.protocol.equals("hysteria2", ignoreCase = true)) "Hysteria2" else "VLESS"
+        holder.binding.tvServerDetails.text = "$protoTag • ${item.address}:${item.port} | ${item.security} | ${item.transport}"
         holder.binding.rbSelected.isChecked = (item.id == selectedId)
 
         val ping = pingResults[item.id]
