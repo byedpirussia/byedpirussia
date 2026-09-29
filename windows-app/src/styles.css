@@ -564,3 +564,49 @@ body {
   border-color: rgba(239, 68, 68, 0.2);
   opacity: 0.6;
 }
+
+/* Theme Accent Colors */
+body.theme-purple {
+  --accent-blue: #8b5cf6;
+}
+body.theme-emerald {
+  --accent-blue: #10b981;
+}
+body.theme-orange {
+  --accent-blue: #f97316;
+}
+body.theme-ruby {
+  --accent-blue: #ef4444;
+}
+
+.theme-chips-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.theme-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+  position: relative;
+}
+
+.theme-chip:hover {
+  transform: scale(1.1);
+}
+
+.theme-chip.active {
+  border-color: #ffffff;
+  box-shadow: 0 0 10px var(--accent-blue);
+}
+
+.theme-chip.color-blue { background: #3b82f6; }
+.theme-chip.color-purple { background: #8b5cf6; }
+.theme-chip.color-emerald { background: #10b981; }
+.theme-chip.color-orange { background: #f97316; }
+.theme-chip.color-ruby { background: #ef4444; }
+

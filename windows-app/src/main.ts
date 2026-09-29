@@ -4,6 +4,7 @@ interface VlessConfig {
   id: string;
   subscription_url: string;
   name: string;
+  protocol: string;
   address: string;
   port: number;
   uuid: string;
@@ -86,6 +87,33 @@ document.getElementById("btn-open-vless-list")?.addEventListener("click", () => 
   navVless.click();
 });
 
+// Theme Management
+function initThemes() {
+  const savedTheme = localStorage.getItem("byedpi_theme") || "blue";
+  applyTheme(savedTheme);
+
+  const chips = document.querySelectorAll(".theme-chip");
+  chips.forEach(chip => {
+    chip.addEventListener("click", () => {
+      const theme = chip.getAttribute("data-theme") || "blue";
+      applyTheme(theme);
+    });
+  });
+}
+
+function applyTheme(themeName: string) {
+  document.body.className = themeName === "blue" ? "" : `theme-${themeName}`;
+  localStorage.setItem("byedpi_theme", themeName);
+
+  document.querySelectorAll(".theme-chip").forEach(chip => {
+    if (chip.getAttribute("data-theme") === themeName) {
+      chip.classList.add("active");
+    } else {
+      chip.classList.remove("active");
+    }
+  });
+}
+
 // WARP Config Display & Generation
 async function renderWarpConfig() {
   const textarea = document.getElementById("warp-config-text") as HTMLTextAreaElement;
@@ -109,6 +137,8 @@ Endpoint = ${cfg.endpoint}`;
       
       const sub = document.getElementById("warp-active-subtitle");
       if (sub) sub.textContent = `WireGuard • ${cfg.endpoint}`;
+      const desc = document.getElementById("warp-detail-desc");
+      if (desc) desc.textContent = `Туннелирование трафика через сеть Cloudflare (${cfg.endpoint})`;
     }
   } catch (e) {
     console.error("Failed to load warp config", e);
@@ -137,7 +167,7 @@ async function handleGenerateWarp() {
   if (statusEl) {
     statusEl.style.display = "block";
     statusEl.style.color = "var(--accent-blue)";
-    statusEl.textContent = "⏳ Регистрация в сети Cloudflare и подбор быстрого эндпоинта...";
+    statusEl.textContent = "⏳ Регистрация в сети Cloudflare и подбор чистого эндпоинта...";
   }
   if (quickBtn) quickBtn.textContent = "⏳ Генерация...";
   if (pageBtn) pageBtn.textContent = "⏳ Генерация...";
@@ -182,10 +212,6 @@ document.getElementById("btn-open-github-repo")?.addEventListener("click", () =>
   window.open("https://github.com/byedpirussia/byedpirussia");
 });
 
-document.getElementById("btn-warp-page-toggle")?.addEventListener("click", () => {
-  document.getElementById("btn-toggle-warp")?.click();
-});
-
 // ByeDPI Button
 const btnToggleByeDpi = document.getElementById("btn-toggle-byedpi")!;
 const badgeByeDpi = document.getElementById("badge-byedpi")!;
@@ -204,19 +230,50 @@ btnToggleByeDpi.addEventListener("click", async () => {
   }
 });
 
-// VLESS Button
+// VLESS / Hysteria2 Buttons
 const btnToggleVless = document.getElementById("btn-toggle-vless")!;
+const badgeVless = document.getElementById("badge-vless")!;
 
-btnToggleVless.addEventListener("click", () => {
-  alert("Режим VLESS временно недоступен в Windows-версии. Мы исправим и включим его в следующем релизе!");
+btnToggleVless.addEventListener("click", async () => {
+  try {
+    const status: ServiceStatus = await invoke("get_status");
+    if (status.vless_running) {
+      await invoke("stop_vless");
+    } else {
+      if (configs.length === 0) {
+        alert("Список серверов пуст. Добавьте ключ или ссылку на подписку во вкладке 'Серверы VLESS / Hysteria2'!");
+        navVless.click();
+        return;
+      }
+      await invoke("start_vless");
+    }
+    updateStatus();
+  } catch (err: any) {
+    alert("Ошибка подключения: " + err);
+  }
 });
 
-// WARP Button
+// WARP Buttons
 const btnToggleWarp = document.getElementById("btn-toggle-warp")!;
+const btnWarpPageToggle = document.getElementById("btn-warp-page-toggle")!;
+const badgeWarp = document.getElementById("badge-warp")!;
 
-btnToggleWarp?.addEventListener("click", () => {
-  alert("Подключение WARP временно недоступно в Windows-версии. Мы исправим и включим его в следующем релизе!");
-});
+async function toggleWarpService() {
+  try {
+    const status: ServiceStatus = await invoke("get_status");
+    if (status.warp_running) {
+      await invoke("stop_warp");
+    } else {
+      await invoke("start_warp");
+    }
+    updateStatus();
+  } catch (err: any) {
+    alert("Ошибка WARP: " + err);
+  }
+}
+
+btnToggleWarp?.addEventListener("click", toggleWarpService);
+btnWarpPageToggle?.addEventListener("click", toggleWarpService);
 
 // System Proxy & TUN Toggles
 const chkSystemProxy = document.getElementById("chk-system-proxy") as HTMLInputElement;
@@ -234,10 +291,16 @@ async function handleProxyChange(checked: boolean) {
   }
 }
 
-async function handleTunChange(_checked: boolean) {
-  alert("Режим Виртуального TUN (Wintun) временно отключен на доработку. Мы исправим и включим его в следующем релизе!");
-  if (chkTunMode) chkTunMode.checked = false;
-  if (chkSettingsTun) chkSettingsTun.checked = false;
+async function handleTunChange(checked: boolean) {
+  try {
+    const enabled: boolean = await invoke("toggle_tun_mode", { enable: checked });
+    chkTunMode.checked = enabled;
+    if (chkSettingsTun) chkSettingsTun.checked = enabled;
+  } catch (err: any) {
+    alert("Ошибка настройки Wintun TUN: " + err + "\n\nДля создания виртуального сетевого адаптера Wintun запустите приложение от имени Администратора!");
+    chkTunMode.checked = false;
+    if (chkSettingsTun) chkSettingsTun.checked = false;
+  }
 }
 
 chkSystemProxy?.addEventListener("change", () => handleProxyChange(chkSystemProxy.checked));
@@ -245,9 +308,20 @@ chkSettingsProxy?.addEventListener("change", () => handleProxyChange(chkSettings
 chkTunMode?.addEventListener("change", () => handleTunChange(chkTunMode.checked));
 chkSettingsTun?.addEventListener("change", () => handleTunChange(chkSettingsTun.checked));
 
-// Telegram Button
-document.getElementById("btn-tg-connect")?.addEventListener("click", () => {
-  alert("Telegram Proxy для Windows временно отключен на доработку. Мы исправим и включим его в следующем релизе!");
+// Telegram Connect Button
+document.getElementById("btn-tg-connect")?.addEventListener("click", async () => {
+  try {
+    const status: ServiceStatus = await invoke("get_status");
+    if (!status.byedpi_running && !status.vless_running && !status.warp_running) {
+      // Auto-start ByeDPI if nothing is running
+      await invoke("start_byedpi", { params: null });
+      updateStatus();
+    }
+    const port: number = await invoke("get_telegram_proxy_port");
+    window.open(`tg://socks?server=127.0.0.1&port=${port}`);
+  } catch (err: any) {
+    alert("Ошибка подключения Telegram Proxy: " + err);
+  }
 });
 
 // Status Poller
@@ -268,12 +342,42 @@ async function updateStatus() {
       btnToggleByeDpi.className = "btn btn-primary";
     }
 
+    // VLESS / Hysteria2
+    if (status.vless_running) {
+      badgeVless.textContent = "🟢 Подключено";
+      badgeVless.className = "status-badge active";
+      btnToggleVless.textContent = "Остановить VLESS / HY2";
+      btnToggleVless.className = "btn btn-active";
+    } else {
+      badgeVless.textContent = "⚪ Отключено";
+      badgeVless.className = "status-badge inactive";
+      btnToggleVless.textContent = "Включить VLESS / HY2";
+      btnToggleVless.className = "btn btn-primary";
+    }
+
+    // WARP
+    if (status.warp_running) {
+      badgeWarp.textContent = "🟢 Подключено";
+      badgeWarp.className = "status-badge active";
+      btnToggleWarp.textContent = "Остановить WARP";
+      btnToggleWarp.className = "btn btn-active";
+      btnWarpPageToggle.textContent = "Остановить WARP";
+      btnWarpPageToggle.className = "btn btn-active";
+    } else {
+      badgeWarp.textContent = "⚪ Отключено";
+      badgeWarp.className = "status-badge inactive";
+      btnToggleWarp.textContent = "Включить WARP";
+      btnToggleWarp.className = "btn btn-primary";
+      btnWarpPageToggle.textContent = "Включить WARP";
+      btnWarpPageToggle.className = "btn btn-primary";
+    }
+
     chkSystemProxy.checked = status.system_proxy_enabled;
     if (chkSettingsProxy) chkSettingsProxy.checked = status.system_proxy_enabled;
-    if (chkTunMode) chkTunMode.checked = false;
-    if (chkSettingsTun) chkSettingsTun.checked = false;
+    chkTunMode.checked = status.tun_mode;
+    if (chkSettingsTun) chkSettingsTun.checked = status.tun_mode;
 
-    // Update active vless subtitle
+    // Active vless subtitle
     if (status.selected_vless_id) {
       const active = configs.find(c => c.id === status.selected_vless_id);
       const vlessSubtitle = document.getElementById("vless-active-subtitle");
@@ -367,10 +471,14 @@ async function renderServerList() {
       }
     }
 
+    const protoBadge = cfg.protocol === "hysteria2" 
+      ? `<span style="background: rgba(249, 115, 22, 0.2); color: #f97316; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-right: 6px;">HY2</span>` 
+      : `<span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-right: 6px;">VLESS</span>`;
+
     item.innerHTML = `
       <div class="server-info">
-        <h4>${isSelected ? "🔘 " : "⚪ "}${cfg.name}</h4>
-        <span>${cfg.address}:${cfg.port} • ${cfg.security} • ${cfg.transport}</span>
+        <h4>${isSelected ? "🔘 " : "⚪ "}${protoBadge}${cfg.name}</h4>
+        <span>${cfg.address}:${cfg.port} • ${cfg.security || 'tls'} • ${cfg.transport || 'tcp'}</span>
       </div>
       <div class="server-meta">
         ${pingHtml}
@@ -412,6 +520,7 @@ document.getElementById("btn-confirm-add-key")?.addEventListener("click", async 
       modalAddKey.style.display = "none";
       (document.getElementById("input-vless-key") as HTMLInputElement).value = "";
       loadConfigsAndTabs();
+      alert("Сервер успешно добавлен!");
     } catch (e: any) {
       alert("Ошибка добавления ключа: " + e);
     }
@@ -435,6 +544,7 @@ document.getElementById("btn-confirm-add-sub")?.addEventListener("click", async 
       modalAddSub.style.display = "none";
       (document.getElementById("input-sub-url") as HTMLInputElement).value = "";
       loadConfigsAndTabs();
+      alert("Подписка успешно загружена!");
     } catch (e: any) {
       alert("Ошибка загрузки подписки: " + e);
       document.getElementById("btn-confirm-add-sub")!.textContent = "Загрузить";
@@ -647,7 +757,6 @@ btnApplyBestStrategy.addEventListener("click", async () => {
     }
     modalAutocheck.style.display = "none";
 
-    // Restart ByeDPI if currently running to apply winning strategy
     const status: ServiceStatus = await invoke("get_status");
     if (status.byedpi_running) {
       await invoke("stop_byedpi");
@@ -660,9 +769,9 @@ btnApplyBestStrategy.addEventListener("click", async () => {
 });
 
 // Initial boot
+initThemes();
 loadStrategies();
 loadConfigsAndTabs();
 renderWarpConfig();
 updateStatus();
 setInterval(updateStatus, 2000);
-

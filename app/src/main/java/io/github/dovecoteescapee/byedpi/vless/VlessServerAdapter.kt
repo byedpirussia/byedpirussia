@@ -34,6 +34,7 @@ class VlessServerAdapter(
         }
         val securityInfo = if (item.security.isNotBlank() && item.security != "none") " | ${item.security}" else ""
         val transportInfo = if (item.transport.isNotBlank()) " | ${item.transport}" else ""
+        holder.binding.tvServerName.text = item.name.ifBlank { "${item.address}:${item.port}" }
         holder.binding.tvServerDetails.text = "$protoTag • ${item.address}:${item.port}$securityInfo$transportInfo"
         holder.binding.rbSelected.isChecked = (item.id == selectedId)
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ByeDPI Russia</title>
+    <title>ByeDPI Russia Desktop</title>
   </head>
 
   <body>
@@ -15,7 +15,7 @@
           <div class="brand-icon">🛡️</div>
           <div class="brand-text">
             <h2>ByeDPI Russia</h2>
-            <span>Desktop v1.1.2-Beta</span>
+            <span>Desktop v1.1.5</span>
           </div>
         </div>
 
@@ -24,7 +24,7 @@
             <span>🎛️</span> Панель управления
           </div>
           <div class="nav-item" id="nav-vless">
-            <span>⚡</span> Серверы VLESS
+            <span>⚡</span> VLESS / Hysteria2
           </div>
           <div class="nav-item" id="nav-warp">
             <span>🌐</span> Cloudflare WARP
@@ -39,11 +39,11 @@
             <span>Системный прокси</span>
             <input type="checkbox" id="chk-system-proxy" style="cursor: pointer;" />
           </div>
-          <div class="proxy-toggle" style="margin-top: 6px; opacity: 0.65;">
-            <span title="Временно не работает (исправим в следующем релизе)">Виртуальный TUN (В разработке)</span>
-            <input type="checkbox" id="chk-tun-mode" disabled style="cursor: not-allowed;" />
+          <div class="proxy-toggle" style="margin-top: 6px;">
+            <span title="Туннелирование всей системы через виртуальный сетевой драйвер (требуются права администратора)">Виртуальный TUN</span>
+            <input type="checkbox" id="chk-tun-mode" style="cursor: pointer;" />
           </div>
-          <div id="proxy-status" style="font-size: 11px; color: #10b981; margin-top: 4px;">● ByeDPI готов к работе</div>
+          <div id="proxy-status" style="font-size: 11px; color: #10b981; margin-top: 4px;">● Все модули готовы к работе</div>
         </div>
       </aside>
 
@@ -79,94 +79,81 @@
               </div>
             </div>
 
-            <!-- VLESS Card -->
-            <div class="card" style="border-color: rgba(245, 158, 11, 0.3);">
+            <!-- VLESS / Hysteria2 Card -->
+            <div class="card">
               <div class="card-header">
                 <div class="card-title-group">
                   <div class="card-icon icon-vless">⚡</div>
                   <div>
-                    <div class="card-title">VLESS / Reality</div>
-                    <div class="card-subtitle" id="vless-active-subtitle">Xray Core (Порты: 10809 / 10808)</div>
+                    <div class="card-title">VLESS / Hysteria2</div>
+                    <div class="card-subtitle" id="vless-active-subtitle">Sing-Box Core (Порты: 10808 / 10809)</div>
                   </div>
                 </div>
-                <div class="status-badge warning" id="badge-vless">⚠️ Временно недоступно</div>
-              </div>
-              <div class="maintenance-notice">
-                <span>⚠️ Временно не работает — исправим в следующем релизе</span>
+                <div class="status-badge inactive" id="badge-vless">⚪ Отключено</div>
               </div>
               <div class="card-desc">
-                Современный протокол с маскировкой трафика под обычный HTTPS. Интеграция дорабатывается.
+                Быстрые протоколы с маскировкой трафика (Reality, TLS, gRPC, WS, Hysteria2 QUIC) через зарубежные серверы.
               </div>
-              <div class="card-actions">
-                <button class="btn btn-secondary" id="btn-toggle-vless" style="opacity: 0.65; cursor: not-allowed;">Временно отключено</button>
+              <div class="card-actions" style="display: flex; gap: 8px;">
+                <button class="btn btn-primary" id="btn-toggle-vless" style="flex: 1;">Включить VLESS / HY2</button>
                 <button class="btn btn-secondary" id="btn-open-vless-list">Серверы</button>
               </div>
             </div>
 
             <!-- WARP Card -->
-            <div class="card" style="border-color: rgba(245, 158, 11, 0.3);">
+            <div class="card">
               <div class="card-header">
                 <div class="card-title-group">
                   <div class="card-icon icon-warp">🌐</div>
                   <div>
                     <div class="card-title">Cloudflare WARP</div>
-                    <div class="card-subtitle" id="warp-active-subtitle">WireGuard / AmneziaWG</div>
+                    <div class="card-subtitle" id="warp-active-subtitle">WireGuard / AmneziaWG (10818 / 10819)</div>
                   </div>
                 </div>
-                <div class="status-badge warning" id="badge-warp">⚠️ Временно недоступно</div>
-              </div>
-              <div class="maintenance-notice">
-                <span>⚠️ Временно не работает — исправим в следующем релизе</span>
+                <div class="status-badge inactive" id="badge-warp">⚪ Отключено</div>
               </div>
               <div class="card-desc">
-                Быстрый защищенный туннель Cloudflare. Сетевой драйвер дорабатывается для Windows.
+                Бесплатный быстрый защищенный туннель Cloudflare с автоматической генерацией профилей и ключей.
               </div>
               <div class="card-actions" style="display: flex; gap: 8px;">
-                <button class="btn btn-secondary" id="btn-toggle-warp" style="flex: 1; opacity: 0.65; cursor: not-allowed;">Временно отключено</button>
+                <button class="btn btn-primary" id="btn-toggle-warp" style="flex: 1;">Включить WARP</button>
                 <button class="btn btn-secondary" id="btn-warp-generate-quick" title="Сгенерировать новый профиль">✨ Новый ключ</button>
               </div>
             </div>
 
             <!-- Telegram Proxy Card -->
-            <div class="card" style="border-color: rgba(245, 158, 11, 0.3);">
+            <div class="card">
               <div class="card-header">
                 <div class="card-title-group">
                   <div class="card-icon icon-tg">✈️</div>
                   <div>
                     <div class="card-title">Telegram Proxy</div>
-                    <div class="card-subtitle">Cloudflare WebSocket</div>
+                    <div class="card-subtitle" id="tg-active-subtitle">MTProto / SOCKS5 over Cloudflare</div>
                   </div>
                 </div>
-                <div class="status-badge warning">⚠️ Временно недоступно</div>
-              </div>
-              <div class="maintenance-notice">
-                <span>⚠️ Временно не работает — исправим в следующем релизе</span>
+                <div class="status-badge active" id="badge-tg">🟢 Готов</div>
               </div>
               <div class="card-desc">
-                Подключение десктопного Telegram через встроенный прокси-сервер (в процессе обновления).
+                Мгновенное подключение десктопного клиента Telegram через активный локальный защищенный туннель.
               </div>
               <div class="card-actions">
-                <button class="btn btn-secondary" id="btn-tg-connect" style="flex: 1; opacity: 0.65; cursor: not-allowed;">Временно недоступно</button>
+                <button class="btn btn-primary" id="btn-tg-connect" style="flex: 1;">🚀 Применить в Telegram</button>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- VLESS Manager Section -->
+        <!-- VLESS / Hysteria2 Manager Section -->
         <section id="section-vless" style="display: none;">
           <div class="header">
-            <h1>Серверы VLESS / Reality</h1>
-            <p>Управление конфигурациями, подписками и проверка скорости серверов</p>
-          </div>
-
-          <div class="maintenance-notice" style="margin-bottom: 20px;">
-            <span>⚠️ Внимание: Подключение через VLESS на Windows временно недоступно — исправим в следующем релизе. Вы можете добавлять и тестировать конфигурации.</span>
+            <h1>Серверы VLESS и Hysteria2</h1>
+            <p>Управление ключами, подписками и автоматическая проверка задержки (пинга)</p>
           </div>
 
           <div class="vless-view">
             <div class="vless-toolbar">
               <div style="display: flex; gap: 8px;">
-                <button class="btn btn-primary" id="btn-add-key">+ vless://</button>
+                <button class="btn btn-primary" id="btn-add-key">+ Ключ (vless / hy2)</button>
                 <button class="btn btn-secondary" id="btn-add-sub">+ Подписка</button>
                 <button class="btn btn-secondary" id="btn-test-ping">⚡ Тест пинга</button>
               </div>
@@ -193,11 +180,7 @@
         <section id="section-warp" style="display: none;">
           <div class="header">
             <h1>Cloudflare WARP (WireGuard)</h1>
-            <p>Управление профилем WARP, генерация ключей и настройка параметров</p>
-          </div>
-
-          <div class="maintenance-notice" style="margin-bottom: 20px;">
-            <span>⚠️ Внимание: Подключение туннеля WARP на Windows временно недоступно — исправим в следующем релизе. Доступна генерация и экспорт профилей.</span>
+            <p>Управление профилем WARP, генерация ключей и экспорт конфигураций</p>
           </div>
 
           <div class="settings-group">
@@ -205,9 +188,9 @@
             <div class="settings-item">
               <div>
                 <div style="font-weight: 600;">Подключение Cloudflare WARP</div>
-                <div class="settings-desc">Туннелирование трафика через сеть Cloudflare (188.114.98.8:854)</div>
+                <div class="settings-desc" id="warp-detail-desc">Туннелирование трафика через сеть Cloudflare (188.114.98.8:854)</div>
               </div>
-              <button class="btn btn-secondary" id="btn-warp-page-toggle" style="min-width: 140px; opacity: 0.65; cursor: not-allowed;">Временно отключено</button>
+              <button class="btn btn-primary" id="btn-warp-page-toggle" style="min-width: 140px;">Включить WARP</button>
             </div>
           </div>
 
@@ -240,7 +223,24 @@
         <section id="section-settings" style="display: none;">
           <div class="header">
             <h1>Настройки приложения</h1>
-            <p>Общие системные параметры, автозапуск и управление сетевыми адаптерами</p>
+            <p>Общие системные параметры, сетевые адаптеры и кастомизация оформления</p>
+          </div>
+
+          <div class="settings-group">
+            <h3>Оформление и тема</h3>
+            <div class="settings-item">
+              <div>
+                <div style="font-weight: 600;">Акцентный цвет интерфейса</div>
+                <div class="settings-desc">Выберите цветовую палитру приложения</div>
+              </div>
+              <div class="theme-chips-container" id="theme-chips">
+                <div class="theme-chip color-blue active" data-theme="blue" title="Синий (по умолчанию)"></div>
+                <div class="theme-chip color-purple" data-theme="purple" title="Фиолетовый"></div>
+                <div class="theme-chip color-emerald" data-theme="emerald" title="Изумрудный"></div>
+                <div class="theme-chip color-orange" data-theme="orange" title="Оранжевый закат"></div>
+                <div class="theme-chip color-ruby" data-theme="ruby" title="Рубиновый"></div>
+              </div>
+            </div>
           </div>
 
           <div class="settings-group">
@@ -248,23 +248,23 @@
             <div class="settings-item">
               <div>
                 <div style="font-weight: 600;">Системный прокси Windows</div>
-                <div class="settings-desc">Автоматически перенаправлять трафик браузеров (Edge, Chrome, Yandex) через локальный порт</div>
+                <div class="settings-desc">Автоматически перенаправлять трафик браузеров (Edge, Chrome, Yandex) через локальный прокси</div>
               </div>
               <input type="checkbox" id="chk-settings-proxy" style="cursor: pointer; transform: scale(1.3);" />
             </div>
-            <div class="settings-item" style="opacity: 0.65;">
+            <div class="settings-item">
               <div>
-                <div style="font-weight: 600;">Виртуальный сетевой адаптер (Wintun TUN) <span style="font-size: 11px; color: #f59e0b;">(Временно не работает — исправим в следующем релизе)</span></div>
-                <div class="settings-desc">Туннелирование всей системы целиком (игры, Discord голосовые каналы, приложения без поддержки прокси)</div>
+                <div style="font-weight: 600;">Виртуальный сетевой адаптер (Wintun TUN)</div>
+                <div class="settings-desc">Туннелирование всей системы целиком (игры, Discord голос, программы без прокси). Требует запуска от имени Администратора.</div>
               </div>
-              <input type="checkbox" id="chk-settings-tun" disabled style="cursor: not-allowed; transform: scale(1.3);" />
+              <input type="checkbox" id="chk-settings-tun" style="cursor: pointer; transform: scale(1.3);" />
             </div>
             <div class="settings-item">
               <div>
-                <div style="font-weight: 600;">Порты прокси-серверов</div>
-                <div class="settings-desc">HTTP/HTTPS: 127.0.0.1:10809 • SOCKS5: 127.0.0.1:1080 (ByeDPI)</div>
+                <div style="font-weight: 600;">Локальные порты прокси-серверов</div>
+                <div class="settings-desc">ByeDPI: 1080 • VLESS / Hysteria2: 10808 (Mixed) / 10809 (HTTP) • WARP: 10818 / 10819</div>
               </div>
-              <span style="font-size: 12px; color: var(--accent-green); font-weight: 600;">Авто</span>
+              <span style="font-size: 12px; color: var(--accent-green); font-weight: 600;">Активны</span>
             </div>
           </div>
 
@@ -273,7 +273,7 @@
             <div class="settings-item">
               <div>
                 <div style="font-weight: 600;">ByeDPI Russia Desktop</div>
-                <div class="settings-desc">Версия 1.1.2-Beta • Сборка Windows x64 (Rust + Tauri + ByeDPI Core)</div>
+                <div class="settings-desc">Версия 1.1.5 • Windows x64 (Rust, Tauri, ByeDPI, Sing-Box, Xray)</div>
               </div>
               <button class="btn btn-secondary" id="btn-open-github-repo" style="font-size: 12px;">GitHub Репозиторий</button>
             </div>
@@ -285,9 +285,9 @@
     <!-- Add Key Modal -->
     <div class="modal-overlay" id="modal-add-key" style="display: none;">
       <div class="modal">
-        <h3>Добавить ключ VLESS</h3>
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Вставьте ссылку формата vless://uuid@host:port?...</p>
-        <input type="text" id="input-vless-key" placeholder="vless://..." />
+        <h3>Добавить ключ VLESS или Hysteria2</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Вставьте ссылку формата vless://... или hy2://...</p>
+        <input type="text" id="input-vless-key" placeholder="vless://... или hy2://..." />
         <div class="modal-actions">
           <button class="btn btn-secondary" id="btn-cancel-add-key">Отмена</button>
           <button class="btn btn-primary" id="btn-confirm-add-key">Добавить</button>
@@ -299,7 +299,7 @@
     <div class="modal-overlay" id="modal-add-sub" style="display: none;">
       <div class="modal">
         <h3>Добавить подписку</h3>
-        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Введите прямую ссылку на подписку VLESS (HTTP/HTTPS)</p>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Введите прямую ссылку на подписку VLESS / Hysteria2 (HTTP/HTTPS)</p>
         <input type="text" id="input-sub-url" placeholder="https://domain.com/sub/..." />
         <div class="modal-actions">
           <button class="btn btn-secondary" id="btn-cancel-add-sub">Отмена</button>
