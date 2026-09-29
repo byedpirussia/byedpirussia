@@ -52,3 +52,30 @@ fun Context.isStarNeverShow(): Boolean =
 fun Context.setStarNeverShow(never: Boolean) {
     getPreferences().edit().putBoolean(KEY_STAR_NEVER_SHOW, never).apply()
 }
+
+const val KEY_APP_LANGUAGE = "app_language"
+const val KEY_LANGUAGE_SELECTED = "language_selected"
+
+fun Context.isLanguageSelected(): Boolean =
+    getPreferences().getBoolean(KEY_LANGUAGE_SELECTED, false)
+
+fun Context.setLanguageSelected(selected: Boolean) {
+    getPreferences().edit().putBoolean(KEY_LANGUAGE_SELECTED, selected).apply()
+}
+
+fun Context.getAppLanguage(): String =
+    getPreferences().getString(KEY_APP_LANGUAGE, "system") ?: "system"
+
+fun Context.setAppLanguage(lang: String) {
+    getPreferences().edit().putString(KEY_APP_LANGUAGE, lang).apply()
+}
+
+fun Context.wrapLocale(): Context {
+    val lang = getAppLanguage()
+    if (lang == "system") return this
+    val locale = java.util.Locale(lang)
+    java.util.Locale.setDefault(locale)
+    val config = android.content.res.Configuration(resources.configuration)
+    config.setLocale(locale)
+    return createConfigurationContext(config)
+}

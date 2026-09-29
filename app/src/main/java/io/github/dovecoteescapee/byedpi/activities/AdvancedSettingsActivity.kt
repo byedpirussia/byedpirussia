@@ -32,7 +32,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class AdvancedSettingsActivity : AppCompatActivity() {
+class AdvancedSettingsActivity : BaseActivity() {
     private lateinit var binding: ActivityAdvancedSettingsBinding
     private lateinit var testedAdapter: TestedStrategiesAdapter
     private var autoTuneJob: Job? = null

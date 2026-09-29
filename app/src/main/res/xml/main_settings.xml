@@ -24,6 +24,14 @@
             app:useSimpleSummaryProvider="true" />
 
         <DropDownPreference
+            android:key="app_language"
+            android:title="@string/language_setting"
+            android:entries="@array/languages"
+            android:entryValues="@array/languages_entries"
+            android:defaultValue="system"
+            app:useSimpleSummaryProvider="true" />
+
+        <DropDownPreference
             android:key="byedpi_mode"
             android:title="@string/mode_setting"
             android:entries="@array/byedpi_modes"

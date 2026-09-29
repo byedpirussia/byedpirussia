@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     companion object {
@@ -290,7 +290,31 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun showLanguageSelectionDialog() {
+        val languages = arrayOf(
+            getString(R.string.lang_ru),
+            getString(R.string.lang_en)
+        )
+        val codes = arrayOf("ru", "en")
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_select_language_title)
+            .setCancelable(false)
+            .setItems(languages) { _, which ->
+                val selectedLang = codes[which]
+                setLanguageSelected(true)
+                setAppLanguage(selectedLang)
+                recreate()
+            }
+            .show()
+    }
+
     private fun checkInitialSetup() {
+        if (!isLanguageSelected()) {
+            showLanguageSelectionDialog()
+            return
+        }
+
         if (!isInitialSetupDone()) {
             showInitialSetupDialog(force = false)
         } else {

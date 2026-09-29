@@ -54,6 +54,16 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
+        findPreferenceNotNull<DropDownPreference>("app_language")
+            .setOnPreferenceChangeListener { _, newValue ->
+                context?.let { ctx ->
+                    ctx.setLanguageSelected(true)
+                    ctx.setAppLanguage(newValue as String)
+                }
+                activity?.recreate()
+                true
+            }
+
         val switchCommandLineSettings = findPreferenceNotNull<SwitchPreference>(
             "byedpi_enable_cmd_settings"
         )

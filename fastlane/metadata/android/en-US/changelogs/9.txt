@@ -1,0 +1,3 @@
+- Added full English language support (selectable on first launch or in Settings)
+- Fixed accent theme and locale propagation across all screens
+- Improved UI responsiveness

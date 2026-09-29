@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <array name="themes">
-        <item name="system">Системная</item>
-        <item name="light">Светлая</item>
-        <item name="dark">Тёмная</item>
+        <item name="system">System</item>
+        <item name="light">Light</item>
+        <item name="dark">Dark</item>
     </array>
     <array name="themes_entries">
         <item name="system">system</item>
@@ -12,11 +12,11 @@
     </array>
 
     <array name="accent_colors">
-        <item name="blue">Синий (Indigo)</item>
-        <item name="purple">Фиолетовый (Deep Purple)</item>
-        <item name="green">Изумрудный (Teal)</item>
-        <item name="orange">Оранжевый (Sunset)</item>
-        <item name="red">Красный (Crimson)</item>
+        <item name="blue">Blue (Indigo)</item>
+        <item name="purple">Purple (Deep Purple)</item>
+        <item name="green">Emerald (Teal)</item>
+        <item name="orange">Orange (Sunset)</item>
+        <item name="red">Red (Crimson)</item>
     </array>
     <array name="accent_colors_entries">
         <item name="blue">blue</item>
@@ -27,7 +27,7 @@
     </array>
 
     <array name="languages">
-        <item name="system">Как в системе</item>
+        <item name="system">System Default</item>
         <item name="ru">Русский</item>
         <item name="en">English</item>
     </array>
@@ -64,9 +64,9 @@
     </array>
 
     <array name="byedpi_hosts_modes">
-        <item name="disable">Отключено</item>
-        <item name="blacklist">Черный список</item>
-        <item name="whitelist">Белый список</item>
+        <item name="disable">Disable</item>
+        <item name="blacklist">Blacklist</item>
+        <item name="whitelist">Whitelist</item>
     </array>
     <array name="byedpi_hosts_modes_entries">
         <item name="disable">disable</item>

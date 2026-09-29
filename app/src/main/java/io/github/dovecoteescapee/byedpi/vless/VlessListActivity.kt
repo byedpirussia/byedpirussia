@@ -16,12 +16,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.databinding.ActivityVlessListBinding
+import io.github.dovecoteescapee.byedpi.activities.BaseActivity
 import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class VlessListActivity : AppCompatActivity() {
+class VlessListActivity : BaseActivity() {
 
     private lateinit var binding: ActivityVlessListBinding
     private var adapter: VlessServerAdapter? = null

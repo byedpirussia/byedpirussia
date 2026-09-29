@@ -14,12 +14,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.databinding.ActivitySplitTunnelBinding
+import io.github.dovecoteescapee.byedpi.activities.BaseActivity
 import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SplitTunnelActivity : AppCompatActivity() {
+class SplitTunnelActivity : BaseActivity() {
     private lateinit var binding: ActivitySplitTunnelBinding
     private var adapter: AppSelectionAdapter? = null
 

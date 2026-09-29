@@ -13,7 +13,7 @@ import io.github.dovecoteescapee.byedpi.fragments.MainSettingsFragment
 import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
 import io.github.dovecoteescapee.byedpi.utility.getPreferences
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         applyAccentTheme(noActionBar = true)
         super.onCreate(savedInstanceState)
