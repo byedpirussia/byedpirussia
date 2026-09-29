@@ -476,8 +476,10 @@ data class VlessConfig(
                 })
             })
             if (proxyTag != null) {
-                put("proxySettings", JSONObject().apply {
-                    put("tag", proxyTag)
+                put("streamSettings", JSONObject().apply {
+                    put("sockopt", JSONObject().apply {
+                        put("dialerProxy", proxyTag)
+                    })
                 })
             }
         }
@@ -719,9 +721,17 @@ data class VlessConfig(
             }
 
             if (proxyTag != null) {
-                put("proxySettings", JSONObject().apply {
-                    put("tag", proxyTag)
-                })
+                var streamSettings = optJSONObject("streamSettings")
+                if (streamSettings == null) {
+                    streamSettings = JSONObject()
+                    put("streamSettings", streamSettings)
+                }
+                var sockopt = streamSettings.optJSONObject("sockopt")
+                if (sockopt == null) {
+                    sockopt = JSONObject()
+                    streamSettings.put("sockopt", sockopt)
+                }
+                sockopt.put("dialerProxy", proxyTag)
             }
         }
         return proxyOutbound
