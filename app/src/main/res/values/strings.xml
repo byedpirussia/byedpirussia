@@ -172,4 +172,9 @@
     <string name="setup_wizard_close">Готово</string>
     <string name="settings_rerun_setup">Пройти первоначальную настройку заново</string>
     <string name="settings_rerun_setup_summary">Автоматически создать профиль WARP и запустить тест стратегий</string>
+
+    <!-- Quick Settings Tiles -->
+    <string name="tile_byedpi">ByeDPI</string>
+    <string name="tile_tg_proxy">TG Прокси</string>
+    <string name="tile_warp">Cloudflare WARP</string>
 </resources>

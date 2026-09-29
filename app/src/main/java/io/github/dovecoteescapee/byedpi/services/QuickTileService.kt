@@ -100,6 +100,8 @@ class QuickTileService : TileService() {
 
     private fun updateStatus() {
         val (status) = appStatus
+        val tile = qsTile ?: return
+        tile.label = getString(R.string.tile_byedpi)
         setState(if (status == AppStatus.Halted) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE)
     }
 
@@ -116,6 +118,15 @@ class QuickTileService : TileService() {
                     updateStatus()
                     launchActivity()
                     return
+                }
+
+                if (mode == Mode.VPN) {
+                    if (io.github.dovecoteescapee.byedpi.warp.WarpVpnService.isRunning.value) {
+                        io.github.dovecoteescapee.byedpi.warp.WarpVpnService.stop(this)
+                    }
+                    if (io.github.dovecoteescapee.byedpi.vless.VlessVpnService.isRunning.value) {
+                        io.github.dovecoteescapee.byedpi.vless.VlessVpnService.stop(this)
+                    }
                 }
 
                 ServiceManager.start(this, mode)
