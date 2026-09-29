@@ -111,6 +111,10 @@ class WarpVpnService : VpnService() {
 
                 startForegroundNotification("Подключение к Cloudflare WARP...")
 
+                // Resolve letter-based/domain endpoints before creating TUN (prevents DNS deadlock & Go panic)
+                val resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint)
+                val finalParsed = parsed.copy(peerEndpoint = resolvedEndpoint)
+
                 // Build TUN interface
                 val builder = Builder()
                 builder.setSession("Cloudflare WARP (AmneziaWG)")
@@ -124,7 +128,7 @@ class WarpVpnService : VpnService() {
                 )
 
                 // Add Addresses
-                for (addr in parsed.addresses) {
+                for (addr in finalParsed.addresses) {
                     try {
                         val parts = addr.split("/")
                         val ip = parts[0].trim()
@@ -138,8 +142,8 @@ class WarpVpnService : VpnService() {
                 // Add Routes (default route for VPN)
                 var hasV4 = false
                 var hasV6 = false
-                if (parsed.allowedIps.isNotEmpty()) {
-                    for (aip in parsed.allowedIps) {
+                if (finalParsed.allowedIps.isNotEmpty()) {
+                    for (aip in finalParsed.allowedIps) {
                         try {
                             val parts = aip.split("/")
                             val ip = parts[0].trim()
@@ -162,31 +166,41 @@ class WarpVpnService : VpnService() {
                 }
 
                 // Add DNS
-                for (dns in parsed.dnsServers) {
+                for (dns in finalParsed.dnsServers) {
                     try {
                         builder.addDnsServer(dns.trim())
                     } catch (e: Exception) {
                         Log.e(TAG, "Failed to add DNS: $dns", e)
                     }
                 }
-                if (parsed.dnsServers.isEmpty()) {
+                if (finalParsed.dnsServers.isEmpty()) {
                     builder.addDnsServer("1.1.1.1")
                 }
 
-                builder.setMtu(parsed.mtu)
+                builder.setMtu(finalParsed.mtu)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     builder.setMetered(false)
                 }
+                try {
+                    builder.allowBypass()
+                } catch (_: Exception) {}
 
                 io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this@WarpVpnService)
 
                 // Establish TUN
                 val pfd = builder.establish() ?: throw IllegalStateException("Не удалось создать TUN интерфейс")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    try {
+                        setUnderlyingNetworks(null)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Cannot set underlying networks", e)
+                    }
+                }
                 tunFd = pfd
 
-                // Generate UAPI config string
-                val uapi = AwgUapiFormatter.toUapi(parsed)
-                Log.d(TAG, "Starting GoBackend.awgTurnOn with UAPI length: ${uapi.length}")
+                // Generate UAPI config string with resolved IP endpoint
+                val uapi = AwgUapiFormatter.toUapi(finalParsed)
+                Log.d(TAG, "Starting GoBackend.awgTurnOn with UAPI length: ${uapi.length} for endpoint: $resolvedEndpoint")
 
                 // Detach FD for GoBackend
                 val nativeFd = pfd.detachFd()
@@ -279,6 +293,34 @@ class WarpVpnService : VpnService() {
             )
         } else {
             startForeground(FOREGROUND_SERVICE_ID, notification)
+        }
+    }
+
+    private suspend fun resolveEndpointToIp(endpoint: String?): String? {
+        if (endpoint.isNullOrBlank()) return endpoint
+        return withContext(Dispatchers.IO) {
+            try {
+                val lastColon = endpoint.lastIndexOf(':')
+                if (lastColon <= 0) return@withContext endpoint
+                val host = endpoint.substring(0, lastColon).trim().removePrefix("[").removeSuffix("]")
+                val port = endpoint.substring(lastColon + 1).trim()
+
+                // If already IPv4 or IPv6
+                if (host.matches(Regex("""^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$""")) || host.contains(':')) {
+                    return@withContext endpoint
+                }
+
+                // Resolve domain name using DNS before creating the VPN interface
+                val addresses = java.net.InetAddress.getAllByName(host)
+                val ip = addresses.firstOrNull { it is java.net.Inet4Address }?.hostAddress
+                    ?: addresses.firstOrNull()?.hostAddress
+                    ?: host
+
+                if (ip.contains(':')) "[$ip]:$port" else "$ip:$port"
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to resolve endpoint domain: $endpoint", e)
+                endpoint
+            }
         }
     }
 }

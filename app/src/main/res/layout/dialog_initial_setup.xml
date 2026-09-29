@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/setup_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/setup_wizard_title"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/setup_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/setup_wizard_desc"
+        android:textSize="14sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:lineSpacingExtra="3dp"
+        android:layout_marginBottom="20dp" />
+
+    <!-- Блок процесса настройки -->
+    <LinearLayout
+        android:id="@+id/setup_progress_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="20dp">
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/setup_progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:trackCornerRadius="4dp"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/setup_status_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Подготовка..."
+            android:textSize="13sp"
+            android:textColor="?attr/colorPrimary"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Кнопки действий -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_setup_action"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="@string/setup_wizard_btn_start"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:cornerRadius="16dp"
+        android:layout_marginBottom="8dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_setup_skip"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/setup_wizard_btn_skip"
+        android:textSize="14sp"
+        android:textColor="?attr/colorOutline" />
+
+</LinearLayout>

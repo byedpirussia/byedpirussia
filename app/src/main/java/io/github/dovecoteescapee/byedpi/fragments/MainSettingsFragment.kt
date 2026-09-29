@@ -74,6 +74,18 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
 
         findPreferenceNotNull<Preference>("version").summary = BuildConfig.VERSION_NAME
 
+        findPreference<Preference>("rerun_initial_setup")?.setOnPreferenceClickListener {
+            context?.let { ctx ->
+                ctx.setInitialSetupDone(false)
+                android.widget.Toast.makeText(
+                    ctx,
+                    "Первоначальная настройка будет запущена при открытии главного экрана",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            }
+            true
+        }
+
         updatePreferences()
     }
 

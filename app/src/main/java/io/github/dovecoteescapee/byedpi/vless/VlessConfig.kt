@@ -1,9 +1,12 @@
 package io.github.dovecoteescapee.byedpi.vless
 
 import android.net.Uri
+import android.util.Base64
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 
 data class VlessConfig(
@@ -12,10 +15,10 @@ data class VlessConfig(
     val name: String,
     val address: String,
     val port: Int,
-    val uuid: String,
-    val protocol: String = "vless", // vless, hysteria2
+    val uuid: String, // uuid, password for trojan/hy2/ss
+    val protocol: String = "vless", // vless, hysteria2, shadowsocks, vmess, trojan
     val flow: String = "",
-    val encryption: String = "none",
+    val encryption: String = "none", // cipher / security
     val transport: String = "tcp", // tcp, ws, grpc, httpupgrade, udp
     val security: String = "none", // none, tls, reality
     val sni: String = "",
@@ -28,15 +31,41 @@ data class VlessConfig(
     val obfs: String = "", // hysteria2 obfs
     val obfsPassword: String = "", // hysteria2 obfs password
     val allowInsecure: Boolean = false, // hysteria2 / tls insecure
+    val alterId: Int = 0, // vmess alterId
     val rawUri: String = ""
 ) {
     companion object {
+        private const val TAG = "VlessConfig"
+
+        private fun decodeBase64Safe(input: String): String {
+            val clean = input.trim().replace('-', '+').replace('_', '/')
+            val padded = when (clean.length % 4) {
+                2 -> "$clean=="
+                3 -> "$clean="
+                else -> clean
+            }
+            return try {
+                String(Base64.decode(padded, Base64.DEFAULT), StandardCharsets.UTF_8)
+            } catch (e: Exception) {
+                ""
+            }
+        }
+
         fun parse(uriString: String, subscriptionUrl: String = ""): VlessConfig? {
             val trimmed = uriString.trim()
-            val isVless = trimmed.startsWith("vless://", ignoreCase = true)
-            val isHy2 = trimmed.startsWith("hy2://", ignoreCase = true) || trimmed.startsWith("hysteria2://", ignoreCase = true)
-            if (!isVless && !isHy2) return null
+            val lower = trimmed.lowercase()
 
+            return when {
+                lower.startsWith("vless://") -> parseVless(trimmed, subscriptionUrl)
+                lower.startsWith("hy2://") || lower.startsWith("hysteria2://") -> parseHysteria2(trimmed, subscriptionUrl)
+                lower.startsWith("ss://") -> parseShadowsocks(trimmed, subscriptionUrl)
+                lower.startsWith("trojan://") -> parseTrojan(trimmed, subscriptionUrl)
+                lower.startsWith("vmess://") -> parseVmess(trimmed, subscriptionUrl)
+                else -> null
+            }
+        }
+
+        private fun parseVless(trimmed: String, subscriptionUrl: String): VlessConfig? {
             return try {
                 val uri = Uri.parse(trimmed)
                 val userInfo = uri.userInfo ?: ""
@@ -44,62 +73,221 @@ data class VlessConfig(
                 val port = if (uri.port != -1) uri.port else 443
                 val fragment = uri.fragment?.let { URLDecoder.decode(it, "UTF-8") } ?: host
 
-                if (isHy2) {
-                    val sni = uri.getQueryParameter("sni") ?: uri.getQueryParameter("peer") ?: host
-                    val obfs = uri.getQueryParameter("obfs") ?: ""
-                    val obfsPassword = uri.getQueryParameter("obfs-password") ?: ""
-                    val insecure = uri.getQueryParameter("insecure") == "1" || uri.getQueryParameter("allowInsecure") == "1"
+                val flow = uri.getQueryParameter("flow") ?: ""
+                val encryption = uri.getQueryParameter("encryption") ?: "none"
+                val transport = uri.getQueryParameter("type") ?: "tcp"
+                val security = uri.getQueryParameter("security") ?: "none"
+                val sni = uri.getQueryParameter("sni") ?: uri.getQueryParameter("peer") ?: ""
+                val pbk = uri.getQueryParameter("pbk") ?: ""
+                val sid = uri.getQueryParameter("sid") ?: ""
+                val fp = uri.getQueryParameter("fp") ?: "chrome"
+                val path = uri.getQueryParameter("path") ?: ""
+                val wsHost = uri.getQueryParameter("host") ?: ""
+                val serviceName = uri.getQueryParameter("serviceName") ?: ""
+
+                VlessConfig(
+                    subscriptionUrl = subscriptionUrl,
+                    name = fragment.ifBlank { "$host:$port" },
+                    address = host,
+                    port = port,
+                    uuid = userInfo,
+                    protocol = "vless",
+                    flow = flow,
+                    encryption = encryption,
+                    transport = transport,
+                    security = security,
+                    sni = sni,
+                    pbk = pbk,
+                    sid = sid,
+                    fp = fp,
+                    path = path,
+                    host = wsHost,
+                    serviceName = serviceName,
+                    rawUri = trimmed
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing VLESS", e)
+                null
+            }
+        }
+
+        private fun parseHysteria2(trimmed: String, subscriptionUrl: String): VlessConfig? {
+            return try {
+                val uri = Uri.parse(trimmed)
+                val userInfo = uri.userInfo ?: ""
+                val host = uri.host ?: return null
+                val port = if (uri.port != -1) uri.port else 443
+                val fragment = uri.fragment?.let { URLDecoder.decode(it, "UTF-8") } ?: host
+
+                val sni = uri.getQueryParameter("sni") ?: uri.getQueryParameter("peer") ?: host
+                val obfs = uri.getQueryParameter("obfs") ?: ""
+                val obfsPassword = uri.getQueryParameter("obfs-password") ?: ""
+                val insecure = uri.getQueryParameter("insecure") == "1" || uri.getQueryParameter("allowInsecure") == "1"
+
+                VlessConfig(
+                    subscriptionUrl = subscriptionUrl,
+                    name = fragment.ifBlank { "Hysteria2 - $host:$port" },
+                    address = host,
+                    port = port,
+                    uuid = userInfo,
+                    protocol = "hysteria2",
+                    transport = "udp",
+                    security = "tls",
+                    sni = sni,
+                    obfs = obfs,
+                    obfsPassword = obfsPassword,
+                    allowInsecure = insecure,
+                    rawUri = trimmed
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing Hysteria2", e)
+                null
+            }
+        }
+
+        private fun parseShadowsocks(trimmed: String, subscriptionUrl: String): VlessConfig? {
+            return try {
+                // ss://[base64(method:password)]@host:port#name
+                // or ss://[base64(method:password@host:port)]#name
+                val noScheme = trimmed.removePrefix("ss://")
+                val fragmentIdx = noScheme.indexOf('#')
+                val mainPart = if (fragmentIdx != -1) noScheme.substring(0, fragmentIdx) else noScheme
+                val fragment = if (fragmentIdx != -1) {
+                    URLDecoder.decode(noScheme.substring(fragmentIdx + 1), "UTF-8")
+                } else ""
+
+                if (mainPart.contains('@')) {
+                    val atParts = mainPart.split('@', limit = 2)
+                    val userBase64 = atParts[0]
+                    val hostPort = atParts[1].split('?')[0] // remove query params if any
+                    val decodedUser = decodeBase64Safe(userBase64)
+                    val colonIdx = decodedUser.indexOf(':')
+                    val method = if (colonIdx != -1) decodedUser.substring(0, colonIdx) else "aes-256-gcm"
+                    val password = if (colonIdx != -1) decodedUser.substring(colonIdx + 1) else decodedUser
+
+                    val lastColon = hostPort.lastIndexOf(':')
+                    val host = if (lastColon != -1) hostPort.substring(0, lastColon).removePrefix("[").removeSuffix("]") else hostPort
+                    val port = if (lastColon != -1) hostPort.substring(lastColon + 1).toIntOrNull() ?: 8388 else 8388
 
                     VlessConfig(
                         subscriptionUrl = subscriptionUrl,
-                        name = fragment.ifBlank { "Hysteria2 - $host:$port" },
+                        name = fragment.ifBlank { "SS - $host:$port" },
                         address = host,
                         port = port,
-                        uuid = userInfo,
-                        protocol = "hysteria2",
-                        transport = "udp",
-                        security = "tls",
-                        sni = sni,
-                        obfs = obfs,
-                        obfsPassword = obfsPassword,
-                        allowInsecure = insecure,
+                        uuid = password,
+                        protocol = "shadowsocks",
+                        encryption = method,
+                        transport = "tcp",
+                        security = "none",
                         rawUri = trimmed
                     )
                 } else {
-                    val flow = uri.getQueryParameter("flow") ?: ""
-                    val encryption = uri.getQueryParameter("encryption") ?: "none"
-                    val transport = uri.getQueryParameter("type") ?: "tcp"
-                    val security = uri.getQueryParameter("security") ?: "none"
-                    val sni = uri.getQueryParameter("sni") ?: uri.getQueryParameter("peer") ?: ""
-                    val pbk = uri.getQueryParameter("pbk") ?: ""
-                    val sid = uri.getQueryParameter("sid") ?: ""
-                    val fp = uri.getQueryParameter("fp") ?: "chrome"
-                    val path = uri.getQueryParameter("path") ?: ""
-                    val wsHost = uri.getQueryParameter("host") ?: ""
-                    val serviceName = uri.getQueryParameter("serviceName") ?: ""
+                    // Entire body base64 encoded
+                    val decoded = decodeBase64Safe(mainPart.split('?')[0])
+                    val atParts = decoded.split('@', limit = 2)
+                    if (atParts.size < 2) return null
+                    val creds = atParts[0].split(':', limit = 2)
+                    val method = creds[0]
+                    val password = creds.getOrElse(1) { "" }
+                    val lastColon = atParts[1].lastIndexOf(':')
+                    val host = if (lastColon != -1) atParts[1].substring(0, lastColon).removePrefix("[").removeSuffix("]") else atParts[1]
+                    val port = if (lastColon != -1) atParts[1].substring(lastColon + 1).toIntOrNull() ?: 8388 else 8388
 
                     VlessConfig(
                         subscriptionUrl = subscriptionUrl,
-                        name = fragment.ifBlank { "$host:$port" },
+                        name = fragment.ifBlank { "SS - $host:$port" },
                         address = host,
                         port = port,
-                        uuid = userInfo,
-                        protocol = "vless",
-                        flow = flow,
-                        encryption = encryption,
-                        transport = transport,
-                        security = security,
-                        sni = sni,
-                        pbk = pbk,
-                        sid = sid,
-                        fp = fp,
-                        path = path,
-                        host = wsHost,
-                        serviceName = serviceName,
+                        uuid = password,
+                        protocol = "shadowsocks",
+                        encryption = method,
+                        transport = "tcp",
+                        security = "none",
                         rawUri = trimmed
                     )
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error parsing Shadowsocks", e)
+                null
+            }
+        }
+
+        private fun parseTrojan(trimmed: String, subscriptionUrl: String): VlessConfig? {
+            return try {
+                val uri = Uri.parse(trimmed)
+                val password = uri.userInfo ?: ""
+                val host = uri.host ?: return null
+                val port = if (uri.port != -1) uri.port else 443
+                val fragment = uri.fragment?.let { URLDecoder.decode(it, "UTF-8") } ?: host
+
+                val sni = uri.getQueryParameter("sni") ?: uri.getQueryParameter("peer") ?: host
+                val transport = uri.getQueryParameter("type") ?: "tcp"
+                val security = uri.getQueryParameter("security") ?: "tls"
+                val path = uri.getQueryParameter("path") ?: ""
+                val wsHost = uri.getQueryParameter("host") ?: ""
+                val serviceName = uri.getQueryParameter("serviceName") ?: ""
+                val allowInsecure = uri.getQueryParameter("allowInsecure") == "1"
+
+                VlessConfig(
+                    subscriptionUrl = subscriptionUrl,
+                    name = fragment.ifBlank { "Trojan - $host:$port" },
+                    address = host,
+                    port = port,
+                    uuid = password,
+                    protocol = "trojan",
+                    transport = transport,
+                    security = security,
+                    sni = sni,
+                    path = path,
+                    host = wsHost,
+                    serviceName = serviceName,
+                    allowInsecure = allowInsecure,
+                    rawUri = trimmed
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing Trojan", e)
+                null
+            }
+        }
+
+        private fun parseVmess(trimmed: String, subscriptionUrl: String): VlessConfig? {
+            return try {
+                val b64 = trimmed.removePrefix("vmess://").trim()
+                val jsonStr = decodeBase64Safe(b64)
+                val json = JSONObject(jsonStr)
+
+                val name = json.optString("ps", "")
+                val address = json.optString("add", "")
+                val port = json.optInt("port", 443)
+                val id = json.optString("id", "")
+                val aid = json.optInt("aid", 0)
+                val net = json.optString("net", "tcp")
+                val tls = json.optString("tls", "none")
+                val sni = json.optString("sni", "")
+                val host = json.optString("host", "")
+                val path = json.optString("path", "")
+                val scy = json.optString("scy", "auto")
+
+                if (address.isBlank() || id.isBlank()) return null
+
+                VlessConfig(
+                    subscriptionUrl = subscriptionUrl,
+                    name = name.ifBlank { "VMess - $address:$port" },
+                    address = address,
+                    port = port,
+                    uuid = id,
+                    protocol = "vmess",
+                    encryption = scy,
+                    transport = net,
+                    security = tls,
+                    sni = sni,
+                    host = host,
+                    path = path,
+                    alterId = aid,
+                    rawUri = trimmed
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing VMess", e)
                 null
             }
         }
@@ -139,129 +327,238 @@ data class VlessConfig(
         // Outbounds
         val outbounds = JSONArray()
 
-        // Main proxy outbound
         val proxyOutbound = JSONObject().apply {
             put("tag", "proxy")
 
-            if (protocol.equals("hysteria2", ignoreCase = true)) {
-                put("protocol", "hysteria2")
-                val serversArray = JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("address", address)
-                        put("port", port)
-                        put("password", uuid)
+            when (protocol.lowercase()) {
+                "hysteria2" -> {
+                    put("protocol", "hysteria2")
+                    val serversArray = JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("address", address)
+                            put("port", port)
+                            put("password", uuid)
+                        })
+                    }
+                    put("settings", JSONObject().apply {
+                        put("servers", serversArray)
+                    })
+
+                    val streamSettings = JSONObject().apply {
+                        put("network", "udp")
+                        put("security", "tls")
+                        val tlsSettings = JSONObject().apply {
+                            val serverName = if (sni.isNotBlank()) sni else address
+                            put("serverName", serverName)
+                            if (allowInsecure) {
+                                put("allowInsecure", true)
+                            }
+                        }
+                        put("tlsSettings", tlsSettings)
+
+                        if (obfs.isNotBlank()) {
+                            put("hy2Settings", JSONObject().apply {
+                                put("password", obfsPassword)
+                                put("type", obfs)
+                            })
+                        }
+                    }
+                    put("streamSettings", streamSettings)
+                }
+
+                "shadowsocks" -> {
+                    put("protocol", "shadowsocks")
+                    val serversArray = JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("address", address)
+                            put("port", port)
+                            put("method", if (encryption.isNotBlank() && encryption != "none") encryption else "aes-256-gcm")
+                            put("password", uuid)
+                            put("ota", false)
+                        })
+                    }
+                    put("settings", JSONObject().apply {
+                        put("servers", serversArray)
                     })
                 }
-                put("settings", JSONObject().apply {
-                    put("servers", serversArray)
-                })
 
-                val streamSettings = JSONObject().apply {
-                    put("network", "udp")
-                    put("security", "tls")
-                    val tlsSettings = JSONObject().apply {
-                        val serverName = if (sni.isNotBlank()) sni else address
-                        put("serverName", serverName)
-                        if (allowInsecure) {
-                            put("allowInsecure", true)
+                "trojan" -> {
+                    put("protocol", "trojan")
+                    val serversArray = JSONArray().apply {
+                        put(JSONObject().apply {
+                            put("address", address)
+                            put("port", port)
+                            put("password", uuid)
+                        })
+                    }
+                    put("settings", JSONObject().apply {
+                        put("servers", serversArray)
+                    })
+
+                    val streamSettings = JSONObject().apply {
+                        put("network", transport)
+                        put("security", "tls")
+                        val tlsSettings = JSONObject().apply {
+                            val serverName = if (sni.isNotBlank()) sni else address
+                            put("serverName", serverName)
+                            if (allowInsecure) put("allowInsecure", true)
+                            if (fp.isNotBlank()) put("fingerprint", fp)
+                        }
+                        put("tlsSettings", tlsSettings)
+
+                        if (transport.equals("ws", ignoreCase = true)) {
+                            put("wsSettings", JSONObject().apply {
+                                if (path.isNotBlank()) put("path", path)
+                                if (host.isNotBlank()) {
+                                    put("headers", JSONObject().apply { put("Host", host) })
+                                }
+                            })
+                        } else if (transport.equals("grpc", ignoreCase = true)) {
+                            put("grpcSettings", JSONObject().apply {
+                                if (serviceName.isNotBlank()) put("serviceName", serviceName)
+                                put("multiMode", true)
+                            })
                         }
                     }
-                    put("tlsSettings", tlsSettings)
-
-                    if (obfs.isNotBlank()) {
-                        put("hy2Settings", JSONObject().apply {
-                            put("password", obfsPassword)
-                            put("type", obfs)
-                        })
-                    }
+                    put("streamSettings", streamSettings)
                 }
-                put("streamSettings", streamSettings)
-            } else {
-                put("protocol", "vless")
 
-                // VLESS settings
-                val vnextArray = JSONArray()
-                val vnextItem = JSONObject().apply {
-                    put("address", address)
-                    put("port", port)
-                    val users = JSONArray().apply {
+                "vmess" -> {
+                    put("protocol", "vmess")
+                    val vnextArray = JSONArray().apply {
                         put(JSONObject().apply {
-                            put("id", uuid)
-                            put("encryption", encryption)
-                            if (flow.isNotBlank()) {
-                                put("flow", flow)
-                            }
-                        })
-                    }
-                    put("users", users)
-                }
-                vnextArray.put(vnextItem)
-                put("settings", JSONObject().apply {
-                    put("vnext", vnextArray)
-                })
-
-                // StreamSettings
-                val streamSettings = JSONObject()
-                streamSettings.put("network", transport)
-
-                val effectiveSecurity = when {
-                    security.equals("reality", ignoreCase = true) || pbk.isNotBlank() -> "reality"
-                    security.equals("tls", ignoreCase = true) || sni.isNotBlank() || port == 443 -> "tls"
-                    else -> if (security.equals("none", ignoreCase = true)) "tls" else security
-                }
-
-                if (effectiveSecurity.equals("reality", ignoreCase = true)) {
-                    streamSettings.put("security", "reality")
-                    val realitySettings = JSONObject().apply {
-                        if (sni.isNotBlank()) put("serverName", sni)
-                        if (fp.isNotBlank()) put("fingerprint", fp)
-                        if (pbk.isNotBlank()) put("publicKey", pbk)
-                        if (sid.isNotBlank()) put("shortId", sid)
-                        put("show", false)
-                    }
-                    streamSettings.put("realitySettings", realitySettings)
-                } else if (effectiveSecurity.equals("tls", ignoreCase = true)) {
-                    streamSettings.put("security", "tls")
-                    val tlsSettings = JSONObject().apply {
-                        val serverName = if (sni.isNotBlank()) sni else if (host.isNotBlank()) host else address
-                        put("serverName", serverName)
-                        if (fp.isNotBlank()) put("fingerprint", fp)
-                    }
-                    streamSettings.put("tlsSettings", tlsSettings)
-                } else {
-                    streamSettings.put("security", "none")
-                }
-
-                // Transport details
-                when (transport.lowercase()) {
-                    "ws" -> {
-                        val wsSettings = JSONObject().apply {
-                            if (path.isNotBlank()) put("path", path)
-                            if (host.isNotBlank()) {
-                                put("headers", JSONObject().apply {
-                                    put("Host", host)
+                            put("address", address)
+                            put("port", port)
+                            val users = JSONArray().apply {
+                                put(JSONObject().apply {
+                                    put("id", uuid)
+                                    put("alterId", alterId)
+                                    put("security", if (encryption.isNotBlank() && encryption != "none") encryption else "auto")
                                 })
                             }
-                        }
-                        streamSettings.put("wsSettings", wsSettings)
+                            put("users", users)
+                        })
                     }
-                    "grpc" -> {
-                        val grpcSettings = JSONObject().apply {
-                            if (serviceName.isNotBlank()) put("serviceName", serviceName)
-                            put("multiMode", true)
+                    put("settings", JSONObject().apply {
+                        put("vnext", vnextArray)
+                    })
+
+                    val streamSettings = JSONObject().apply {
+                        put("network", transport)
+                        if (security.equals("tls", ignoreCase = true)) {
+                            put("security", "tls")
+                            val tlsSettings = JSONObject().apply {
+                                val serverName = if (sni.isNotBlank()) sni else if (host.isNotBlank()) host else address
+                                put("serverName", serverName)
+                                if (fp.isNotBlank()) put("fingerprint", fp)
+                            }
+                            put("tlsSettings", tlsSettings)
+                        } else {
+                            put("security", "none")
                         }
-                        streamSettings.put("grpcSettings", grpcSettings)
-                    }
-                    "httpupgrade" -> {
-                        val httpUpgradeSettings = JSONObject().apply {
-                            if (path.isNotBlank()) put("path", path)
-                            if (host.isNotBlank()) put("host", host)
+
+                        if (transport.equals("ws", ignoreCase = true)) {
+                            put("wsSettings", JSONObject().apply {
+                                if (path.isNotBlank()) put("path", path)
+                                if (host.isNotBlank()) {
+                                    put("headers", JSONObject().apply { put("Host", host) })
+                                }
+                            })
+                        } else if (transport.equals("grpc", ignoreCase = true)) {
+                            put("grpcSettings", JSONObject().apply {
+                                if (serviceName.isNotBlank()) put("serviceName", serviceName)
+                                put("multiMode", true)
+                            })
                         }
-                        streamSettings.put("httpupgradeSettings", httpUpgradeSettings)
                     }
+                    put("streamSettings", streamSettings)
                 }
 
-                put("streamSettings", streamSettings)
+                else -> { // vless
+                    put("protocol", "vless")
+                    val vnextArray = JSONArray()
+                    val vnextItem = JSONObject().apply {
+                        put("address", address)
+                        put("port", port)
+                        val users = JSONArray().apply {
+                            put(JSONObject().apply {
+                                put("id", uuid)
+                                put("encryption", encryption)
+                                if (flow.isNotBlank()) {
+                                    put("flow", flow)
+                                }
+                            })
+                        }
+                        put("users", users)
+                    }
+                    vnextArray.put(vnextItem)
+                    put("settings", JSONObject().apply {
+                        put("vnext", vnextArray)
+                    })
+
+                    // StreamSettings
+                    val streamSettings = JSONObject()
+                    streamSettings.put("network", transport)
+
+                    val effectiveSecurity = when {
+                        security.equals("reality", ignoreCase = true) || pbk.isNotBlank() -> "reality"
+                        security.equals("tls", ignoreCase = true) || sni.isNotBlank() || port == 443 -> "tls"
+                        else -> if (security.equals("none", ignoreCase = true)) "tls" else security
+                    }
+
+                    if (effectiveSecurity.equals("reality", ignoreCase = true)) {
+                        streamSettings.put("security", "reality")
+                        val realitySettings = JSONObject().apply {
+                            if (sni.isNotBlank()) put("serverName", sni)
+                            if (fp.isNotBlank()) put("fingerprint", fp)
+                            if (pbk.isNotBlank()) put("publicKey", pbk)
+                            if (sid.isNotBlank()) put("shortId", sid)
+                            put("show", false)
+                        }
+                        streamSettings.put("realitySettings", realitySettings)
+                    } else if (effectiveSecurity.equals("tls", ignoreCase = true)) {
+                        streamSettings.put("security", "tls")
+                        val tlsSettings = JSONObject().apply {
+                            val serverName = if (sni.isNotBlank()) sni else if (host.isNotBlank()) host else address
+                            put("serverName", serverName)
+                            if (fp.isNotBlank()) put("fingerprint", fp)
+                        }
+                        streamSettings.put("tlsSettings", tlsSettings)
+                    } else {
+                        streamSettings.put("security", "none")
+                    }
+
+                    // Transport details
+                    when (transport.lowercase()) {
+                        "ws" -> {
+                            val wsSettings = JSONObject().apply {
+                                if (path.isNotBlank()) put("path", path)
+                                if (host.isNotBlank()) {
+                                    put("headers", JSONObject().apply {
+                                        put("Host", host)
+                                    })
+                                }
+                            }
+                            streamSettings.put("wsSettings", wsSettings)
+                        }
+                        "grpc" -> {
+                            val grpcSettings = JSONObject().apply {
+                                if (serviceName.isNotBlank()) put("serviceName", serviceName)
+                                put("multiMode", true)
+                            }
+                            streamSettings.put("grpcSettings", grpcSettings)
+                        }
+                        "httpupgrade" -> {
+                            val httpUpgradeSettings = JSONObject().apply {
+                                if (path.isNotBlank()) put("path", path)
+                                if (host.isNotBlank()) put("host", host)
+                            }
+                            streamSettings.put("httpupgradeSettings", httpUpgradeSettings)
+                        }
+                    }
+
+                    put("streamSettings", streamSettings)
+                }
             }
         }
         outbounds.put(proxyOutbound)

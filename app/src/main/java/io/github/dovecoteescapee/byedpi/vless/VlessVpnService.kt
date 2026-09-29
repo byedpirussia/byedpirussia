@@ -136,7 +136,13 @@ class VlessVpnService : VpnService() {
                 delay(300)
 
                 // 2. Setup TUN interface via Android VpnService
-                val protoTitle = if (activeConfig.protocol.equals("hysteria2", ignoreCase = true)) "Hysteria2" else "VLESS"
+                val protoTitle = when (activeConfig.protocol.lowercase()) {
+                    "hysteria2" -> "Hysteria2"
+                    "shadowsocks" -> "Shadowsocks"
+                    "vmess" -> "VMess"
+                    "trojan" -> "Trojan"
+                    else -> "VLESS"
+                }
                 val builder = Builder()
                 builder.setSession("$protoTitle: ${activeConfig.name}")
                 builder.setConfigureIntent(
@@ -164,12 +170,25 @@ class VlessVpnService : VpnService() {
                     Log.w(TAG, "Cannot exclude own package", e)
                 }
 
+                try {
+                    builder.allowBypass()
+                } catch (_: Exception) {}
+
                 val pfd = builder.establish()
                 if (pfd == null) {
                     Log.e(TAG, "Failed to establish VPN interface")
                     stopVless()
                     return@launch
                 }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    try {
+                        setUnderlyingNetworks(null)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Cannot set underlying networks", e)
+                    }
+                }
+
                 tunFd = pfd
 
                 // 3. Connect TUN to local SOCKS5 proxy via high-performance hev-socks5-tunnel
@@ -192,7 +211,7 @@ class VlessVpnService : VpnService() {
 
                 _isRunning.value = true
                 _connectionStatus.value = "Подключен (${activeConfig.name})"
-                updateNotification("🟢 VLESS подключен: ${activeConfig.name}")
+                updateNotification("🟢 $protoTitle подключен: ${activeConfig.name}")
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting VlessVpnService", e)

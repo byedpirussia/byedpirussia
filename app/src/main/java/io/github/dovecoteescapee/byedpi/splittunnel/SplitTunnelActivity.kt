@@ -60,6 +60,12 @@ class SplitTunnelActivity : AppCompatActivity() {
             updateControlsVisibility(newMode)
         }
 
+        // Авто-исключение российских приложений
+        binding.switchExcludeRussian.isChecked = SplitTunnelManager.isExcludeRussianAppsEnabled(this)
+        binding.switchExcludeRussian.setOnCheckedChangeListener { _, isChecked ->
+            SplitTunnelManager.setExcludeRussianAppsEnabled(this, isChecked)
+        }
+
         binding.btnSelectAll.setOnClickListener {
             adapter?.selectAll(true)
         }
@@ -106,6 +112,8 @@ class SplitTunnelActivity : AppCompatActivity() {
                 pm.getInstalledApplications(flags)
             }
 
+            var russianAppsCount = 0
+
             val appItems = installedPackages
                 .filter { it.packageName != ownPackage }
                 .map { appInfo ->
@@ -117,7 +125,11 @@ class SplitTunnelActivity : AppCompatActivity() {
                     }
                     val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
                     val isSelected = selected.contains(appInfo.packageName)
-                    Triple(AppInfoItem(name, appInfo.packageName, icon, isSelected), isSystem, isSelected)
+                    val isRussian = SplitTunnelManager.isRussianApp(appInfo.packageName)
+                    if (isRussian) {
+                        russianAppsCount++
+                    }
+                    Triple(AppInfoItem(name, appInfo.packageName, icon, isSelected, isRussian), isSystem, isSelected)
                 }
                 .sortedWith(compareByDescending<Triple<AppInfoItem, Boolean, Boolean>> { it.third } // Сначала выбранные
                     .thenBy { it.second } // Затем пользовательские перед системными
@@ -127,6 +139,7 @@ class SplitTunnelActivity : AppCompatActivity() {
 
             withContext(Dispatchers.Main) {
                 binding.progressLoading.visibility = View.GONE
+                binding.tvRussianAppsCount.text = "Найдено $russianAppsCount росс. приложений (Банки, Госуслуги, Такси и др.)"
                 adapter = AppSelectionAdapter(appItems) { count ->
                     binding.tvSelectedCount.text = getString(R.string.split_tunnel_apps_count, count)
                     saveSelection()

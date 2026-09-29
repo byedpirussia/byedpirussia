@@ -100,6 +100,11 @@
                 android:data="https://github.com/byedpirussia/byedpirussia" />
         </Preference>
 
+        <Preference
+            android:key="rerun_initial_setup"
+            android:title="@string/settings_rerun_setup"
+            android:summary="@string/settings_rerun_setup_summary" />
+
     </androidx.preference.PreferenceCategory>
 
 </PreferenceScreen>

@@ -86,6 +86,7 @@ object VlessManager {
                         obfs = obj.optString("obfs", ""),
                         obfsPassword = obj.optString("obfsPassword", ""),
                         allowInsecure = obj.optBoolean("allowInsecure", false),
+                        alterId = obj.optInt("alterId", 0),
                         rawUri = obj.optString("rawUri")
                     )
                 )
@@ -122,6 +123,7 @@ object VlessManager {
                 put("obfs", cfg.obfs)
                 put("obfsPassword", cfg.obfsPassword)
                 put("allowInsecure", cfg.allowInsecure)
+                put("alterId", cfg.alterId)
                 put("rawUri", cfg.rawUri)
             }
             jsonArray.put(obj)
@@ -180,14 +182,25 @@ object VlessManager {
     }
 
     /**
-     * Imports multiple VLESS / Hysteria2 links from raw text (supports plain text or base64 subscription format)
+     * Imports multiple proxy links (VLESS, Hysteria2, SS, VMess, Trojan) from raw text or Base64
      */
     fun parseSubscriptionContent(content: String, subscriptionUrl: String = ""): List<VlessConfig> {
         var text = content.trim()
-        if (!text.contains("vless://") && !text.contains("hy2://") && !text.contains("hysteria2://")) {
+        val hasKnownScheme = text.contains("vless://", ignoreCase = true) ||
+                text.contains("hy2://", ignoreCase = true) ||
+                text.contains("hysteria2://", ignoreCase = true) ||
+                text.contains("ss://", ignoreCase = true) ||
+                text.contains("vmess://", ignoreCase = true) ||
+                text.contains("trojan://", ignoreCase = true)
+
+        if (!hasKnownScheme) {
             try {
-                val decodedBytes = Base64.decode(text, Base64.DEFAULT)
-                text = String(decodedBytes, Charsets.UTF_8).trim()
+                val clean = text.replace('-', '+').replace('_', '/')
+                val decodedBytes = Base64.decode(clean, Base64.DEFAULT)
+                val decodedStr = String(decodedBytes, Charsets.UTF_8).trim()
+                if (decodedStr.isNotBlank()) {
+                    text = decodedStr
+                }
             } catch (_: Exception) {
                 // Not base64
             }
@@ -197,9 +210,13 @@ object VlessManager {
         val lines = text.split("\r\n", "\n", "\r")
         for (line in lines) {
             val trimmed = line.trim()
-            if (trimmed.startsWith("vless://", ignoreCase = true) ||
-                trimmed.startsWith("hy2://", ignoreCase = true) ||
-                trimmed.startsWith("hysteria2://", ignoreCase = true)) {
+            val lower = trimmed.lowercase()
+            if (lower.startsWith("vless://") ||
+                lower.startsWith("hy2://") ||
+                lower.startsWith("hysteria2://") ||
+                lower.startsWith("ss://") ||
+                lower.startsWith("vmess://") ||
+                lower.startsWith("trojan://")) {
                 VlessConfig.parse(trimmed, subscriptionUrl)?.let { results.add(it) }
             }
         }
@@ -224,7 +241,7 @@ object VlessManager {
                 val body = connection.inputStream.bufferedReader().use { it.readText() }
                 val parsed = parseSubscriptionContent(body, subscriptionUrl.trim())
                 if (parsed.isEmpty()) {
-                    Result.failure(Exception("Не найдено действительных vless:// или hy2:// ссылок"))
+                    Result.failure(Exception("Не найдено серверов (vless, hy2, ss, vmess, trojan)"))
                 } else {
                     Result.success(parsed)
                 }

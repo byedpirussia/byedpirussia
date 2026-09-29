@@ -33,9 +33,7 @@ import io.github.dovecoteescapee.byedpi.services.ServiceManager
 import io.github.dovecoteescapee.byedpi.services.appStatus
 import io.github.dovecoteescapee.byedpi.strategy.StrategyCatalog
 import io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService
-import io.github.dovecoteescapee.byedpi.utility.getPreferences
-import io.github.dovecoteescapee.byedpi.utility.mode
-import io.github.dovecoteescapee.byedpi.utility.applyAccentTheme
+import io.github.dovecoteescapee.byedpi.utility.*
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
 import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessManager
@@ -206,7 +204,147 @@ class MainActivity : AppCompatActivity() {
         setupTelegramProxyCard()
         setupWarpCard()
         setupVlessCard()
+        setupDiscussionsBanner()
         setupAdvancedSettingsCard()
+
+        checkInitialSetup()
+    }
+
+    private fun setupDiscussionsBanner() {
+        binding.btnOpenDiscussions.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/byedpirussia/byedpirussia/discussions"))
+            startActivity(intent)
+        }
+    }
+
+    fun showInitialSetupDialog(force: Boolean = false) {
+        if (!force && isInitialSetupDone()) return
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_initial_setup, null)
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        val tvTitle = dialogView.findViewById<android.widget.TextView>(R.id.setup_title)
+        val tvDesc = dialogView.findViewById<android.widget.TextView>(R.id.setup_desc)
+        val progressLayout = dialogView.findViewById<android.view.View>(R.id.setup_progress_layout)
+        val progressBar = dialogView.findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.setup_progress_bar)
+        val tvStatus = dialogView.findViewById<android.widget.TextView>(R.id.setup_status_text)
+        val btnAction = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_setup_action)
+        val btnSkip = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_setup_skip)
+
+        btnSkip.setOnClickListener {
+            setInitialSetupDone(true)
+            dialog.dismiss()
+            checkStarDialog()
+        }
+
+        btnAction.setOnClickListener {
+            btnAction.isEnabled = false
+            btnSkip.visibility = View.GONE
+            progressLayout.visibility = View.VISIBLE
+
+            lifecycleScope.launch {
+                // Шаг 1: Генерация профиля WARP
+                tvStatus.text = getString(R.string.setup_wizard_step_warp)
+                try {
+                    val warpResult = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateConfig()
+                    if (warpResult.isSuccess) {
+                        val profile = warpResult.getOrNull()
+                        if (profile != null) {
+                            WarpConfigManager.saveConfig(this@MainActivity, profile.toAmneziaWgConfig())
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Initial setup WARP gen error", e)
+                }
+
+                // Шаг 2: Автоподбор стратегии ByeDPI
+                tvStatus.text = getString(R.string.setup_wizard_step_benchmark)
+                val benchmark = io.github.dovecoteescapee.byedpi.strategy.StrategyBenchmark(this@MainActivity)
+                try {
+                    benchmark.runBenchmark(
+                        onProgress = { current, total, strategy, status ->
+                            tvStatus.text = "$status ($current/$total)"
+                        }
+                    )
+                } catch (e: Exception) {
+                    Log.w(TAG, "Initial setup benchmark error", e)
+                }
+
+                // Завершено
+                tvStatus.text = getString(R.string.setup_wizard_done)
+                progressBar.visibility = View.INVISIBLE
+                btnAction.isEnabled = true
+                btnAction.text = getString(R.string.setup_wizard_close)
+                btnAction.setOnClickListener {
+                    setInitialSetupDone(true)
+                    updateStrategyBadge()
+                    dialog.dismiss()
+                    checkStarDialog()
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun checkInitialSetup() {
+        if (!isInitialSetupDone()) {
+            showInitialSetupDialog(force = false)
+        } else {
+            checkStarDialog()
+        }
+    }
+
+    private fun checkStarDialog() {
+        if (isStarNeverShow()) return
+
+        val sp = getPreferences()
+        val count = sp.getInt(KEY_STAR_SHOW_COUNT, 0)
+        val lastTime = sp.getLong(KEY_STAR_LAST_SHOW_TIME, 0L)
+        val now = System.currentTimeMillis()
+
+        // Показываем если прошло более 24 часов с предыдущего показа или показываем во 2-й сессии
+        if (count > 0 && now - lastTime < 24 * 60 * 60 * 1000L) {
+            return
+        }
+
+        sp.edit()
+            .putInt(KEY_STAR_SHOW_COUNT, count + 1)
+            .putLong(KEY_STAR_LAST_SHOW_TIME, now)
+            .apply()
+
+        showStarDialog()
+    }
+
+    private fun showStarDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_github_star, null)
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .create()
+
+        val btnGo = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_star_go_github)
+        val btnNever = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_star_never)
+        val btnLater = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_star_later)
+
+        btnGo.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/byedpirussia/byedpirussia"))
+            startActivity(intent)
+            dialog.dismiss()
+        }
+
+        btnNever.setOnClickListener {
+            setStarNeverShow(true)
+            dialog.dismiss()
+        }
+
+        btnLater.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     override fun onResume() {

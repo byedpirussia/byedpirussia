@@ -133,21 +133,43 @@
     <string name="split_tunnel_search_hint">Поиск приложения...</string>
     <string name="split_tunnel_select_all">Выбрать все</string>
     <string name="split_tunnel_deselect_all">Снять все</string>
-    <string name="card_vless_title">VLESS / Hysteria2</string>
-    <string name="card_vless_desc">Универсальный клиент Xray: поддержка VLESS (Reality, TLS, WS, gRPC) и скоростного UDP-протокола Hysteria2</string>
+    <string name="card_vless_title">VLESS / Shadowsocks / Trojan / HY2</string>
+    <string name="card_vless_desc">Универсальный клиент Xray: поддержка VLESS (Reality), Shadowsocks, VMess, Trojan и Hysteria 2</string>
     <string name="vless_active_btn">Отключить Прокси</string>
     <string name="vless_inactive_btn">Включить Прокси</string>
     <string name="vless_manage_btn">Подписки и серверы</string>
-    <string name="vless_no_servers">Нет добавленных серверов (VLESS / Hysteria2)</string>
-    <string name="vless_servers_title">Серверы VLESS и Hysteria2</string>
-    <string name="vless_add_single">Вставить ключ (vless:// или hy2://)</string>
+    <string name="vless_no_servers">Нет добавленных серверов (VLESS / SS / VMess / Trojan / HY2)</string>
+    <string name="vless_servers_title">Серверы и прокси-ключи</string>
+    <string name="vless_add_single">Вставить ключ (vless, hy2, ss, vmess, trojan)</string>
     <string name="vless_add_subscription">Добавить ссылку на подписку</string>
-    <string name="vless_enter_key_hint">Вставьте ссылку vless:// или hy2://...</string>
+    <string name="vless_enter_key_hint">Вставьте ссылку vless://, hy2://, ss://, vmess://, trojan://...</string>
     <string name="vless_enter_sub_hint">https://example.com/sub/...</string>
     <string name="vless_sub_updating">Обновление подписки...</string>
     <string name="vless_sub_success">Успешно загружено серверов: %1$d</string>
     <string name="vless_sub_error">Ошибка обновления: %1$s</string>
     <string name="vless_added_success">Сервер успешно добавлен!</string>
-    <string name="vless_invalid_link">Некорректная ссылка (поддерживаются vless:// и hy2:// / hysteria2://)</string>
+    <string name="vless_invalid_link">Некорректная ссылка (поддерживаются vless://, hy2://, ss://, vmess://, trojan://)</string>
     <string name="vless_delete_confirm">Удалить этот сервер?</string>
+
+    <!-- Discussions Banner -->
+    <string name="discussions_banner_text">Хотите связаться с разработчиком? Вам на нашу ветку обсуждений в GitHub!</string>
+    <string name="discussions_banner_btn">Перейти</string>
+
+    <!-- GitHub Star Dialog -->
+    <string name="star_dialog_text">Пожалуйста, поставьте звезду на наш GitHub. Для вас это 1 минута времени, а для нас большая мотивация дальше делать обновления</string>
+    <string name="star_dialog_btn_github">Перейти на наш GitHub</string>
+    <string name="star_dialog_btn_never">Больше не показывать</string>
+    <string name="star_dialog_btn_later">Позже</string>
+
+    <!-- Initial Setup Wizard -->
+    <string name="setup_wizard_title">Первоначальная настройка</string>
+    <string name="setup_wizard_desc">Добро пожаловать в ByeDPI Россия! Приложение автоматически сгенерирует профиль Cloudflare WARP и протестирует стратегии ByeDPI для выбора наилучшей скорости.</string>
+    <string name="setup_wizard_btn_start">Начать настройку</string>
+    <string name="setup_wizard_btn_skip">Пропустить</string>
+    <string name="setup_wizard_step_warp">Генерация профиля Cloudflare WARP...</string>
+    <string name="setup_wizard_step_benchmark">Автоподбор стратегии ByeDPI...</string>
+    <string name="setup_wizard_done">Настройка успешно завершена!</string>
+    <string name="setup_wizard_close">Готово</string>
+    <string name="settings_rerun_setup">Пройти первоначальную настройку заново</string>
+    <string name="settings_rerun_setup_summary">Автоматически создать профиль WARP и запустить тест стратегий</string>
 </resources>

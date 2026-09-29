@@ -10,7 +10,8 @@ data class AppInfoItem(
     val name: String,
     val packageName: String,
     val icon: Drawable?,
-    var isSelected: Boolean
+    var isSelected: Boolean,
+    val isRussian: Boolean = false
 )
 
 class AppSelectionAdapter(
@@ -22,7 +23,8 @@ class AppSelectionAdapter(
 
     inner class ViewHolder(val binding: ItemAppSelectionBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: AppInfoItem) {
-            binding.appName.text = item.name
+            val displayName = if (item.isRussian) "🇷🇺 ${item.name}" else item.name
+            binding.appName.text = displayName
             binding.packageName.text = item.packageName
             if (item.icon != null) {
                 binding.appIcon.setImageDrawable(item.icon)

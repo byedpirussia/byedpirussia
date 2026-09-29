@@ -168,12 +168,16 @@ class VlessListActivity : AppCompatActivity() {
     private fun showAddKeyDialog() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipText = clipboard.primaryClip?.getItemAt(0)?.text?.toString()?.trim() ?: ""
-        val initialText = if (clipText.startsWith("vless://", ignoreCase = true) ||
-            clipText.startsWith("hy2://", ignoreCase = true) ||
-            clipText.startsWith("hysteria2://", ignoreCase = true)) clipText else ""
+        val lowerClip = clipText.lowercase()
+        val initialText = if (lowerClip.startsWith("vless://") ||
+            lowerClip.startsWith("hy2://") ||
+            lowerClip.startsWith("hysteria2://") ||
+            lowerClip.startsWith("ss://") ||
+            lowerClip.startsWith("vmess://") ||
+            lowerClip.startsWith("trojan://")) clipText else ""
 
         val input = EditText(this).apply {
-            hint = getString(R.string.vless_enter_key_hint)
+            hint = "vless://, hy2://, ss://, vmess://, trojan://"
             setText(initialText)
             setSelection(text.length)
         }
@@ -187,7 +191,13 @@ class VlessListActivity : AppCompatActivity() {
                 if (config != null) {
                     VlessManager.addConfig(this, config)
                     loadServers()
-                    val protoName = if (config.protocol.equals("hysteria2", ignoreCase = true)) "Hysteria2" else "VLESS"
+                    val protoName = when (config.protocol.lowercase()) {
+                        "hysteria2" -> "Hysteria2"
+                        "shadowsocks" -> "Shadowsocks"
+                        "vmess" -> "VMess"
+                        "trojan" -> "Trojan"
+                        else -> "VLESS"
+                    }
                     Toast.makeText(this, "$protoName сервер успешно добавлен!", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(this, R.string.vless_invalid_link, Toast.LENGTH_LONG).show()
