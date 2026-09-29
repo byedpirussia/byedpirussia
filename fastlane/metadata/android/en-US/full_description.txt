@@ -1,0 +1,10 @@
+ByeDPI Russia is an all-in-one network censorship circumvention toolkit for Android.
+
+Features:
+• ByeDPI (Direct DPI circumvention): Local TCP/TLS fragmentation without remote VPS.
+• Automated Benchmark: Tests 32 strategy combinations to find optimal settings.
+• Telegram MTProto Proxy: Built-in local proxy over Cloudflare WebSocket.
+• Cloudflare WARP (AmneziaWG): Advanced WireGuard obfuscation with auto profile generation.
+• Universal Xray Client: VLESS Reality, Shadowsocks, VMess, Trojan, Hysteria 2.
+• Proxy Chaining: Link WARP and external proxies in multi-hop configurations.
+• Split Tunneling: Per-app routing and automated Russian services bypass.
