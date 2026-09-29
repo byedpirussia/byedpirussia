@@ -11,10 +11,10 @@
 ## 📥 Скачать приложение (Download)
 
 ### 📱 Android:
-[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2.1-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2.2-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
 [![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F66%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)
 
-- **[APK v1.2.1 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[APK v1.2.2 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
 - **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
 ### 💻 Windows (ПК):
@@ -23,12 +23,7 @@
 
 - **[Скачать архив Windows v1.1.2-Beta (.ZIP)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.1.2/ByeDPI-Russia-Windows-v1.1.2-Beta.zip)** — портативная версия для Windows x64.
 - ⚠️ **Важное примечание по Windows-версии**: в версии `v1.1.2-Beta` **полноценно работает только режим ByeDPI** (прямой обход DPI, автоподбор стратегий, системный прокси). Режимы VLESS, Cloudflare WARP, Telegram Proxy и Wintun TUN временно отключены на доработку и будут включены в следующем релизе.
-- **[Отчёт VirusTotal Windows (3/67)](https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection)** — 3 ложных срабатывания (False Positive) из 67 антивирусов из-за включённых в поставку открытых сетевых утилит туннелирования:
-  - `AliCloud`: `Proxytool:Multi/tunSocks` (ложный детект сетевой утилиты tun2socks)
-  - `MaxSecure`: `Trojan.Malware.300983.susgen` (эвристика)
-  - `VirIT`: `Trojan.Win64.Sliver.AA` (ложная эвристика)
-  
-  Все крупные антивирусы (Kaspersky, Microsoft Defender, ESET, DrWeb, Avast, BitDefender и др.) подтверждают чистоту файла.
+- **[Отчёт VirusTotal Windows (3/67)](https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection)** — 3 ложных срабатывания (False Positive) из 67 антивирусов из-за включённых в поставку открытых сетевых утилит туннелирования (`tun2socks`). Все крупные антивирусы (Kaspersky, Microsoft Defender, ESET, DrWeb, Avast, BitDefender и др.) подтверждают чистоту файла.
 
 - **[Промо-сайт проекта (GitHub Pages)](https://byedpirussia.github.io/byedpirussia/)** — веб-страница проекта с описанием функций.
 
@@ -36,7 +31,20 @@
 
 Универсальное Android-приложение для восстановления доступа к заблокированным ресурсам (YouTube, Discord, Telegram и др.) без необходимости аренды зарубежных серверов и сложных настроек.
 
-Приложение объединяет в себе четыре независимых инструмента (ByeDPI, Telegram Proxy, AmneziaWG WARP, VLESS / Shadowsocks / VMess / Trojan / Hysteria 2), доступных прямо с главного экрана в 1 клик, гибкую систему **раздельного туннелирования (Split Tunneling)** с автоматическим исключением российских приложений (банки, Госуслуги), мастер **первоначальной настройки**, а также **кастомизацию оформления** (выбор акцентного цвета).
+Приложение объединяет в себе четыре независимых инструмента (ByeDPI, Telegram Proxy, AmneziaWG WARP, VLESS / Shadowsocks / VMess / Trojan / Hysteria 2), доступных прямо с главного экрана в 1 клик, поддержку **цепочек прокси (Proxy Chaining)**, **шторку быстрых настроек (Quick Settings Tiles)**, многоязычный интерфейс (**Русский / English**), гибкое **раздельное туннелирование (Split Tunneling)** с автоматическим исключением российских приложений (банки, Госуслуги), мастер **первоначальной настройки**, а также **кастомизацию оформления** (выбор акцентного цвета).
+
+---
+
+## 🌟 Основные возможности
+
+- 🚀 **ByeDPI Engine**: локальная десинхронизация TCP/DNS/TLS, фрагментация пакетов, фейковые SNI и автоматический подбор рабочих параметров под вашего провайдера.
+- ✈️ **Telegram MTProto Proxy**: встроенный WebSocket-прокси через Cloudflare для обхода блокировок Telegram в 1 клик.
+- 🌐 **AmneziaWG Cloudflare WARP**: генерация и подключение обфусцированных WireGuard-туннелей, устойчивых к блокировкам ТСПУ.
+- ⚡ **Xray Core (VLESS Reality / Trojan / Shadowsocks / VMess / Hysteria 2)**: поддержка подписок, одиночных ключей и пинг-теста.
+- 🔗 **Цепочки прокси (Proxy Chaining)**: туннелирование трафика WARP через Shadowsocks / VLESS / Trojan и наоборот (`WARP over Proxy` / `Proxy over WARP`).
+- 🎛️ **Quick Settings Tiles**: плитки быстрой активации ByeDPI, Telegram Proxy и WARP прямо из шторки Android.
+- 🌍 **Многоязычность**: поддержка русского и английского языков с возможностью выбора при первом запуске или в меню «Настройки».
+- 🔀 **Split Tunneling**: гибкая маршрутизация по приложениям с автоматическим исключением российских сервисов.
 
 ---
 
@@ -87,7 +95,17 @@
 
 ---
 
-### 5. 🔀 Раздельное туннелирование (Split Tunneling) и исключение банков РФ
+### 5. 🔗 Цепочки прокси (Proxy Chaining)
+**Кому подходит**: Для обхода блокировок WireGuard/WARP или скрытия реального IP сервера за Cloudflare.
+1. Откройте **«Подписки и серверы»** -> кнопка **«🔗 Цепочка»**.
+2. Введите название цепочки и выберите тип маршрутизации:
+   - **WARP через Прокси (WARP -> Прокси -> Сайт)**: Cloudflare WARP подключается через выбранный зарубежный VLESS/Shadowsocks сервер.
+   - **Прокси через WARP (Прокси -> WARP -> Сайт)**: Ваш VLESS/Trojan подключается через WARP туннель для маскировки под Cloudflare.
+3. Сохраненная цепочка появится в общем списке серверов и подключается в один тап!
+
+---
+
+### 6. 🔀 Раздельное туннелирование (Split Tunneling) и исключение банков РФ
 **Кому подходит**: Если вы хотите пустить в обход только отдельные приложения, либо гарантировать, что российские банки (Сбер, Т-Банк, Альфа, ВТБ) и Госуслуги не увидят VPN.
 1. Откройте **«Продвинутые настройки»** -> **«Раздельное туннелирование»**.
 2. Включите тумблер **«Автоматически исключать российские приложения»** — все российские банковские, государственные и системные сервисы будут автоматически направлены напрямую в обход VPN без детекта флага `TRANSPORT_VPN`.
@@ -100,15 +118,11 @@
 
 ---
 
-### 6. 🎨 Кастомизация оформления
-В настройках приложения доступен выбор акцентного цвета:
-- **Синий (по умолчанию)**
-- **Фиолетовый**
-- **Изумрудный**
-- **Оранжевый закат**
-- **Рубиновый**
-
-Выбранная цветовая схема автоматически применяется ко всем разделам и окнам приложения с поддержкой светлой и тёмной темы.
+### 7. 🎨 Кастомизация оформления и язык
+В настройках приложения доступен выбор акцентного цвета и языка интерфейса:
+- **Цветовые акценты**: Синий (по умолчанию), Фиолетовый, Изумрудный, Оранжевый закат, Рубиновый.
+- **Язык**: Системный, Русский, English (выбирается также при первом входе).
+- Поддержка системной тёмной и светлой темы оформления Material 3.
 
 ---
 
@@ -120,25 +134,26 @@
 | **TG Proxy** | 🚀 Высокая | 🍃 Минимальное | Telegram при любых блокировках |
 | **AmneziaWG WARP** | 🌐 Скорость Cloudflare | 🔋 Стандартная для VPN | Полное туннелирование всего трафика устройства |
 | **VLESS (Xray)** | ⚡ Высокая | 🔋 Стандартная для VPN | Обход изощренных блокировок через VLESS Reality/WS/gRPC |
+| **Proxy Chains** | 🛡️ Максимальная защита | 🔋 Стандартная для VPN | Каскадное шифрование и обход белых списков |
 
 ---
 
 ## 🛠️ Сборка проекта
 
 ### Требования:
-- Android Studio Hedgehog (или новее) / JDK 17+
-- Android SDK (API 34, Min SDK 26)
+- Android Studio Ladybug / Koala / Hedgehog (или новее) / JDK 17+
+- Android SDK (API 35, Min SDK 26)
 - NDK & CMake (для сборки нативных библиотек C/C++ и JNI)
 
 ### Сборка через командную строку:
 ```bash
 # Windows
-gradlew.bat assembleDebug
+gradlew.bat assembleRelease
 
 # Linux / macOS
-./gradlew assembleDebug
+./gradlew assembleRelease
 ```
-Собранный APK будет находиться в папке: `app/build/outputs/apk/debug/app-debug.apk`.
+Собранный APK будет находиться в папке: `app/build/outputs/apk/release/app-release.apk`.
 
 ---
 
@@ -153,6 +168,7 @@ gradlew.bat assembleDebug
 - **[WG Tunnel Android](https://github.com/wgtunnel/android)** — реализация туннелирования WireGuard / AmneziaWG для Android.
 - **[hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)** от heiher — высокопроизводительный tun2socks туннель для перенаправления сетевого трафика.
 - **[warp-generation](https://github.com/warp-generation/warp-generation.github.io)** — генератор конфигураций Cloudflare WARP с поддержкой параметров AmneziaWG.
+- **[Xray-core](https://github.com/XTLS/Xray-core)** — универсальное ядро сетевых прокси протоколов (VLESS Reality, Shadowsocks, Trojan, VMess).
 
 ---
 
