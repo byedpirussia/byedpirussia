@@ -12,10 +12,10 @@
 
 ### 📱 Android:
 [![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
-[![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F67%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/22e9a3063253810b1102b65a45722389e3b85e01e318da6a4b8c9e999abbfd6e?nocache=1)
+[![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F66%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)
 
 - **[APK v1.2 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
-- **[Отчёт VirusTotal Android (0/67)](https://www.virustotal.com/gui/file/22e9a3063253810b1102b65a45722389e3b85e01e318da6a4b8c9e999abbfd6e?nocache=1)** — проверка APK-файла (0 детектов, 100% чисто).
+- **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
 ### 💻 Windows (ПК):
 [![Скачать Windows Beta](https://img.shields.io/badge/Скачать_Windows-v1.1.2--Beta-blue?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.1.2/ByeDPI-Russia-Windows-v1.1.2-Beta.zip)
