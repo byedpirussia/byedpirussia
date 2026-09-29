@@ -25,17 +25,23 @@ class VlessServerAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = items[position]
-        val protoTag = when (item.protocol.lowercase()) {
-            "hysteria2" -> "Hysteria2"
-            "shadowsocks" -> "Shadowsocks"
-            "vmess" -> "VMess"
-            "trojan" -> "Trojan"
-            else -> "VLESS"
+        if (item.isChain) {
+            val chainLabel = if (item.chainMode == "warp_over_proxy") "WARP -> Прокси" else "Прокси -> WARP"
+            holder.binding.tvServerName.text = "🔗 " + item.name.ifBlank { "Цепочка: $chainLabel" }
+            holder.binding.tvServerDetails.text = "Цепочка серверов ($chainLabel) • Выход: ${item.address}:${item.port}"
+        } else {
+            val protoTag = when (item.protocol.lowercase()) {
+                "hysteria2" -> "Hysteria2"
+                "shadowsocks" -> "Shadowsocks"
+                "vmess" -> "VMess"
+                "trojan" -> "Trojan"
+                else -> "VLESS"
+            }
+            val securityInfo = if (item.security.isNotBlank() && item.security != "none") " | ${item.security}" else ""
+            val transportInfo = if (item.transport.isNotBlank()) " | ${item.transport}" else ""
+            holder.binding.tvServerName.text = item.name.ifBlank { "${item.address}:${item.port}" }
+            holder.binding.tvServerDetails.text = "$protoTag • ${item.address}:${item.port}$securityInfo$transportInfo"
         }
-        val securityInfo = if (item.security.isNotBlank() && item.security != "none") " | ${item.security}" else ""
-        val transportInfo = if (item.transport.isNotBlank()) " | ${item.transport}" else ""
-        holder.binding.tvServerName.text = item.name.ifBlank { "${item.address}:${item.port}" }
-        holder.binding.tvServerDetails.text = "$protoTag • ${item.address}:${item.port}$securityInfo$transportInfo"
         holder.binding.rbSelected.isChecked = (item.id == selectedId)
 
         val ping = pingResults[item.id]

@@ -87,7 +87,11 @@ object VlessManager {
                         obfsPassword = obj.optString("obfsPassword", ""),
                         allowInsecure = obj.optBoolean("allowInsecure", false),
                         alterId = obj.optInt("alterId", 0),
-                        rawUri = obj.optString("rawUri")
+                        rawUri = obj.optString("rawUri"),
+                        isChain = obj.optBoolean("isChain", false),
+                        chainMode = obj.optString("chainMode", ""),
+                        chainHop1ConfigJson = obj.optString("chainHop1ConfigJson", ""),
+                        chainWarpConfigText = obj.optString("chainWarpConfigText", "")
                     )
                 )
             }
@@ -125,6 +129,10 @@ object VlessManager {
                 put("allowInsecure", cfg.allowInsecure)
                 put("alterId", cfg.alterId)
                 put("rawUri", cfg.rawUri)
+                put("isChain", cfg.isChain)
+                put("chainMode", cfg.chainMode)
+                put("chainHop1ConfigJson", cfg.chainHop1ConfigJson)
+                put("chainWarpConfigText", cfg.chainWarpConfigText)
             }
             jsonArray.put(obj)
         }

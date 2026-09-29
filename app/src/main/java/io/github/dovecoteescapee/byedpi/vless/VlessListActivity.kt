@@ -56,6 +56,10 @@ class VlessListActivity : AppCompatActivity() {
             showAddSubscriptionDialog()
         }
 
+        binding.btnAddChain.setOnClickListener {
+            showAddChainDialog()
+        }
+
         binding.btnTestPing.setOnClickListener {
             startUrlPingTest()
         }
@@ -222,6 +226,149 @@ class VlessListActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(this, "Введите корректную HTTP/HTTPS ссылку", Toast.LENGTH_SHORT).show()
                 }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun showAddChainDialog() {
+        val allConfigs = VlessManager.getConfigs(this).filter { !it.isChain }
+        if (allConfigs.isEmpty()) {
+            Toast.makeText(this, R.string.chain_no_proxies_found, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val chainTypeOptions = arrayOf(
+            getString(R.string.chain_type_warp_over_proxy),
+            getString(R.string.chain_type_proxy_over_warp)
+        )
+        var selectedTypeIndex = 0
+
+        val serverNames = allConfigs.map { "${it.protocol.uppercase()} • ${it.name} (${it.address}:${it.port})" }.toTypedArray()
+        var selectedServerIndex = 0
+
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad / 2, pad, pad / 2)
+        }
+
+        val tvType = android.widget.TextView(this).apply {
+            text = "Тип цепочки:"
+            textSize = 14f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+        }
+        val spType = android.widget.Spinner(this).apply {
+            adapter = android.widget.ArrayAdapter(
+                this@VlessListActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                chainTypeOptions
+            )
+            onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                    selectedTypeIndex = position
+                }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+            }
+        }
+
+        val tvServer = android.widget.TextView(this).apply {
+            text = getString(R.string.chain_select_proxy)
+            textSize = 14f
+            setTypeface(null, android.graphics.Typeface.BOLD)
+            setPadding(0, (12 * resources.displayMetrics.density).toInt(), 0, 0)
+        }
+        val spServer = android.widget.Spinner(this).apply {
+            adapter = android.widget.ArrayAdapter(
+                this@VlessListActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                serverNames
+            )
+            onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                    selectedServerIndex = position
+                }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+            }
+        }
+
+        container.addView(tvType)
+        container.addView(spType)
+        container.addView(tvServer)
+        container.addView(spServer)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.chain_title)
+            .setView(container)
+            .setPositiveButton("Создать") { _, _ ->
+                val chosenProxy = allConfigs[selectedServerIndex]
+                val mode = if (selectedTypeIndex == 0) "warp_over_proxy" else "proxy_over_warp"
+                val chainName = if (mode == "warp_over_proxy") {
+                    "WARP + ${chosenProxy.name}"
+                } else {
+                    "${chosenProxy.name} + WARP"
+                }
+
+                // Serialize chosenProxy to JSON for chainHop1ConfigJson
+                val proxyJson = org.json.JSONObject().apply {
+                    put("id", chosenProxy.id)
+                    put("subscriptionUrl", chosenProxy.subscriptionUrl)
+                    put("name", chosenProxy.name)
+                    put("address", chosenProxy.address)
+                    put("port", chosenProxy.port)
+                    put("uuid", chosenProxy.uuid)
+                    put("protocol", chosenProxy.protocol)
+                    put("flow", chosenProxy.flow)
+                    put("encryption", chosenProxy.encryption)
+                    put("transport", chosenProxy.transport)
+                    put("security", chosenProxy.security)
+                    put("sni", chosenProxy.sni)
+                    put("pbk", chosenProxy.pbk)
+                    put("sid", chosenProxy.sid)
+                    put("fp", chosenProxy.fp)
+                    put("path", chosenProxy.path)
+                    put("host", chosenProxy.host)
+                    put("serviceName", chosenProxy.serviceName)
+                    put("obfs", chosenProxy.obfs)
+                    put("obfsPassword", chosenProxy.obfsPassword)
+                    put("allowInsecure", chosenProxy.allowInsecure)
+                    put("alterId", chosenProxy.alterId)
+                    put("rawUri", chosenProxy.rawUri)
+                }.toString()
+
+                val warpConfigText = io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.currentConfig.value
+
+                val chainConfig = VlessConfig(
+                    name = chainName,
+                    address = chosenProxy.address,
+                    port = chosenProxy.port,
+                    uuid = chosenProxy.uuid,
+                    protocol = chosenProxy.protocol,
+                    flow = chosenProxy.flow,
+                    encryption = chosenProxy.encryption,
+                    transport = chosenProxy.transport,
+                    security = chosenProxy.security,
+                    sni = chosenProxy.sni,
+                    pbk = chosenProxy.pbk,
+                    sid = chosenProxy.sid,
+                    fp = chosenProxy.fp,
+                    path = chosenProxy.path,
+                    host = chosenProxy.host,
+                    serviceName = chosenProxy.serviceName,
+                    obfs = chosenProxy.obfs,
+                    obfsPassword = chosenProxy.obfsPassword,
+                    allowInsecure = chosenProxy.allowInsecure,
+                    alterId = chosenProxy.alterId,
+                    rawUri = "",
+                    isChain = true,
+                    chainMode = mode,
+                    chainHop1ConfigJson = proxyJson,
+                    chainWarpConfigText = warpConfigText
+                )
+
+                VlessManager.addConfig(this, chainConfig)
+                loadServers()
+                Toast.makeText(this, R.string.chain_created_success, Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Отмена", null)
             .show()

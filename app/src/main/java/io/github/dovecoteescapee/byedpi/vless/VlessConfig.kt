@@ -32,7 +32,12 @@ data class VlessConfig(
     val obfsPassword: String = "", // hysteria2 obfs password
     val allowInsecure: Boolean = false, // hysteria2 / tls insecure
     val alterId: Int = 0, // vmess alterId
-    val rawUri: String = ""
+    val rawUri: String = "",
+    // Proxy Chaining fields:
+    val isChain: Boolean = false,
+    val chainMode: String = "", // "warp_over_proxy" (WARP -> Proxy -> Site), "proxy_over_warp" (Proxy -> WARP -> Site)
+    val chainHop1ConfigJson: String = "", // JSON serialized VlessConfig for hop
+    val chainWarpConfigText: String = "" // AmneziaWG / WireGuard config text for WARP hop
 ) {
     companion object {
         private const val TAG = "VlessConfig"
@@ -327,8 +332,160 @@ data class VlessConfig(
         // Outbounds
         val outbounds = JSONArray()
 
+        if (isChain) {
+            val hopConfig = if (chainHop1ConfigJson.isNotBlank()) {
+                try {
+                    val obj = JSONObject(chainHop1ConfigJson)
+                    VlessConfig(
+                        id = obj.optString("id"),
+                        subscriptionUrl = obj.optString("subscriptionUrl", ""),
+                        name = obj.optString("name"),
+                        address = obj.optString("address"),
+                        port = obj.optInt("port", 443),
+                        uuid = obj.optString("uuid"),
+                        protocol = obj.optString("protocol", "vless"),
+                        flow = obj.optString("flow"),
+                        encryption = obj.optString("encryption", "none"),
+                        transport = obj.optString("transport", "tcp"),
+                        security = obj.optString("security", "none"),
+                        sni = obj.optString("sni"),
+                        pbk = obj.optString("pbk"),
+                        sid = obj.optString("sid"),
+                        fp = obj.optString("fp", "chrome"),
+                        path = obj.optString("path"),
+                        host = obj.optString("host"),
+                        serviceName = obj.optString("serviceName"),
+                        obfs = obj.optString("obfs", ""),
+                        obfsPassword = obj.optString("obfsPassword", ""),
+                        allowInsecure = obj.optBoolean("allowInsecure", false),
+                        alterId = obj.optInt("alterId", 0),
+                        rawUri = obj.optString("rawUri")
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+            } else null
+
+            val warpOutbound = createWarpOutbound(tag = "warp-out", proxyTag = null)
+
+            if (chainMode == "warp_over_proxy") {
+                // WARP traffic routes through the Proxy:
+                // socks-in -> warp-out (proxySettings: tag = "proxy-out") -> proxy-out -> Internet
+                // warp-out is the primary outbound tagged "proxy"
+                val proxyOut = hopConfig?.createOutbound(tag = "hop-proxy", proxyTag = null)
+                    ?: createOutbound(tag = "hop-proxy", proxyTag = null)
+
+                val warpMain = createWarpOutbound(tag = "proxy", proxyTag = "hop-proxy")
+                outbounds.put(warpMain)
+                outbounds.put(proxyOut)
+            } else {
+                // proxy_over_warp:
+                // socks-in -> proxy-out (proxySettings: tag = "warp-hop") -> warp-hop -> Internet
+                val proxyMain = (hopConfig ?: this).createOutbound(tag = "proxy", proxyTag = "warp-hop")
+                val warpHop = createWarpOutbound(tag = "warp-hop", proxyTag = null)
+                outbounds.put(proxyMain)
+                outbounds.put(warpHop)
+            }
+        } else {
+            val proxyOutbound = createOutbound(tag = "proxy", proxyTag = null)
+            outbounds.put(proxyOutbound)
+        }
+
+        // Direct outbound
+        val directOutbound = JSONObject().apply {
+            put("tag", "direct")
+            put("protocol", "freedom")
+            put("settings", JSONObject())
+        }
+        outbounds.put(directOutbound)
+
+        // Block outbound
+        val blockOutbound = JSONObject().apply {
+            put("tag", "block")
+            put("protocol", "blackhole")
+            put("settings", JSONObject())
+        }
+        outbounds.put(blockOutbound)
+
+        root.put("outbounds", outbounds)
+
+        // DNS configuration
+        val dns = JSONObject().apply {
+            put("servers", JSONArray().apply {
+                put("1.1.1.1")
+                put("8.8.8.8")
+                put("https://dns.google/dns-query")
+            })
+        }
+        root.put("dns", dns)
+
+        // Routing
+        val routing = JSONObject().apply {
+            put("domainStrategy", "AsIs")
+            val rules = JSONArray()
+
+            // DNS rule
+            rules.put(JSONObject().apply {
+                put("type", "field")
+                put("outboundTag", "proxy")
+                put("port", "53")
+            })
+
+            // Default route to proxy
+            rules.put(JSONObject().apply {
+                put("type", "field")
+                put("outboundTag", "proxy")
+                put("network", "tcp,udp")
+            })
+
+            put("rules", rules)
+        }
+        root.put("routing", routing)
+
+        return root.toString(2)
+    }
+
+    private fun createWarpOutbound(tag: String, proxyTag: String?): JSONObject {
+        // Parse WARP config text or use default
+        val configText = chainWarpConfigText.ifBlank {
+            io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.currentConfig.value
+        }
+        val matchPriv = Regex("""(?m)^\s*PrivateKey\s*=\s*(.+)$""").find(configText)?.groupValues?.get(1)?.trim()
+            ?: "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc="
+        val matchPub = Regex("""(?m)^\s*PublicKey\s*=\s*(.+)$""").find(configText)?.groupValues?.get(1)?.trim()
+            ?: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
+        val matchEndpoint = Regex("""(?m)^\s*Endpoint\s*=\s*(.+)$""").find(configText)?.groupValues?.get(1)?.trim()
+            ?: "188.114.98.8:854"
+
+        val peerObj = JSONObject().apply {
+            put("publicKey", matchPub)
+            put("endpoint", matchEndpoint)
+        }
+
+        return JSONObject().apply {
+            put("tag", tag)
+            put("protocol", "wireguard")
+            put("settings", JSONObject().apply {
+                put("secretKey", matchPriv)
+                put("address", JSONArray().apply {
+                    put("172.16.0.2/32")
+                    put("2606:4700:110:8700:31d8:595c:36c3:8014/128")
+                })
+                put("peers", JSONArray().apply {
+                    put(peerObj)
+                })
+            })
+            if (proxyTag != null) {
+                put("proxySettings", JSONObject().apply {
+                    put("tag", proxyTag)
+                })
+            }
+        }
+    }
+
+    fun createOutbound(tag: String, proxyTag: String?): JSONObject {
         val proxyOutbound = JSONObject().apply {
-            put("tag", "proxy")
+            put("tag", tag)
 
             when (protocol.lowercase()) {
                 "hysteria2" -> {
@@ -560,60 +717,13 @@ data class VlessConfig(
                     put("streamSettings", streamSettings)
                 }
             }
+
+            if (proxyTag != null) {
+                put("proxySettings", JSONObject().apply {
+                    put("tag", proxyTag)
+                })
+            }
         }
-        outbounds.put(proxyOutbound)
-
-        // Direct outbound
-        val directOutbound = JSONObject().apply {
-            put("tag", "direct")
-            put("protocol", "freedom")
-            put("settings", JSONObject())
-        }
-        outbounds.put(directOutbound)
-
-        // Block outbound
-        val blockOutbound = JSONObject().apply {
-            put("tag", "block")
-            put("protocol", "blackhole")
-            put("settings", JSONObject())
-        }
-        outbounds.put(blockOutbound)
-
-        root.put("outbounds", outbounds)
-
-        // DNS configuration
-        val dns = JSONObject().apply {
-            put("servers", JSONArray().apply {
-                put("1.1.1.1")
-                put("8.8.8.8")
-                put("https://dns.google/dns-query")
-            })
-        }
-        root.put("dns", dns)
-
-        // Routing
-        val routing = JSONObject().apply {
-            put("domainStrategy", "AsIs")
-            val rules = JSONArray()
-
-            // DNS rule
-            rules.put(JSONObject().apply {
-                put("type", "field")
-                put("outboundTag", "proxy")
-                put("port", "53")
-            })
-
-            // Default route to proxy
-            rules.put(JSONObject().apply {
-                put("type", "field")
-                put("outboundTag", "proxy")
-                put("network", "tcp,udp")
-            })
-
-            put("rules", rules)
-        }
-        root.put("routing", routing)
-
-        return root.toString(2)
+        return proxyOutbound
     }
 }

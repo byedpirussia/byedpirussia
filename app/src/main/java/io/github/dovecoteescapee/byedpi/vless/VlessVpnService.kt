@@ -136,7 +136,9 @@ class VlessVpnService : VpnService() {
                 delay(300)
 
                 // 2. Setup TUN interface via Android VpnService
-                val protoTitle = when (activeConfig.protocol.lowercase()) {
+                val protoTitle = if (activeConfig.isChain) {
+                    "Цепочка (" + (if (activeConfig.chainMode == "warp_over_proxy") "WARP->Прокси" else "Прокси->WARP") + ")"
+                } else when (activeConfig.protocol.lowercase()) {
                     "hysteria2" -> "Hysteria2"
                     "shadowsocks" -> "Shadowsocks"
                     "vmess" -> "VMess"

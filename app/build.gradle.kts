@@ -10,13 +10,20 @@ android {
         applicationId = "com.byedpifork.russia"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.2"
+        versionCode = 8
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+        }
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            enableV1Signing = true
+            enableV2Signing = true
         }
     }
 

@@ -177,4 +177,13 @@
     <string name="tile_byedpi">ByeDPI</string>
     <string name="tile_tg_proxy">TG Прокси</string>
     <string name="tile_warp">Cloudflare WARP</string>
+
+    <!-- Proxy Chains -->
+    <string name="chain_title">Создать цепочку прокси</string>
+    <string name="chain_name_hint">Название цепочки</string>
+    <string name="chain_type_warp_over_proxy">WARP через Прокси (WARP -> Прокси -> Сайт)</string>
+    <string name="chain_type_proxy_over_warp">Прокси через WARP (Прокси -> WARP -> Сайт)</string>
+    <string name="chain_select_proxy">Выберите прокси (SS / VLESS / Trojan / VMess):</string>
+    <string name="chain_no_proxies_found">Сначала добавьте хотя бы один сервер (например, Shadowsocks или VLESS)</string>
+    <string name="chain_created_success">Цепочка успешно создана!</string>
 </resources>
