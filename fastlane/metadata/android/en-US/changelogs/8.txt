@@ -1,0 +1,4 @@
+- Added Proxy Chaining (local ByeDPI + VLESS Reality / Shadowsocks / Trojan)
+- Fixed Xray Core crash when using chained outbound proxy
+- Added Quick Settings Tiles for Telegram Proxies and Cloudflare WARP
+- Improved split tunneling reliability

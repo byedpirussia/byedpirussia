@@ -1,1 +1,1 @@
-Единый центр обхода блокировок: ByeDPI, MTProto, AmneziaWG WARP, VLESS Reality и цепочки прокси.
+Универсальный инструмент обхода блокировок: ByeDPI, MTProto, WARP, VLESS.
