@@ -210,10 +210,56 @@ class MainActivity : BaseActivity() {
         checkInitialSetup()
     }
 
-    private fun setupTgChannelBanner() {
-        binding.btnOpenTgChannel.setOnClickListener {
+    private fun isAnyVpnActive(): Boolean {
+        val (byedpiStatus, byedpiMode) = appStatus
+        val isByeDpiVpn = byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN
+        val isWarpVpn = WarpVpnService.isRunning.value
+        val isVlessVpn = VlessVpnService.isRunning.value
+        return isByeDpiVpn || isWarpVpn || isVlessVpn
+    }
+
+    private fun startWarpVpn() {
+        val (byedpiStatus, byedpiMode) = appStatus
+        if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
+            ServiceManager.stop(this)
+        }
+        if (VlessVpnService.isRunning.value) {
+            VlessVpnService.stop(this)
+        }
+        val intentPrepare = VpnService.prepare(this)
+        if (intentPrepare != null) {
+            warpVpnRegister.launch(intentPrepare)
+        } else {
+            WarpVpnService.start(this)
+        }
+    }
+
+    private fun openTelegramWithVpnCheck() {
+        if (isAnyVpnActive()) {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
             startActivity(intent)
+        } else {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.tg_vpn_warning_title)
+                .setMessage(R.string.tg_vpn_warning_msg)
+                .setPositiveButton(R.string.tg_vpn_warning_btn_warp) { dialog, _ ->
+                    dialog.dismiss()
+                    startWarpVpn()
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
+                    startActivity(intent)
+                }
+                .setNegativeButton(R.string.tg_vpn_warning_btn_anyway) { dialog, _ ->
+                    dialog.dismiss()
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
+                    startActivity(intent)
+                }
+                .show()
+        }
+    }
+
+    private fun setupTgChannelBanner() {
+        binding.btnOpenTgChannel.setOnClickListener {
+            openTelegramWithVpnCheck()
         }
     }
 
@@ -338,8 +384,7 @@ class MainActivity : BaseActivity() {
             .setPositiveButton(R.string.tg_channel_dialog_btn_join) { dialog, _ ->
                 setTgChannelDialogShown(true)
                 dialog.dismiss()
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
-                startActivity(intent)
+                openTelegramWithVpnCheck()
                 checkStarDialog()
             }
             .setNegativeButton(R.string.setup_wizard_btn_skip) { dialog, _ ->
@@ -421,8 +466,7 @@ class MainActivity : BaseActivity() {
 
         return when (item.itemId) {
             R.id.action_telegram -> {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
-                startActivity(intent)
+                openTelegramWithVpnCheck()
                 true
             }
 

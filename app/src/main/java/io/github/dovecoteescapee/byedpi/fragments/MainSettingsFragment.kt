@@ -84,6 +84,38 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
 
         findPreferenceNotNull<Preference>("version").summary = BuildConfig.VERSION_NAME
 
+        findPreference<Preference>("telegram_channel")?.setOnPreferenceClickListener {
+            context?.let { ctx ->
+                val (byedpiStatus, byedpiMode) = io.github.dovecoteescapee.byedpi.services.appStatus
+                val isByeDpiVpn = byedpiMode == Mode.VPN && byedpiStatus == io.github.dovecoteescapee.byedpi.data.AppStatus.Running
+                val isWarpVpn = io.github.dovecoteescapee.byedpi.warp.WarpVpnService.isRunning.value
+                val isVlessVpn = io.github.dovecoteescapee.byedpi.vless.VlessVpnService.isRunning.value
+                val isVpnActive = isByeDpiVpn || isWarpVpn || isVlessVpn
+
+                if (isVpnActive) {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://t.me/Byedpirussia"))
+                    ctx.startActivity(intent)
+                } else {
+                    com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
+                        .setTitle(R.string.tg_vpn_warning_title)
+                        .setMessage(R.string.tg_vpn_warning_msg)
+                        .setPositiveButton(R.string.tg_vpn_warning_btn_warp) { dialog, _ ->
+                            dialog.dismiss()
+                            io.github.dovecoteescapee.byedpi.warp.WarpVpnService.start(ctx)
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://t.me/Byedpirussia"))
+                            ctx.startActivity(intent)
+                        }
+                        .setNegativeButton(R.string.tg_vpn_warning_btn_anyway) { dialog, _ ->
+                            dialog.dismiss()
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://t.me/Byedpirussia"))
+                            ctx.startActivity(intent)
+                        }
+                        .show()
+                }
+            }
+            true
+        }
+
         findPreference<Preference>("rerun_initial_setup")?.setOnPreferenceClickListener {
             context?.let { ctx ->
                 ctx.setInitialSetupDone(false)

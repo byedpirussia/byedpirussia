@@ -203,4 +203,10 @@
     <string name="tg_channel_dialog_text">Подпишитесь на официальный Telegram-канал проекта: t.me/Byedpirussia\n\n⚠️ Обратите внимание: все последующие обновления и свежие версии приложения теперь будут выходить исключительно в Telegram-канале!</string>
     <string name="tg_channel_dialog_btn_join">Перейти в канал</string>
     <string name="tg_channel_pref_summary">t.me/Byedpirussia — все обновления теперь только здесь</string>
+
+    <!-- VPN Warning for Telegram -->
+    <string name="tg_vpn_warning_title">Внимание</string>
+    <string name="tg_vpn_warning_msg">У вас не включен VPN, без него Telegram не работает. Включить WARP?</string>
+    <string name="tg_vpn_warning_btn_warp">Включить WARP</string>
+    <string name="tg_vpn_warning_btn_anyway">Всё равно перейти без VPN</string>
 </resources>

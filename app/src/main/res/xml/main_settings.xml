@@ -112,11 +112,7 @@
             android:key="telegram_channel"
             android:title="@string/tg_channel_title"
             android:summary="@string/tg_channel_pref_summary"
-            android:icon="@drawable/ic_telegram_24">
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="https://t.me/Byedpirussia" />
-        </Preference>
+            android:icon="@drawable/ic_telegram_24" />
 
         <Preference
             android:key="rerun_initial_setup"
