@@ -24,7 +24,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ByeDPI"
-        tools:targetApi="34">
+        tools:targetApi="35">
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/Theme.ByeDPI.NoActionBar"
