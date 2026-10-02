@@ -8,13 +8,21 @@
 
 ---
 
+## 📢 Официальный Telegram-канал проекта
+> **👉 Подписывайтесь на наш канал: [t.me/Byedpirussia](https://t.me/Byedpirussia)**  
+> ⚠️ **Важное объявление**: Начиная с версии `v1.2.2.1`, **все последующие обновления, новости, инструкции и свежие версии приложения будут публиковаться исключительно в Telegram-канале!**
+
+---
+
 ## 📥 Скачать приложение (Download)
 
 ### 📱 Android:
-[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2.2-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2.2.1-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Telegram Channel](https://img.shields.io/badge/Telegram_Канал-t.me%2FByedpirussia-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Byedpirussia)
 [![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F66%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)
 
-- **[APK v1.2.2 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[APK v1.2.2.1 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[Официальный Telegram-канал t.me/Byedpirussia](https://t.me/Byedpirussia)** — свежие релизы и новости проекта.
 - **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
 ### 💻 Windows (ПК):

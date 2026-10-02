@@ -53,6 +53,15 @@ fun Context.setStarNeverShow(never: Boolean) {
     getPreferences().edit().putBoolean(KEY_STAR_NEVER_SHOW, never).apply()
 }
 
+const val KEY_TG_CHANNEL_SHOWN = "tg_channel_dialog_shown"
+
+fun Context.isTgChannelDialogShown(): Boolean =
+    getPreferences().getBoolean(KEY_TG_CHANNEL_SHOWN, false)
+
+fun Context.setTgChannelDialogShown(shown: Boolean) {
+    getPreferences().edit().putBoolean(KEY_TG_CHANNEL_SHOWN, shown).apply()
+}
+
 const val KEY_APP_LANGUAGE = "app_language"
 const val KEY_LANGUAGE_SELECTED = "language_selected"
 

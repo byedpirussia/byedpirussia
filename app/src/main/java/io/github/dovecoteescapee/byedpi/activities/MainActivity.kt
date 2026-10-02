@@ -204,15 +204,15 @@ class MainActivity : BaseActivity() {
         setupTelegramProxyCard()
         setupWarpCard()
         setupVlessCard()
-        setupDiscussionsBanner()
+        setupTgChannelBanner()
         setupAdvancedSettingsCard()
 
         checkInitialSetup()
     }
 
-    private fun setupDiscussionsBanner() {
-        binding.btnOpenDiscussions.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/byedpirussia/byedpirussia/discussions"))
+    private fun setupTgChannelBanner() {
+        binding.btnOpenTgChannel.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
             startActivity(intent)
         }
     }
@@ -237,7 +237,7 @@ class MainActivity : BaseActivity() {
         btnSkip.setOnClickListener {
             setInitialSetupDone(true)
             dialog.dismiss()
-            checkStarDialog()
+            checkTgChannelAnnouncement()
         }
 
         btnAction.setOnClickListener {
@@ -282,7 +282,7 @@ class MainActivity : BaseActivity() {
                     setInitialSetupDone(true)
                     updateStrategyBadge()
                     dialog.dismiss()
-                    checkStarDialog()
+                    checkTgChannelAnnouncement()
                 }
             }
         }
@@ -318,8 +318,36 @@ class MainActivity : BaseActivity() {
         if (!isInitialSetupDone()) {
             showInitialSetupDialog(force = false)
         } else {
+            checkTgChannelAnnouncement()
+        }
+    }
+
+    private fun checkTgChannelAnnouncement() {
+        if (!isTgChannelDialogShown()) {
+            showTgChannelAnnouncementDialog()
+        } else {
             checkStarDialog()
         }
+    }
+
+    private fun showTgChannelAnnouncementDialog() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.tg_channel_dialog_title)
+            .setMessage(R.string.tg_channel_dialog_text)
+            .setCancelable(false)
+            .setPositiveButton(R.string.tg_channel_dialog_btn_join) { dialog, _ ->
+                setTgChannelDialogShown(true)
+                dialog.dismiss()
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
+                startActivity(intent)
+                checkStarDialog()
+            }
+            .setNegativeButton(R.string.setup_wizard_btn_skip) { dialog, _ ->
+                setTgChannelDialogShown(true)
+                dialog.dismiss()
+                checkStarDialog()
+            }
+            .show()
     }
 
     private fun checkStarDialog() {
@@ -392,6 +420,12 @@ class MainActivity : BaseActivity() {
         val (status, _) = appStatus
 
         return when (item.itemId) {
+            R.id.action_telegram -> {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/Byedpirussia"))
+                startActivity(intent)
+                true
+            }
+
             R.id.action_github -> {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/byedpirussia/byedpirussia"))
                 startActivity(intent)

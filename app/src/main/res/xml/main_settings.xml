@@ -109,6 +109,16 @@
         </Preference>
 
         <Preference
+            android:key="telegram_channel"
+            android:title="@string/tg_channel_title"
+            android:summary="@string/tg_channel_pref_summary"
+            android:icon="@drawable/ic_telegram_24">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://t.me/Byedpirussia" />
+        </Preference>
+
+        <Preference
             android:key="rerun_initial_setup"
             android:title="@string/settings_rerun_setup"
             android:summary="@string/settings_rerun_setup_summary" />

@@ -5,8 +5,15 @@
     tools:context=".activities.MainActivity">
 
     <item
-        android:id="@+id/action_github"
+        android:id="@+id/action_telegram"
         android:orderInCategory="1"
+        android:title="@string/tg_channel_title"
+        android:icon="@drawable/ic_telegram_24"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_github"
+        android:orderInCategory="2"
         android:title="GitHub"
         android:icon="@drawable/ic_github_36"
         app:showAsAction="ifRoom" />

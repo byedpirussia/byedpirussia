@@ -1,0 +1,3 @@
+- Added official Telegram channel announcement (t.me/Byedpirussia)
+- Direct links to Telegram channel added to Main Menu, Settings and home screen banner
+- Important notice: future updates and new releases will be published exclusively in Telegram

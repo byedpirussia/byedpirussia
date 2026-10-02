@@ -458,13 +458,13 @@
 
             <!-- ================= БАННЕР СВЯЗИ С РАЗРАБОТЧИКОМ ================= -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_discussions_banner"
+                android:id="@+id/card_tg_channel_banner"
                 style="@style/Widget.Material3.CardView.Filled"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="20dp"
-                app:strokeWidth="1dp"
+                app:strokeWidth="1.5dp"
                 app:strokeColor="?attr/colorPrimary"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant">
 
@@ -481,32 +481,44 @@
                         android:gravity="center_vertical"
                         android:layout_marginBottom="10dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="💬"
-                            android:textSize="22sp"
-                            android:layout_marginEnd="10dp" />
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_telegram_24"
+                            app:tint="?attr/colorPrimary"
+                            android:layout_marginEnd="12dp"
+                            tools:ignore="ContentDescription" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/discussions_banner_text"
-                            android:textSize="13sp"
+                            android:text="@string/tg_channel_banner_title"
+                            android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface" />
                     </LinearLayout>
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tg_channel_banner_text"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:lineSpacingExtra="2dp"
+                        android:layout_marginBottom="14dp" />
+
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_open_discussions"
+                        android:id="@+id/btn_open_tg_channel"
                         style="@style/Widget.Material3.Button"
                         android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:text="@string/discussions_banner_btn"
+                        android:layout_height="46dp"
+                        android:text="@string/tg_channel_banner_btn"
+                        app:icon="@drawable/ic_telegram_24"
+                        app:iconGravity="textStart"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        app:cornerRadius="12dp" />
+                        app:cornerRadius="14dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
