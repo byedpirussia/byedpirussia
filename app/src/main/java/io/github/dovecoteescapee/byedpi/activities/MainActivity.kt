@@ -708,6 +708,13 @@ class MainActivity : BaseActivity() {
 
         val isPrivateDns = WarpDnsManager.isPrivateDnsActive(this)
         if (isPrivateDns) {
+            val serverName = WarpDnsManager.getPrivateDnsServerName(this)
+            val warningTextView = dialogView.findViewById<android.widget.TextView>(R.id.tv_private_dns_warning)
+            if (!serverName.isNullOrBlank()) {
+                warningTextView?.text = getString(R.string.warp_dns_private_warning_with_server, serverName)
+            } else {
+                warningTextView?.text = getString(R.string.warp_dns_private_warning)
+            }
             cardWarning.visibility = android.view.View.VISIBLE
             // Блокируем выбор DNS радиокнопками
             for (i in 0 until rgDns.childCount) {

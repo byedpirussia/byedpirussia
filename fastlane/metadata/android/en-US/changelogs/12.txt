@@ -1,0 +1,3 @@
+- Fixed detection of Android Private DNS (DoT) including server hostname display.
+- Fixed WARP auto-reconnect when switching between Wi-Fi and mobile data with default network tracking and resilient reconnect retry loops.
+- Added ACCESS_NETWORK_STATE permission.

@@ -218,4 +218,6 @@
     <string name="warp_dns_save_btn">Сохранить DNS</string>
     <string name="warp_dns_saved">DNS настройки сохранены</string>
     <string name="warp_dns_private_warning">⚠️ В системе Android включен Частный DNS (Private DNS). Android перенаправляет все DNS-запросы через системный DoT, поэтому пользовательский DNS в WARP работать не будет. Отключите Частный DNS в настройках Android (Сеть и интернет → Частный DNS: Отключено), чтобы использовать выбор DNS.</string>
+    <string name="warp_dns_private_warning_with_server">⚠️ В системе Android включен Частный DNS (сервер: %1$s). Android перенаправляет все DNS-запросы через системный DoT, поэтому пользовательский DNS в WARP работать не будет. Отключите Частный DNS в настройках Android (Сеть и интернет → Частный DNS: Отключено), чтобы использовать выбор DNS.</string>
 </resources>
+

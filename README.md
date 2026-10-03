@@ -17,11 +17,11 @@
 ## 📥 Скачать приложение (Download)
 
 ### 📱 Android:
-[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2.2.1-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2.4.1-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
 [![Telegram Channel](https://img.shields.io/badge/Telegram_Канал-t.me%2FByedpirussia-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Byedpirussia)
 [![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F66%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)
 
-- **[APK v1.2.2.1 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[APK v1.2.4.1 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
 - **[Официальный Telegram-канал t.me/Byedpirussia](https://t.me/Byedpirussia)** — свежие релизы и новости проекта.
 - **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
@@ -47,7 +47,7 @@
 
 - 🚀 **ByeDPI Engine**: локальная десинхронизация TCP/DNS/TLS, фрагментация пакетов, фейковые SNI и автоматический подбор рабочих параметров под вашего провайдера.
 - ✈️ **Telegram MTProto Proxy**: встроенный WebSocket-прокси через Cloudflare для обхода блокировок Telegram в 1 клик.
-- 🌐 **AmneziaWG Cloudflare WARP**: генерация и подключение обфусцированных WireGuard-туннелей, устойчивых к блокировкам ТСПУ.
+- 🌐 **AmneziaWG Cloudflare WARP**: генерация и подключение обфусцированных WireGuard-туннелей, устойчивых к блокировкам ТСПУ. Включает **авто-переподключение** при смене сети (Wi-Fi / сотовая сеть) и выбор DNS-серверов (Cloudflare, Google, Xbox, COMSS, DNS Malw Link, DNS AI) с распознаванием Частного DNS (DoT).
 - ⚡ **Xray Core (VLESS Reality / Trojan / Shadowsocks / VMess / Hysteria 2)**: поддержка подписок, одиночных ключей и пинг-теста.
 - 🔗 **Цепочки прокси (Proxy Chaining)**: туннелирование трафика WARP через Shadowsocks / VLESS / Trojan и наоборот (`WARP over Proxy` / `Proxy over WARP`).
 - 🎛️ **Quick Settings Tiles**: плитки быстрой активации ByeDPI, Telegram Proxy и WARP прямо из шторки Android.
