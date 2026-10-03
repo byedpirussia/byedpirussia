@@ -75,30 +75,57 @@ class WarpVpnService : VpnService() {
         }
 
         /**
-         * Pings through the active VPN tunnel. Since the socket is not protected,
-         * its traffic flows directly through awg0 TUN.
+         * Pings through the active VPN tunnel. Uses HTTPS port 443 and HTTP 204 connectivity endpoints.
          */
         suspend fun pingTunnel(timeoutMs: Int = 3000): Long = withContext(Dispatchers.IO) {
             val start = System.currentTimeMillis()
-            val targets = listOf(
-                InetSocketAddress("1.1.1.1", 80),
-                InetSocketAddress("1.0.0.1", 80),
-                InetSocketAddress("8.8.8.8", 53)
+
+            // 1. Direct TCP handshake to port 443 (DoH servers)
+            val fastTargets = listOf(
+                InetSocketAddress("1.1.1.1", 443),
+                InetSocketAddress("1.0.0.1", 443),
+                InetSocketAddress("8.8.8.8", 443)
             )
-            for (target in targets) {
+            for (target in fastTargets) {
                 try {
                     Socket().use { socket ->
                         socket.connect(target, timeoutMs)
-                        return@withContext (System.currentTimeMillis() - start)
+                        val duration = System.currentTimeMillis() - start
+                        if (duration >= 0) return@withContext duration
                     }
                 } catch (_: Exception) {}
             }
+
+            // 2. HTTP generate_204 check
+            val httpUrls = listOf(
+                "http://cp.cloudflare.com/generate_204",
+                "http://connectivitycheck.gstatic.com/generate_204"
+            )
+            for (urlStr in httpUrls) {
+                try {
+                    val urlStart = System.currentTimeMillis()
+                    val url = java.net.URL(urlStr)
+                    val conn = (url.openConnection() as java.net.HttpURLConnection).apply {
+                        connectTimeout = timeoutMs
+                        readTimeout = timeoutMs
+                        instanceFollowRedirects = false
+                        requestMethod = "GET"
+                        useCaches = false
+                    }
+                    val code = conn.responseCode
+                    conn.disconnect()
+                    if (code in 200..399) {
+                        return@withContext (System.currentTimeMillis() - urlStart)
+                    }
+                } catch (_: Exception) {}
+            }
+
             -1L
         }
 
         fun checkPingAsync(scope: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
             scope.launch {
-                val ping = pingTunnel(3000)
+                val ping = pingTunnel(3500)
                 _warpPingMs.value = ping
             }
         }
@@ -156,7 +183,6 @@ class WarpVpnService : VpnService() {
                     }
 
                     if (prev == null) {
-                        // Initial network binding
                         protectCurrentSockets()
                         return
                     }
@@ -268,17 +294,21 @@ class WarpVpnService : VpnService() {
                 delay(300)
                 if (isUserExplicitStop) return@launch
 
-                // Attempt to establish tunnel with retry logic
+                // Attempt to establish tunnel with retry logic (waiting up to 25s for connection)
+                val startTime = System.currentTimeMillis()
+                val maxWaitMs = 25_000L
                 var connected = false
                 var attempt = 1
-                val maxAttempts = 4
 
-                while (!connected && attempt <= maxAttempts && !isUserExplicitStop) {
+                while (!connected && (System.currentTimeMillis() - startTime) < maxWaitMs && !isUserExplicitStop) {
                     try {
-                        Log.i(TAG, "Auto-reconnect attempt $attempt of $maxAttempts")
+                        val elapsed = System.currentTimeMillis() - startTime
+                        val remainingSec = ((maxWaitMs - elapsed) / 1000L).coerceAtLeast(1)
+                        Log.i(TAG, "Auto-reconnect attempt $attempt, waiting connection (${remainingSec}s left)")
+
                         if (attempt > 1) {
-                            _connectionStatus.value = "Переподключение (попытка $attempt)..."
-                            startForegroundNotification("Переподключение (попытка $attempt)...")
+                            _connectionStatus.value = "Переподключение (${remainingSec}с)..."
+                            startForegroundNotification("Переподключение (${remainingSec}с)...")
                         }
 
                         startTunnelInternal()
@@ -287,14 +317,12 @@ class WarpVpnService : VpnService() {
                     } catch (e: Exception) {
                         Log.w(TAG, "Auto-reconnect attempt $attempt failed: ${e.message}")
                         attempt++
-                        if (attempt <= maxAttempts && !isUserExplicitStop) {
-                            delay(1500)
-                        }
+                        delay(2000)
                     }
                 }
 
                 if (!connected && !isUserExplicitStop) {
-                    Log.w(TAG, "All auto-reconnect attempts failed, awaiting network event")
+                    Log.w(TAG, "Auto-reconnect timed out after 25s, awaiting network event")
                     _connectionStatus.value = "Ожидание сети..."
                     startForegroundNotification("Ожидание сети...")
                 }
@@ -305,54 +333,27 @@ class WarpVpnService : VpnService() {
     }
 
     /**
-     * Active ping watchdog that monitors connection health and triggers auto-reconnect
-     * after 25 seconds without a response.
+     * Background ping watchdog that monitors connection health and triggers auto-reconnect
+     * if connection is dead for 25 continuous seconds.
      */
     private fun startWatchdog() {
         watchdogJob?.cancel()
         watchdogJob = serviceScope.launch {
             try {
-                Log.i(TAG, "Starting WARP connection watchdog (25s timeout)...")
-                val startVerificationTime = System.currentTimeMillis()
-                var isInitiallyVerified = false
+                Log.i(TAG, "Starting WARP connection watchdog...")
 
-                // PHASE 1: Wait up to 25 seconds for initial connection
-                while (!isInitiallyVerified && _isRunning.value && !isUserExplicitStop) {
-                    val elapsed = System.currentTimeMillis() - startVerificationTime
-                    val remainingSec = ((25_000L - elapsed) / 1000L).coerceAtLeast(0)
-
-                    _connectionStatus.value = "Проверка связи (${remainingSec}с)..."
-                    val ping = pingTunnel(3000)
-
-                    if (ping >= 0) {
-                        isInitiallyVerified = true
-                        _warpPingMs.value = ping
-                        _connectionStatus.value = "Подключен (WARP активен)"
-                        startForegroundNotification("WARP активен (${ping}ms)")
-                        Log.i(TAG, "Initial connection established and ping verified: ${ping}ms")
-                        break
-                    }
-
-                    if (elapsed >= 25_000L) {
-                        Log.w(TAG, "Connection timeout: no ping response for 25s after connect!")
-                        _warpPingMs.value = -1L
-                        if (isWarpAutoReconnectEnabled() && !isUserExplicitStop) {
-                            triggerAutoReconnect("Таймаут соединения (25с)")
-                            return@launch
-                        } else {
-                            _connectionStatus.value = "Нет ответа от WARP (25с)"
-                            break
-                        }
-                    }
-
-                    delay(2500)
+                // Initial background ping check after start
+                delay(2000)
+                val initialPing = pingTunnel(3500)
+                if (initialPing >= 0) {
+                    _warpPingMs.value = initialPing
+                    startForegroundNotification("WARP активен (${initialPing}ms)")
                 }
 
-                // PHASE 2: Ongoing health monitoring
                 var firstFailureTime: Long? = null
 
                 while (_isRunning.value && !isUserExplicitStop) {
-                    delay(8000) // Regular check interval
+                    delay(12000) // Regular check interval (12 seconds)
 
                     if (!_isRunning.value || isUserExplicitStop) break
 
@@ -371,17 +372,14 @@ class WarpVpnService : VpnService() {
                         val deadDuration = now - firstFailureTime
 
                         if (deadDuration >= 25_000L) {
-                            Log.w(TAG, "Connection lost for 25 seconds without ping response!")
+                            Log.w(TAG, "Connection lost for 25 continuous seconds without ping response")
                             if (isWarpAutoReconnectEnabled() && !isUserExplicitStop) {
-                                triggerAutoReconnect("Потеря связи (таймаут 25с)")
+                                triggerAutoReconnect("Потеря связи (25с)")
                                 return@launch
-                            } else {
-                                _connectionStatus.value = "Связь потеряна (25с)"
                             }
                         } else {
                             val remainingSec = ((25_000L - deadDuration) / 1000L).coerceAtLeast(0)
-                            _connectionStatus.value = "Потеря связи (ожидание ${remainingSec}с)..."
-                            Log.d(TAG, "Ping failed, waiting $remainingSec s before reconnect")
+                            Log.d(TAG, "Ping failed, waiting $remainingSec s before auto-reconnect")
                         }
                     }
                 }
