@@ -34,7 +34,8 @@ class WarpVpnService : VpnService() {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private var connectivityManager: ConnectivityManager? = null
     private var defaultNetworkCallback: ConnectivityManager.NetworkCallback? = null
-    private var activeDefaultNetwork: Network? = null
+    private var currentPhysicalNetworkHandle: Long? = null
+    private var isPhysicalNetworkLost = false
     private var reconnectJob: Job? = null
     private var watchdogJob: Job? = null
     private var isUserExplicitStop = false
@@ -169,9 +170,17 @@ class WarpVpnService : VpnService() {
             val cm = connectivityManager ?: return
             val callback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
-                    val prev = activeDefaultNetwork
-                    activeDefaultNetwork = network
-                    Log.i(TAG, "Default network onAvailable: $network (prev: $prev)")
+                    val caps = cm.getNetworkCapabilities(network) ?: return
+                    // Ignore our own or any other VPN interface!
+                    if (caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                        Log.d(TAG, "Ignoring VPN transport network")
+                        return
+                    }
+
+                    val networkHandle = network.networkHandle
+                    val prevHandle = currentPhysicalNetworkHandle
+                    currentPhysicalNetworkHandle = networkHandle
+                    Log.i(TAG, "Physical network onAvailable: $networkHandle (prev: $prevHandle, wasLost: $isPhysicalNetworkLost)")
 
                     // Update underlying network for VPN
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -182,30 +191,41 @@ class WarpVpnService : VpnService() {
                         }
                     }
 
-                    if (prev == null) {
+                    // Initial connection on service startup
+                    if (prevHandle == null && !isPhysicalNetworkLost) {
                         protectCurrentSockets()
                         return
                     }
 
-                    if (prev != network) {
-                        Log.i(TAG, "Underlying network changed from $prev to $network, triggering auto-reconnect")
-                        if (!isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled()) {
-                            triggerAutoReconnect("Смена сети")
-                        }
+                    // If it is the exact same network and wasn't lost, do nothing!
+                    if (prevHandle == networkHandle && !isPhysicalNetworkLost) {
+                        return
+                    }
+
+                    // Truly a new physical network (Wi-Fi <-> Cellular) OR network was restored after being lost
+                    if (_isRunning.value && !isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled()) {
+                        val reason = if (isPhysicalNetworkLost) "Восстановление сети" else "Смена сети"
+                        isPhysicalNetworkLost = false
+                        triggerAutoReconnect(reason)
                     }
                 }
 
                 override fun onLost(network: Network) {
-                    Log.i(TAG, "Default network onLost: $network")
-                    if (activeDefaultNetwork == network) {
-                        activeDefaultNetwork = null
+                    val caps = cm.getNetworkCapabilities(network)
+                    if (caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                        return // Ignore VPN interface lost
+                    }
+
+                    if (network.networkHandle == currentPhysicalNetworkHandle) {
+                        Log.i(TAG, "Physical network lost: ${network.networkHandle}")
+                        isPhysicalNetworkLost = true
+                        currentPhysicalNetworkHandle = null
+
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                            try {
-                                setUnderlyingNetworks(null)
-                            } catch (_: Exception) {}
+                            try { setUnderlyingNetworks(null) } catch (_: Exception) {}
                         }
 
-                        if (!isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled()) {
+                        if (!isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled() && _isRunning.value) {
                             _connectionStatus.value = "Ожидание сети..."
                             startForegroundNotification("Ожидание сети...")
                         }
@@ -216,15 +236,12 @@ class WarpVpnService : VpnService() {
                     network: Network,
                     networkCapabilities: NetworkCapabilities
                 ) {
-                    val hasInternet = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                    val isValidated = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-                    Log.d(TAG, "Capabilities changed: network=$network, internet=$hasInternet, validated=$isValidated")
-
-                    if (hasInternet && !isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled()) {
-                        if (!_isRunning.value || tunnelHandle < 0) {
-                            activeDefaultNetwork = network
-                            triggerAutoReconnect("Восстановление интернета")
-                        }
+                    // Do NOT trigger reconnects here - onAvailable & onLost handle connection state!
+                    if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) return
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1 && network.networkHandle == currentPhysicalNetworkHandle) {
+                        try {
+                            setUnderlyingNetworks(arrayOf(network))
+                        } catch (_: Exception) {}
                     }
                 }
             }
@@ -242,7 +259,8 @@ class WarpVpnService : VpnService() {
             defaultNetworkCallback?.let {
                 connectivityManager?.unregisterNetworkCallback(it)
                 defaultNetworkCallback = null
-                activeDefaultNetwork = null
+                currentPhysicalNetworkHandle = null
+                isPhysicalNetworkLost = false
                 Log.i(TAG, "Unregistered default network callback")
             }
         } catch (e: Exception) {
@@ -265,9 +283,13 @@ class WarpVpnService : VpnService() {
     }
 
     private fun triggerAutoReconnect(reason: String) {
+        if (reconnectJob?.isActive == true) {
+            Log.d(TAG, "Auto-reconnect already in progress, skipping trigger: $reason")
+            return
+        }
+
         watchdogJob?.cancel()
         watchdogJob = null
-        reconnectJob?.cancel()
         _warpPingMs.value = -1L
 
         reconnectJob = serviceScope.launch {
@@ -333,8 +355,7 @@ class WarpVpnService : VpnService() {
     }
 
     /**
-     * Background ping watchdog that monitors connection health and triggers auto-reconnect
-     * if connection is dead for 25 continuous seconds.
+     * Background ping watchdog that monitors connection health and updates ping in real time.
      */
     private fun startWatchdog() {
         watchdogJob?.cancel()
@@ -350,8 +371,6 @@ class WarpVpnService : VpnService() {
                     startForegroundNotification("WARP активен (${initialPing}ms)")
                 }
 
-                var firstFailureTime: Long? = null
-
                 while (_isRunning.value && !isUserExplicitStop) {
                     delay(12000) // Regular check interval (12 seconds)
 
@@ -359,28 +378,11 @@ class WarpVpnService : VpnService() {
 
                     val ping = pingTunnel(3500)
                     if (ping >= 0) {
-                        firstFailureTime = null
                         _warpPingMs.value = ping
                         _connectionStatus.value = "Подключен (WARP активен)"
                         startForegroundNotification("WARP активен (${ping}ms)")
                     } else {
                         _warpPingMs.value = -1L
-                        val now = System.currentTimeMillis()
-                        if (firstFailureTime == null) {
-                            firstFailureTime = now
-                        }
-                        val deadDuration = now - firstFailureTime
-
-                        if (deadDuration >= 25_000L) {
-                            Log.w(TAG, "Connection lost for 25 continuous seconds without ping response")
-                            if (isWarpAutoReconnectEnabled() && !isUserExplicitStop) {
-                                triggerAutoReconnect("Потеря связи (25с)")
-                                return@launch
-                            }
-                        } else {
-                            val remainingSec = ((25_000L - deadDuration) / 1000L).coerceAtLeast(0)
-                            Log.d(TAG, "Ping failed, waiting $remainingSec s before auto-reconnect")
-                        }
                     }
                 }
             } catch (_: CancellationException) {
@@ -530,8 +532,12 @@ class WarpVpnService : VpnService() {
         val pfd = builder.establish() ?: throw IllegalStateException("Не удалось создать TUN интерфейс")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             try {
-                val net = activeDefaultNetwork
-                setUnderlyingNetworks(if (net != null) arrayOf(net) else null)
+                val cm = connectivityManager
+                val currentNet = cm?.allNetworks?.firstOrNull { net ->
+                    val c = cm.getNetworkCapabilities(net)
+                    c != null && !c.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+                }
+                setUnderlyingNetworks(if (currentNet != null) arrayOf(currentNet) else null)
             } catch (e: Exception) {
                 Log.w(TAG, "Cannot set underlying networks", e)
             }
