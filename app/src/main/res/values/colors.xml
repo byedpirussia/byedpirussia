@@ -5,4 +5,5 @@
     <color name="card_stroke">#25888888</color>
     <color name="primary_accent">#5976DF</color>
     <color name="accent_green">#34C759</color>
+    <color name="accent_orange">#FF9800</color>
 </resources>

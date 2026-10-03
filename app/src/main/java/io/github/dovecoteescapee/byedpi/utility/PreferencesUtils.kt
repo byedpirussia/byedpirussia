@@ -88,3 +88,21 @@ fun Context.wrapLocale(): Context {
     config.setLocale(locale)
     return createConfigurationContext(config)
 }
+
+const val KEY_WARP_AUTO_RECONNECT = "warp_auto_reconnect"
+const val KEY_WARP_DNS_KEY = "warp_dns_key"
+
+fun Context.isWarpAutoReconnectEnabled(): Boolean =
+    getPreferences().getBoolean(KEY_WARP_AUTO_RECONNECT, false)
+
+fun Context.setWarpAutoReconnectEnabled(enabled: Boolean) {
+    getPreferences().edit().putBoolean(KEY_WARP_AUTO_RECONNECT, enabled).apply()
+}
+
+fun Context.getWarpDnsKey(): String =
+    getPreferences().getString(KEY_WARP_DNS_KEY, "cloudflare") ?: "cloudflare"
+
+fun Context.setWarpDnsKey(key: String) {
+    getPreferences().edit().putString(KEY_WARP_DNS_KEY, key).apply()
+}
+

@@ -209,4 +209,13 @@
     <string name="tg_vpn_warning_msg">VPN is not enabled, Telegram does not work without it. Enable WARP?</string>
     <string name="tg_vpn_warning_btn_warp">Enable WARP</string>
     <string name="tg_vpn_warning_btn_anyway">Proceed without VPN</string>
+
+    <!-- WARP Auto-reconnect and DNS -->
+    <string name="warp_auto_reconnect_title">WARP Auto-reconnect</string>
+    <string name="warp_auto_reconnect_help">This feature automatically reconnects you to WARP if internet goes down for a few seconds or when switching to mobile network</string>
+    <string name="warp_dns_settings_btn">⚙️ WARP DNS Settings</string>
+    <string name="warp_dns_dialog_title">WARP DNS Settings</string>
+    <string name="warp_dns_save_btn">Save DNS</string>
+    <string name="warp_dns_saved">DNS settings saved</string>
+    <string name="warp_dns_private_warning">⚠️ Private DNS is enabled in Android system settings. Android routes all DNS requests through Private DNS DoT, so custom DNS in WARP will not work. Disable Private DNS in Android settings (Network &amp; internet → Private DNS: Off) to use custom DNS.</string>
 </resources>

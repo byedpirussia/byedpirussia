@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/warp_dns_dialog_title"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Предупреждение о Частном DNS (показывается если он включен) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_private_dns_warning"
+        style="@style/Widget.Material3.CardView.Filled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="@color/accent_orange"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tv_private_dns_warning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/warp_dns_private_warning"
+                android:textSize="13sp"
+                android:textColor="@android:color/white"
+                android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <RadioGroup
+        android:id="@+id/rg_warp_dns"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Cloudflare DNS -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_dns_cloudflare"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cloudflare DNS (1.1.1.1, 1.0.0.1)"
+            android:textSize="14sp"
+            android:paddingVertical="4dp" />
+
+        <!-- Google DNS -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_dns_google"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Google DNS (8.8.8.8, 8.8.4.4)"
+            android:textSize="14sp"
+            android:paddingVertical="4dp" />
+
+        <!-- Xbox DNS -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_dns_xbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Xbox DNS (xbox-dns.ru)"
+            android:textSize="14sp"
+            android:paddingVertical="4dp" />
+
+        <!-- COMSS DNS -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_dns_comss"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="COMSS DNS (dns.comss.one)"
+            android:textSize="14sp"
+            android:paddingVertical="4dp" />
+
+        <!-- Malw Link DNS -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_dns_malw"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DNS Malw Link (dns.malw.link)"
+            android:textSize="14sp"
+            android:paddingVertical="4dp" />
+
+        <!-- DNS AI -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_dns_ai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DNS AI (dns.dns-ai.ru)"
+            android:textSize="14sp"
+            android:paddingVertical="4dp" />
+    </RadioGroup>
+
+    <!-- Кнопка Сохранить DNS -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_save_warp_dns"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/warp_dns_save_btn"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:cornerRadius="14dp" />
+
+</LinearLayout>

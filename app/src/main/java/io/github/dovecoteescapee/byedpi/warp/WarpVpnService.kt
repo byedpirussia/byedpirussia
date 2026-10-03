@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.activities.MainActivity
+import io.github.dovecoteescapee.byedpi.utility.isWarpAutoReconnectEnabled
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +26,10 @@ class WarpVpnService : VpnService() {
     private var tunFd: ParcelFileDescriptor? = null
     private var tunnelHandle: Int = -1
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var connectivityManager: android.net.ConnectivityManager? = null
+    private var networkCallback: android.net.ConnectivityManager.NetworkCallback? = null
+    private var reconnectJob: Job? = null
+    private var isUserExplicitStop = false
 
     companion object {
         private const val TAG = "WarpVpnService"
@@ -61,16 +66,21 @@ class WarpVpnService : VpnService() {
 
     override fun onCreate() {
         super.onCreate()
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
         createNotificationChannel()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
+                isUserExplicitStop = false
                 startTunnel()
+                registerNetworkCallbackIfNeeded()
                 return START_STICKY
             }
             ACTION_STOP -> {
+                isUserExplicitStop = true
+                unregisterNetworkCallback()
                 stopTunnel()
                 return START_NOT_STICKY
             }
@@ -81,13 +91,112 @@ class WarpVpnService : VpnService() {
         }
     }
 
+    private fun registerNetworkCallbackIfNeeded() {
+        if (!isWarpAutoReconnectEnabled()) {
+            unregisterNetworkCallback()
+            return
+        }
+        if (networkCallback != null) return
+
+        try {
+            val request = android.net.NetworkRequest.Builder()
+                .addCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+
+            var lastNetworkId: Long? = null
+
+            val callback = object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: android.net.Network) {
+                    val networkId = network.networkHandle
+                    Log.d(TAG, "Network available: $networkId (previous: $lastNetworkId)")
+                    if (!isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled()) {
+                        if (lastNetworkId != null && lastNetworkId != networkId && _isRunning.value) {
+                            triggerAutoReconnect("Смена сети")
+                        }
+                    }
+                    lastNetworkId = networkId
+                }
+
+                override fun onLost(network: android.net.Network) {
+                    Log.d(TAG, "Network lost: ${network.networkHandle}")
+                    if (!isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled() && _isRunning.value) {
+                        triggerAutoReconnect("Потеря соединения")
+                    }
+                }
+
+                override fun onCapabilitiesChanged(network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) {
+                    val hasInternet = networkCapabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_VALIDATED) ||
+                            networkCapabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                    if (hasInternet && !isUserExplicitStop && this@WarpVpnService.isWarpAutoReconnectEnabled() && !_isRunning.value && tunnelHandle < 0) {
+                        triggerAutoReconnect("Восстановление интернета")
+                    }
+                }
+            }
+
+            connectivityManager?.registerNetworkCallback(request, callback)
+            networkCallback = callback
+            Log.i(TAG, "Registered NetworkCallback for Warp auto-reconnect")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register network callback", e)
+        }
+    }
+
+    private fun unregisterNetworkCallback() {
+        try {
+            networkCallback?.let {
+                connectivityManager?.unregisterNetworkCallback(it)
+                networkCallback = null
+                Log.i(TAG, "Unregistered NetworkCallback")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Error unregistering network callback", e)
+        }
+    }
+
+    private fun triggerAutoReconnect(reason: String) {
+        reconnectJob?.cancel()
+        reconnectJob = serviceScope.launch {
+            try {
+                Log.i(TAG, "Triggering auto-reconnect due to: $reason")
+                _connectionStatus.value = "Переподключение ($reason)..."
+                startForegroundNotification("Переподключение ($reason)...")
+
+                delay(1200) // Debounce network flap
+
+                if (isUserExplicitStop) return@launch
+
+                // Close existing tunnel backend
+                if (tunnelHandle >= 0) {
+                    try {
+                        GoBackend.awgTurnOff(tunnelHandle)
+                    } catch (_: Exception) {}
+                    tunnelHandle = -1
+                }
+                tunFd?.close()
+                tunFd = null
+                _isRunning.value = false
+
+                delay(500)
+                if (isUserExplicitStop) return@launch
+
+                startTunnelInternal()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during auto-reconnect", e)
+            }
+        }
+    }
+
     override fun onRevoke() {
         Log.i(TAG, "VPN revoked by OS")
+        isUserExplicitStop = true
+        unregisterNetworkCallback()
         stopTunnel()
         super.onRevoke()
     }
 
     override fun onDestroy() {
+        isUserExplicitStop = true
+        unregisterNetworkCallback()
         stopTunnel()
         serviceScope.cancel()
         super.onDestroy()
@@ -100,138 +209,149 @@ class WarpVpnService : VpnService() {
         }
 
         serviceScope.launch {
-            try {
-                _connectionStatus.value = "Подключение..."
-                val rawConfig = WarpConfigManager.currentConfig.value
-                val parsed = AwgUapiFormatter.parseConfig(rawConfig)
+            startTunnelInternal()
+        }
+    }
 
-                if (parsed.privateKeyHex.isEmpty()) {
-                    throw IllegalStateException("В конфиге WARP отсутствует PrivateKey")
-                }
+    private suspend fun startTunnelInternal() {
+        try {
+            _connectionStatus.value = "Подключение..."
+            val rawConfig = WarpConfigManager.currentConfig.value
+            val parsed = AwgUapiFormatter.parseConfig(rawConfig)
 
-                startForegroundNotification("Подключение к Cloudflare WARP...")
+            if (parsed.privateKeyHex.isEmpty()) {
+                throw IllegalStateException("В конфиге WARP отсутствует PrivateKey")
+            }
 
-                // Resolve letter-based/domain endpoints before creating TUN (prevents DNS deadlock & Go panic)
-                val resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint)
-                val finalParsed = parsed.copy(peerEndpoint = resolvedEndpoint)
+            startForegroundNotification("Подключение к Cloudflare WARP...")
 
-                // Build TUN interface
-                val builder = Builder()
-                builder.setSession("Cloudflare WARP (AmneziaWG)")
-                builder.setConfigureIntent(
-                    PendingIntent.getActivity(
-                        this@WarpVpnService,
-                        0,
-                        Intent(this@WarpVpnService, MainActivity::class.java),
-                        PendingIntent.FLAG_IMMUTABLE
-                    )
+            // Resolve letter-based/domain endpoints before creating TUN (prevents DNS deadlock & Go panic)
+            val resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint)
+            val finalParsed = parsed.copy(peerEndpoint = resolvedEndpoint)
+
+            // Build TUN interface
+            val builder = Builder()
+            builder.setSession("Cloudflare WARP (AmneziaWG)")
+            builder.setConfigureIntent(
+                PendingIntent.getActivity(
+                    this@WarpVpnService,
+                    0,
+                    Intent(this@WarpVpnService, MainActivity::class.java),
+                    PendingIntent.FLAG_IMMUTABLE
                 )
+            )
 
-                // Add Addresses
-                for (addr in finalParsed.addresses) {
+            // Add Addresses
+            for (addr in finalParsed.addresses) {
+                try {
+                    val parts = addr.split("/")
+                    val ip = parts[0].trim()
+                    val prefix = if (parts.size > 1) parts[1].trim().toInt() else if (ip.contains(":")) 128 else 32
+                    builder.addAddress(ip, prefix)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to parse address: $addr", e)
+                }
+            }
+
+            // Add Routes (default route for VPN)
+            var hasV4 = false
+            var hasV6 = false
+            if (finalParsed.allowedIps.isNotEmpty()) {
+                for (aip in finalParsed.allowedIps) {
                     try {
-                        val parts = addr.split("/")
+                        val parts = aip.split("/")
                         val ip = parts[0].trim()
                         val prefix = if (parts.size > 1) parts[1].trim().toInt() else if (ip.contains(":")) 128 else 32
-                        builder.addAddress(ip, prefix)
+                        builder.addRoute(ip, prefix)
+                        if (ip.contains(":")) hasV6 = true else hasV4 = true
                     } catch (e: Exception) {
-                        Log.e(TAG, "Failed to parse address: $addr", e)
+                        Log.e(TAG, "Failed to parse allowed ip route: $aip", e)
                     }
                 }
-
-                // Add Routes (default route for VPN)
-                var hasV4 = false
-                var hasV6 = false
-                if (finalParsed.allowedIps.isNotEmpty()) {
-                    for (aip in finalParsed.allowedIps) {
-                        try {
-                            val parts = aip.split("/")
-                            val ip = parts[0].trim()
-                            val prefix = if (parts.size > 1) parts[1].trim().toInt() else if (ip.contains(":")) 128 else 32
-                            builder.addRoute(ip, prefix)
-                            if (ip.contains(":")) hasV6 = true else hasV4 = true
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to parse allowed ip route: $aip", e)
-                        }
-                    }
-                }
-
-                if (!hasV4) builder.addRoute("0.0.0.0", 0)
-                if (!hasV6) {
-                    try {
-                        builder.addRoute("::", 0)
-                    } catch (e: Exception) {
-                        Log.w(TAG, "IPv6 route not supported on interface", e)
-                    }
-                }
-
-                // Add DNS
-                for (dns in finalParsed.dnsServers) {
-                    try {
-                        builder.addDnsServer(dns.trim())
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to add DNS: $dns", e)
-                    }
-                }
-                if (finalParsed.dnsServers.isEmpty()) {
-                    builder.addDnsServer("1.1.1.1")
-                }
-
-                builder.setMtu(finalParsed.mtu)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    builder.setMetered(false)
-                }
-                try {
-                    builder.allowBypass()
-                } catch (_: Exception) {}
-
-                io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this@WarpVpnService)
-
-                // Establish TUN
-                val pfd = builder.establish() ?: throw IllegalStateException("Не удалось создать TUN интерфейс")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    try {
-                        setUnderlyingNetworks(null)
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Cannot set underlying networks", e)
-                    }
-                }
-                tunFd = pfd
-
-                // Generate UAPI config string with resolved IP endpoint
-                val uapi = AwgUapiFormatter.toUapi(finalParsed)
-                Log.d(TAG, "Starting GoBackend.awgTurnOn with UAPI length: ${uapi.length} for endpoint: $resolvedEndpoint")
-
-                // Detach FD for GoBackend
-                val nativeFd = pfd.detachFd()
-
-                // Call GoBackend
-                val handle = GoBackend.awgTurnOn("awg0", nativeFd, uapi)
-                if (handle < 0) {
-                    throw IllegalStateException("GoBackend.awgTurnOn завершился с ошибкой: $handle")
-                }
-                tunnelHandle = handle
-
-                // Protect sockets
-                val sockV4 = GoBackend.awgGetSocketV4(handle)
-                if (sockV4 >= 0) protect(sockV4)
-                val sockV6 = GoBackend.awgGetSocketV6(handle)
-                if (sockV6 >= 0) protect(sockV6)
-
-                _isRunning.value = true
-                _connectionStatus.value = "Подключен (WARP активен)"
-                startForegroundNotification("WARP активен: ${parsed.peerEndpoint ?: "Cloudflare"}")
-                Log.i(TAG, "WARP tunnel successfully activated. Handle: $handle")
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Error starting WARP tunnel", e)
-                _connectionStatus.value = "Ошибка: ${e.message}"
-                stopTunnel()
             }
+
+            if (!hasV4) builder.addRoute("0.0.0.0", 0)
+            if (!hasV6) {
+                try {
+                    builder.addRoute("::", 0)
+                } catch (e: Exception) {
+                    Log.w(TAG, "IPv6 route not supported on interface", e)
+                }
+            }
+
+            // Add DNS (Use selected DNS preset if Private DNS is not active, otherwise config DNS)
+            val customDnsServers = WarpDnsManager.getDnsServers(this@WarpVpnService)
+            val dnsList = if (customDnsServers.isNotEmpty() && !WarpDnsManager.isPrivateDnsActive(this@WarpVpnService)) {
+                customDnsServers
+            } else if (finalParsed.dnsServers.isNotEmpty()) {
+                finalParsed.dnsServers
+            } else {
+                listOf("1.1.1.1", "1.0.0.1")
+            }
+
+            for (dns in dnsList) {
+                try {
+                    builder.addDnsServer(dns.trim())
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to add DNS: $dns", e)
+                }
+            }
+
+            builder.setMtu(finalParsed.mtu)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                builder.setMetered(false)
+            }
+            try {
+                builder.allowBypass()
+            } catch (_: Exception) {}
+
+            io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this@WarpVpnService)
+
+            // Establish TUN
+            val pfd = builder.establish() ?: throw IllegalStateException("Не удалось создать TUN интерфейс")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                try {
+                    setUnderlyingNetworks(null)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Cannot set underlying networks", e)
+                }
+            }
+            tunFd = pfd
+
+            // Generate UAPI config string with resolved IP endpoint
+            val uapi = AwgUapiFormatter.toUapi(finalParsed)
+            Log.d(TAG, "Starting GoBackend.awgTurnOn with UAPI length: ${uapi.length} for endpoint: $resolvedEndpoint")
+
+            // Detach FD for GoBackend
+            val nativeFd = pfd.detachFd()
+
+            // Call GoBackend
+            val handle = GoBackend.awgTurnOn("awg0", nativeFd, uapi)
+            if (handle < 0) {
+                throw IllegalStateException("GoBackend.awgTurnOn завершился с ошибкой: $handle")
+            }
+            tunnelHandle = handle
+
+            // Protect sockets
+            val sockV4 = GoBackend.awgGetSocketV4(handle)
+            if (sockV4 >= 0) protect(sockV4)
+            val sockV6 = GoBackend.awgGetSocketV6(handle)
+            if (sockV6 >= 0) protect(sockV6)
+
+            _isRunning.value = true
+            _connectionStatus.value = "Подключен (WARP активен)"
+            startForegroundNotification("WARP активен: ${parsed.peerEndpoint ?: "Cloudflare"}")
+            Log.i(TAG, "WARP tunnel successfully activated. Handle: $handle")
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting WARP tunnel", e)
+            _connectionStatus.value = "Ошибка: ${e.message}"
+            stopTunnel()
         }
     }
 
     private fun stopTunnel() {
+        reconnectJob?.cancel()
         serviceScope.launch {
             try {
                 if (tunnelHandle >= 0) {

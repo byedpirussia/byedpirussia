@@ -1,0 +1,3 @@
+- Added "WARP Auto-reconnect": automatically reconnects to WARP when the network drops or switches between Wi-Fi and mobile data.
+- Added WARP DNS selection: Cloudflare DNS, Google DNS, Xbox DNS (xbox-dns.ru), COMSS DNS (dns.comss.one), DNS Malw Link (dns.malw.link), DNS AI (dns.dns-ai.ru).
+- Added detection and warning for Android system Private DNS.

@@ -35,6 +35,7 @@ import io.github.dovecoteescapee.byedpi.strategy.StrategyCatalog
 import io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService
 import io.github.dovecoteescapee.byedpi.utility.*
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
+import io.github.dovecoteescapee.byedpi.warp.WarpDnsManager
 import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessManager
 import io.github.dovecoteescapee.byedpi.vless.VlessVpnService
@@ -643,6 +644,30 @@ class MainActivity : BaseActivity() {
             }
         }
 
+        // Авто переподключение Warp Switch
+        binding.switchWarpAutoReconnect.isChecked = isWarpAutoReconnectEnabled()
+        binding.switchWarpAutoReconnect.setOnCheckedChangeListener { _, isChecked ->
+            setWarpAutoReconnectEnabled(isChecked)
+            if (WarpVpnService.isRunning.value) {
+                // Перезапуск службы для обновления колбэков сети
+                WarpVpnService.start(this)
+            }
+        }
+
+        // Помощь (?) по Авто переподключению
+        binding.btnWarpAutoReconnectHelp.setOnClickListener {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.warp_auto_reconnect_title)
+                .setMessage(R.string.warp_auto_reconnect_help)
+                .setPositiveButton("OK", null)
+                .show()
+        }
+
+        // Настройка DNS для WARP
+        binding.btnWarpDnsSettings.setOnClickListener {
+            showWarpDnsDialog()
+        }
+
         lifecycleScope.launch {
             WarpVpnService.isRunning.collectLatest { running ->
                 if (running) {
@@ -663,6 +688,70 @@ class MainActivity : BaseActivity() {
                 binding.warpSubtitleText.text = "Cloudflare WARP ($endpoint)"
             }
         }
+    }
+
+    private fun showWarpDnsDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_warp_dns, null)
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .create()
+
+        val cardWarning = dialogView.findViewById<android.view.View>(R.id.card_private_dns_warning)
+        val rgDns = dialogView.findViewById<android.widget.RadioGroup>(R.id.rg_warp_dns)
+        val rbCloudflare = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_cloudflare)
+        val rbGoogle = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_google)
+        val rbXbox = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_xbox)
+        val rbComss = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_comss)
+        val rbMalw = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_malw)
+        val rbAi = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_ai)
+        val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_save_warp_dns)
+
+        val isPrivateDns = WarpDnsManager.isPrivateDnsActive(this)
+        if (isPrivateDns) {
+            cardWarning.visibility = android.view.View.VISIBLE
+            // Блокируем выбор DNS радиокнопками
+            for (i in 0 until rgDns.childCount) {
+                rgDns.getChildAt(i).isEnabled = false
+            }
+            btnSave.isEnabled = false
+        } else {
+            cardWarning.visibility = android.view.View.GONE
+        }
+
+        // Текущий выбранный DNS
+        val currentKey = getWarpDnsKey()
+        when (currentKey) {
+            "google" -> rbGoogle.isChecked = true
+            "xbox" -> rbXbox.isChecked = true
+            "comss" -> rbComss.isChecked = true
+            "malw" -> rbMalw.isChecked = true
+            "ai" -> rbAi.isChecked = true
+            else -> rbCloudflare.isChecked = true
+        }
+
+        btnSave.setOnClickListener {
+            val selectedKey = when {
+                rbGoogle.isChecked -> "google"
+                rbXbox.isChecked -> "xbox"
+                rbComss.isChecked -> "comss"
+                rbMalw.isChecked -> "malw"
+                rbAi.isChecked -> "ai"
+                else -> "cloudflare"
+            }
+            setWarpDnsKey(selectedKey)
+            Toast.makeText(this, R.string.warp_dns_saved, Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+
+            // Если WARP прямо сейчас запущен, перезапускаем для применения нового DNS
+            if (WarpVpnService.isRunning.value) {
+                WarpVpnService.stop(this)
+                binding.root.postDelayed({
+                    WarpVpnService.start(this)
+                }, 400)
+            }
+        }
+
+        dialog.show()
     }
 
     private fun setupVlessCard() {

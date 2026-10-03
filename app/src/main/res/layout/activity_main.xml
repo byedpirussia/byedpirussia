@@ -344,6 +344,66 @@
                         app:iconPadding="10dp"
                         app:iconSize="20dp" />
 
+                    <!-- Разделитель -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="?attr/colorOutlineVariant"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="12dp"
+                        android:alpha="0.4" />
+
+                    <!-- Авто переподключение Warp -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/warp_auto_reconnect_title"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <ImageButton
+                                android:id="@+id/btn_warp_auto_reconnect_help"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginStart="4dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="Help"
+                                android:src="@drawable/ic_help_outline_24"
+                                app:tint="?attr/colorOutline" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_warp_auto_reconnect"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <!-- Кнопка Настройка DNS для WARP -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_warp_dns_settings"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/warp_dns_settings_btn"
+                        android:textSize="13sp"
+                        android:textAllCaps="false"
+                        app:cornerRadius="12dp" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

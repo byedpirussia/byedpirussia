@@ -1,0 +1,3 @@
+- Добавлена функция «Авто переподключение Warp»: автоматическое переподключение к Cloudflare WARP при кратковременном обрыве связи или переключении сети (Wi-Fi / мобильный интернет).
+- Добавлена настройка DNS для WARP с популярными пресетами: Cloudflare DNS, Google DNS, Xbox DNS (xbox-dns.ru), COMSS DNS (dns.comss.one), DNS Malw Link (dns.malw.link), DNS AI (dns.dns-ai.ru).
+- Реализована блокировка и предупреждение при активном Частном DNS (Private DNS) в Android.
