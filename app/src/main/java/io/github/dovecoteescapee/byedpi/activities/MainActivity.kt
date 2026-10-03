@@ -42,6 +42,7 @@ import io.github.dovecoteescapee.byedpi.vless.VlessVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessListActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.io.IOException
 
@@ -668,15 +669,42 @@ class MainActivity : BaseActivity() {
             showWarpDnsDialog()
         }
 
+        // Клик по бейджу для ручной проверки пинга
+        binding.warpStatusBadge.setOnClickListener {
+            if (WarpVpnService.isRunning.value) {
+                Toast.makeText(this, "Проверка пинга WARP...", Toast.LENGTH_SHORT).show()
+                WarpVpnService.checkPingAsync(lifecycleScope)
+            }
+        }
+
         lifecycleScope.launch {
-            WarpVpnService.isRunning.collectLatest { running ->
+            combine(
+                WarpVpnService.isRunning,
+                WarpVpnService.warpPingMs,
+                WarpVpnService.connectionStatus
+            ) { running, ping, status ->
+                Triple(running, ping, status)
+            }.collectLatest { (running, ping, status) ->
                 if (running) {
-                    binding.warpStatusBadge.text = "🟢 Подключен"
-                    binding.warpStatusBadge.setTextColor(getColor(R.color.accent_green))
+                    if (ping != null && ping >= 0) {
+                        binding.warpStatusBadge.text = "🟢 Подключен ($ping ms)"
+                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_green))
+                    } else if (status.contains("Проверка") || status.contains("Переподключение") || status.contains("Потеря")) {
+                        binding.warpStatusBadge.text = "🟡 $status"
+                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_orange))
+                    } else {
+                        binding.warpStatusBadge.text = "🟢 Подключен"
+                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_green))
+                    }
                     binding.btnActionWarp.text = getString(R.string.warp_active_btn)
                 } else {
-                    binding.warpStatusBadge.text = "⚪ Отключено"
-                    binding.warpStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
+                    if (status.contains("Ожидание") || status.contains("Переподключение") || status.contains("Потеря") || status.contains("Таймаут")) {
+                        binding.warpStatusBadge.text = "🟡 $status"
+                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_orange))
+                    } else {
+                        binding.warpStatusBadge.text = "⚪ Отключено"
+                        binding.warpStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
+                    }
                     binding.btnActionWarp.text = getString(R.string.warp_inactive_btn)
                 }
             }
@@ -707,6 +735,18 @@ class MainActivity : BaseActivity() {
         val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_save_warp_dns)
 
         val isPrivateDns = WarpDnsManager.isPrivateDnsActive(this)
+        val isForced = isWarpDnsForceOverride()
+        val btnForceUseDns = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_force_use_dns)
+
+        fun unlockDnsOptions() {
+            for (i in 0 until rgDns.childCount) {
+                rgDns.getChildAt(i).isEnabled = true
+            }
+            btnSave.isEnabled = true
+            btnForceUseDns?.text = getString(R.string.warp_dns_force_unlocked)
+            btnForceUseDns?.isEnabled = false
+        }
+
         if (isPrivateDns) {
             val serverName = WarpDnsManager.getPrivateDnsServerName(this)
             val warningTextView = dialogView.findViewById<android.widget.TextView>(R.id.tv_private_dns_warning)
@@ -716,13 +756,27 @@ class MainActivity : BaseActivity() {
                 warningTextView?.text = getString(R.string.warp_dns_private_warning)
             }
             cardWarning.visibility = android.view.View.VISIBLE
-            // Блокируем выбор DNS радиокнопками
-            for (i in 0 until rgDns.childCount) {
-                rgDns.getChildAt(i).isEnabled = false
+
+            if (isForced) {
+                unlockDnsOptions()
+            } else {
+                // Блокируем выбор DNS радиокнопками
+                for (i in 0 until rgDns.childCount) {
+                    rgDns.getChildAt(i).isEnabled = false
+                }
+                btnSave.isEnabled = false
+
+                btnForceUseDns?.setOnClickListener {
+                    setWarpDnsForceOverride(true)
+                    unlockDnsOptions()
+                }
             }
-            btnSave.isEnabled = false
         } else {
             cardWarning.visibility = android.view.View.GONE
+            for (i in 0 until rgDns.childCount) {
+                rgDns.getChildAt(i).isEnabled = true
+            }
+            btnSave.isEnabled = true
         }
 
         // Текущий выбранный DNS
@@ -746,6 +800,9 @@ class MainActivity : BaseActivity() {
                 else -> "cloudflare"
             }
             setWarpDnsKey(selectedKey)
+            if (isPrivateDns) {
+                setWarpDnsForceOverride(true)
+            }
             Toast.makeText(this, R.string.warp_dns_saved, Toast.LENGTH_SHORT).show()
             dialog.dismiss()
 

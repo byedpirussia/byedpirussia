@@ -106,3 +106,12 @@ fun Context.setWarpDnsKey(key: String) {
     getPreferences().edit().putString(KEY_WARP_DNS_KEY, key).apply()
 }
 
+const val KEY_WARP_DNS_FORCE_OVERRIDE = "warp_dns_force_override"
+
+fun Context.isWarpDnsForceOverride(): Boolean =
+    getPreferences().getBoolean(KEY_WARP_DNS_FORCE_OVERRIDE, false)
+
+fun Context.setWarpDnsForceOverride(force: Boolean) {
+    getPreferences().edit().putBoolean(KEY_WARP_DNS_FORCE_OVERRIDE, force).apply()
+}
+

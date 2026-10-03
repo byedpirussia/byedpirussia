@@ -219,5 +219,7 @@
     <string name="warp_dns_saved">DNS settings saved</string>
     <string name="warp_dns_private_warning">⚠️ Private DNS is enabled in Android system settings. Android routes all DNS requests through Private DNS DoT, so custom DNS in WARP will not work. Disable Private DNS in Android settings (Network &amp; internet → Private DNS: Off) to use custom DNS.</string>
     <string name="warp_dns_private_warning_with_server">⚠️ Private DNS is enabled in Android system settings (server: %1$s). Android routes all DNS requests through Private DNS DoT, so custom DNS in WARP will not work. Disable Private DNS in Android settings (Network &amp; internet → Private DNS: Off) to use custom DNS.</string>
+    <string name="warp_dns_force_use_btn">Use DNS settings anyway</string>
+    <string name="warp_dns_force_unlocked">DNS settings unlocked ✓</string>
 </resources>
 

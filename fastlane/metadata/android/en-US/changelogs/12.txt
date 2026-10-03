@@ -1,3 +1,4 @@
-- Fixed detection of Android Private DNS (DoT) including server hostname display.
-- Fixed WARP auto-reconnect when switching between Wi-Fi and mobile data with default network tracking and resilient reconnect retry loops.
-- Added ACCESS_NETWORK_STATE permission.
+- Added "Use DNS settings anyway" button allowing custom WARP DNS even when Private DNS is active.
+- Added connection ping and 25-second watchdog for reliable WARP auto-reconnect.
+- Real-time ping display on the main screen.
+- Fixed Private DNS detection and network switch handling between Wi-Fi and mobile data.
