@@ -221,5 +221,13 @@
     <string name="warp_dns_private_warning_with_server">⚠️ Private DNS is enabled in Android system settings (server: %1$s). Android routes all DNS requests through Private DNS DoT, so custom DNS in WARP will not work. Disable Private DNS in Android settings (Network &amp; internet → Private DNS: Off) to use custom DNS.</string>
     <string name="warp_dns_force_use_btn">Use DNS settings anyway</string>
     <string name="warp_dns_force_unlocked">DNS settings unlocked ✓</string>
+
+    <!-- Builtin Subscriptions -->
+    <string name="builtin_subs_title">Subscriptions for Whitelists</string>
+    <string name="builtin_subs_subtitle">Ready-to-use server collections from ru-wbl (GitVerse) for mobile whitelist bypass:</string>
+    <string name="builtin_subs_custom_url">Or enter your custom subscription URL:</string>
+    <string name="builtin_subs_already_added">Already added</string>
+    <string name="builtin_subs_add_btn">Import</string>
+    <string name="builtin_subs_load_custom_btn">Load custom URL</string>
 </resources>
 

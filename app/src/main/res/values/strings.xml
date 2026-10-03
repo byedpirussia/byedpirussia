@@ -221,5 +221,13 @@
     <string name="warp_dns_private_warning_with_server">⚠️ В системе Android включен Частный DNS (сервер: %1$s). Android перенаправляет все DNS-запросы через системный DoT, поэтому пользовательский DNS в WARP работать не будет. Отключите Частный DNS в настройках Android (Сеть и интернет → Частный DNS: Отключено), чтобы использовать выбор DNS.</string>
     <string name="warp_dns_force_use_btn">Всё равно использовать настройки DNS</string>
     <string name="warp_dns_force_unlocked">Настройки DNS разблокированы ✓</string>
+
+    <!-- Builtin Subscriptions -->
+    <string name="builtin_subs_title">Подписки для белых списков (Б/С)</string>
+    <string name="builtin_subs_subtitle">Готовые базы серверов от ru-wbl (GitVerse) для обхода мобильных белых списков:</string>
+    <string name="builtin_subs_custom_url">Или введите свою ссылку на подписку:</string>
+    <string name="builtin_subs_already_added">Уже добавлена</string>
+    <string name="builtin_subs_add_btn">Импортировать</string>
+    <string name="builtin_subs_load_custom_btn">Загрузить свою ссылку</string>
 </resources>
 

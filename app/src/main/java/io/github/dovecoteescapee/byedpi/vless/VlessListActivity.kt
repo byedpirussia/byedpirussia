@@ -85,12 +85,7 @@ class VlessListActivity : BaseActivity() {
 
         val subs = VlessManager.getSubscriptions(this)
         subs.forEachIndexed { index, subUrl ->
-            val tabTitle = try {
-                val host = Uri.parse(subUrl).host ?: "Подписка ${index + 1}"
-                host
-            } catch (_: Exception) {
-                "Подписка ${index + 1}"
-            }
+            val tabTitle = BuiltinSubscriptions.getDisplayName(subUrl, index)
             binding.tabLayout.addTab(binding.tabLayout.newTab().setText(tabTitle))
         }
 
@@ -125,7 +120,8 @@ class VlessListActivity : BaseActivity() {
         val currentSub = getCurrentSubUrl()
         if (currentSub != null) {
             binding.subControlBar.visibility = View.VISIBLE
-            binding.tvSubInfo.text = currentSub
+            val subName = BuiltinSubscriptions.getDisplayName(currentSub)
+            binding.tvSubInfo.text = if (subName != currentSub) "$subName\n$currentSub" else currentSub
         } else {
             binding.subControlBar.visibility = View.GONE
         }
@@ -213,23 +209,59 @@ class VlessListActivity : BaseActivity() {
     }
 
     private fun showAddSubscriptionDialog() {
-        val input = EditText(this).apply {
-            hint = getString(R.string.vless_enter_sub_hint)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_vless_add_subscription, null)
+        val llContainer = dialogView.findViewById<android.widget.LinearLayout>(R.id.ll_builtin_subs_container)
+        val etCustomUrl = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_custom_sub_url)
+        val btnLoadCustom = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_load_custom)
+
+        val existingSubs = VlessManager.getSubscriptions(this).map { it.trim().lowercase() }.toSet()
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setNegativeButton("Закрыть", null)
+            .create()
+
+        BuiltinSubscriptions.LIST.forEach { item ->
+            val cardView = layoutInflater.inflate(R.layout.item_builtin_sub_card, llContainer, false)
+            val tvTitle = cardView.findViewById<android.widget.TextView>(R.id.tv_item_title)
+            val tvBadge = cardView.findViewById<android.widget.TextView>(R.id.tv_item_badge)
+            val tvDesc = cardView.findViewById<android.widget.TextView>(R.id.tv_item_desc)
+            val tvStatus = cardView.findViewById<android.widget.TextView>(R.id.tv_item_status)
+            val btnAction = cardView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_item_action)
+
+            tvTitle.text = item.title
+            tvBadge.text = item.badge
+            tvDesc.text = item.description
+
+            val isAdded = existingSubs.contains(item.url.trim().lowercase())
+            if (isAdded) {
+                tvStatus.visibility = View.VISIBLE
+                tvStatus.text = getString(R.string.builtin_subs_already_added) + " ✓"
+                btnAction.text = "Обновить"
+            } else {
+                tvStatus.visibility = View.GONE
+                btnAction.text = getString(R.string.builtin_subs_add_btn)
+            }
+
+            btnAction.setOnClickListener {
+                dialog.dismiss()
+                downloadSubscription(item.url)
+            }
+
+            llContainer.addView(cardView)
         }
 
-        AlertDialog.Builder(this)
-            .setTitle(R.string.vless_add_subscription)
-            .setView(input)
-            .setPositiveButton("Загрузить") { _, _ ->
-                val subUrl = input.text.toString().trim()
-                if (subUrl.startsWith("http://") || subUrl.startsWith("https://")) {
-                    downloadSubscription(subUrl)
-                } else {
-                    Toast.makeText(this, "Введите корректную HTTP/HTTPS ссылку", Toast.LENGTH_SHORT).show()
-                }
+        btnLoadCustom.setOnClickListener {
+            val subUrl = etCustomUrl.text?.toString()?.trim() ?: ""
+            if (subUrl.startsWith("http://", ignoreCase = true) || subUrl.startsWith("https://", ignoreCase = true)) {
+                dialog.dismiss()
+                downloadSubscription(subUrl)
+            } else {
+                Toast.makeText(this, "Введите корректную HTTP/HTTPS ссылку", Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+
+        dialog.show()
     }
 
     private fun showAddChainDialog() {
@@ -383,13 +415,19 @@ class VlessListActivity : BaseActivity() {
             result.onSuccess { configs ->
                 VlessManager.replaceSubscriptionConfigs(this@VlessListActivity, url, configs)
                 setupTabs()
-                // Переключаем на созданную вкладку
-                selectedTabIndex = binding.tabLayout.tabCount - 1
+                val updatedSubs = VlessManager.getSubscriptions(this@VlessListActivity)
+                val newSubIdx = updatedSubs.indexOf(url.trim())
+                if (newSubIdx != -1) {
+                    selectedTabIndex = newSubIdx + 2
+                } else {
+                    selectedTabIndex = binding.tabLayout.tabCount - 1
+                }
                 binding.tabLayout.getTabAt(selectedTabIndex)?.select()
                 loadServers()
+                val displayName = BuiltinSubscriptions.getDisplayName(url)
                 Toast.makeText(
                     this@VlessListActivity,
-                    getString(R.string.vless_sub_success, configs.size),
+                    "«$displayName»: загружено ${configs.size} серверов",
                     Toast.LENGTH_SHORT
                 ).show()
             }.onFailure { err ->
@@ -412,9 +450,10 @@ class VlessListActivity : BaseActivity() {
                 // Полностью заменяем конфигурации этой подписки
                 VlessManager.replaceSubscriptionConfigs(this@VlessListActivity, subUrl, configs)
                 loadServers()
+                val displayName = BuiltinSubscriptions.getDisplayName(subUrl)
                 Toast.makeText(
                     this@VlessListActivity,
-                    "Подписка обновлена (${configs.size} серверов)",
+                    "«$displayName»: обновлена (${configs.size} серверов)",
                     Toast.LENGTH_SHORT
                 ).show()
             }.onFailure { err ->
@@ -429,9 +468,10 @@ class VlessListActivity : BaseActivity() {
 
     private fun deleteCurrentSubscription() {
         val subUrl = getCurrentSubUrl() ?: return
+        val displayName = BuiltinSubscriptions.getDisplayName(subUrl)
         AlertDialog.Builder(this)
             .setTitle("Удалить подписку?")
-            .setMessage("Все серверы из подписки $subUrl будут удалены.")
+            .setMessage("Все серверы из подписки «$displayName» будут удалены.")
             .setPositiveButton("Удалить") { _, _ ->
                 VlessManager.removeSubscription(this, subUrl)
                 selectedTabIndex = 0
