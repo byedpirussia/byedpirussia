@@ -115,15 +115,29 @@
             border-color: #383e58;
         }
 
-        .nav-btn.primary {
-            background: var(--primary);
+        .nav-btn.telegram {
+            background: #229ED9;
             color: #fff;
-            box-shadow: 0 4px 20px var(--primary-glow);
+            box-shadow: 0 4px 16px rgba(34, 158, 217, 0.3);
         }
 
-        .nav-btn.primary:hover {
-            background: var(--primary-light);
+        .nav-btn.telegram:hover {
+            background: #29b5f6;
             transform: translateY(-1px);
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .grid-4 { grid-template-columns: repeat(4, 1fr); }
         }
 
         /* Hero секция */
@@ -334,6 +348,9 @@
                 <span>ByeDPI Russia</span>
             </a>
             <div class="nav-links">
+                <a href="https://t.me/Byedpirussia" target="_blank" class="nav-btn telegram">
+                    Telegram Канал 📢
+                </a>
                 <a href="https://github.com/byedpirussia/byedpirussia" target="_blank" class="nav-btn github">
                     GitHub ⭐
                 </a>
@@ -347,15 +364,18 @@
         <section class="hero">
             <div class="badge-pill">
                 <span class="badge-dot"></span>
-                Обновление v1.2.1 для Android
+                Обновление v1.2.7 для Android — Новый Material Design 3
             </div>
             <h1>Свободный интернет<br>в 3 простых клика</h1>
             <p>
-                Единый центр обхода блокировок. Прямой доступ к YouTube в 4K и Discord без зарубежных серверов, автономный Telegram MTProto-прокси, универсальный клиент Xray (VLESS Reality, Shadowsocks, VMess, Trojan, Hysteria 2), поддержка цепочек прокси (WARP + Shadowsocks), туннель Cloudflare WARP с AWG 2.0, умное раздельное туннелирование с автоисключением российских приложений и мастер первоначальной настройки.
+                Единый центр обхода блокировок. Новый интерфейс Material Design 3 с возможностью выбора классического стиля, прямой доступ к YouTube в 4K и Discord без зарубежных серверов, автономный Telegram MTProto-прокси с постоянным секретом, универсальный клиент Xray (VLESS Reality, Shadowsocks, VMess, Trojan, Hysteria 2) со встроенными подписками белых списков (ru-wbl), туннель Cloudflare WARP с AWG 2.0, умное раздельное туннелирование с автоисключением российских приложений.
             </p>
             <div class="hero-actions">
                 <a href="https://github.com/byedpirussia/byedpirussia/releases/latest" target="_blank" class="btn-download">
-                    <span>📱 Скачать APK v1.2.1</span>
+                    <span>📱 Скачать APK v1.2.7</span>
+                </a>
+                <a href="https://t.me/Byedpirussia" target="_blank" class="btn-download" style="background: linear-gradient(135deg, #229ED9, #0088cc);">
+                    <span>✈️ Telegram-канал проекта</span>
                 </a>
                 <a href="https://github.com/byedpirussia/byedpirussia/releases/download/v1.1.2/ByeDPI-Russia-Windows-v1.1.2-Beta.zip" target="_blank" class="btn-download" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
                     <span>💻 Скачать для Windows (v1.1.2-Beta)</span>
@@ -363,7 +383,7 @@
                 <a href="https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection" target="_blank" class="nav-btn github" style="padding: 16px 20px; font-size: 14px; border-radius: 16px; border-color: rgba(46, 204, 113, 0.4); color: #2ecc71;">
                     ✓ VT Android 0/66
                 </a>
-                <a href="https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection" target="_blank" class="nav-btn github" style="padding: 16px 20px; font-size: 14px; border-radius: 16px; border-color: rgba(245, 158, 11, 0.4); color: #f59e0b;" title="3 ложных детекта из-за tun2socks/эвристики (AliCloud: Proxytool:Multi/tunSocks, MaxSecure, VirIT). Крупные вендоры чисты.">
+                <a href="https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection" target="_blank" class="nav-btn github" style="padding: 16px 20px; font-size: 14px; border-radius: 16px; border-color: rgba(245, 158, 11, 0.4); color: #f59e0b;" title="3 ложных детекта из-за tun2socks/эвристики. Крупные вендоры чисты.">
                     ⚠️ VT Windows 3/67 (Ложные)
                 </a>
                 <a href="https://github.com/byedpirussia/byedpirussia" target="_blank" class="nav-btn github" style="padding: 16px 20px; font-size: 14px; border-radius: 16px;">
@@ -387,7 +407,7 @@
             <h2 class="section-title">Всё необходимое в одном приложении</h2>
             <p class="section-subtitle">Гибкие протоколы и удобная настройка под ваши задачи</p>
 
-            <div class="grid-3">
+            <div class="grid-4">
                 <!-- Карточка 1 -->
                 <div class="feature-card">
                     <div class="feature-icon">🛡️</div>
@@ -401,21 +421,31 @@
                 <!-- Карточка 2 -->
                 <div class="feature-card">
                     <div class="feature-icon">🚀</div>
-                    <h3 class="feature-title">Xray (VLESS, SS, VMess, Trojan, HY2)</h3>
+                    <h3 class="feature-title">Xray & Подписки Б/С</h3>
                     <p class="feature-desc">
-                        Универсальный клиент: поддержка VLESS (Reality/WS/gRPC/TCP), Shadowsocks, VMess, Trojan и скоростного UDP-протокола Hysteria 2. Поддержка ключей, подписок и замера пинга.
+                        Универсальный клиент VLESS Reality, Shadowsocks, Trojan, HY2. Встроенные проверенные подписки белых списков (ru-wbl) для работы во время ограничений мобильной связи.
                     </p>
-                    <span class="feature-tag">VLESS / SS / VMess / Trojan / HY2</span>
+                    <span class="feature-tag">VLESS / Reality / ru-wbl</span>
                 </div>
 
                 <!-- Карточка 3 -->
                 <div class="feature-card">
                     <div class="feature-icon">🌐</div>
-                    <h3 class="feature-title">AmneziaWG & Telegram</h3>
+                    <h3 class="feature-title">AmneziaWG WARP</h3>
                     <p class="feature-desc">
-                        Полноценный туннель Cloudflare WARP на нативном ядре AmneziaWG (AWG 2.0) с генератором конфигов и поддержкой доменных эндпоинтов, а также локальный сервис MTProto-прокси для Telegram через WebSocket.
+                        Полноценный туннель Cloudflare WARP на ядре AmneziaWG (AWG 2.0). Автоматический генератор конфигов, авто-переподключение, замер пинга и гибкий выбор DNS-серверов.
                     </p>
-                    <span class="feature-tag">WireGuard 2.0 & MTProto</span>
+                    <span class="feature-tag">WireGuard 2.0 & DNS</span>
+                </div>
+
+                <!-- Карточка 4 -->
+                <div class="feature-card">
+                    <div class="feature-icon">✈️</div>
+                    <h3 class="feature-title">Telegram MTProto</h3>
+                    <p class="feature-desc">
+                        Локальный WebSocket-прокси через Cloudflare. Постоянный сохранённый секрет (больше не сбрасывается!), запуск в один тап и защита от любых блокировок Telegram.
+                    </p>
+                    <span class="feature-tag">Постоянный секрет</span>
                 </div>
             </div>
         </section>
