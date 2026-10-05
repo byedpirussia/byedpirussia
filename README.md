@@ -182,6 +182,8 @@ gradlew.bat assembleRelease
 - **[hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel)** от heiher — высокопроизводительный tun2socks туннель для перенаправления сетевого трафика.
 - **[warp-generation](https://github.com/warp-generation/warp-generation.github.io)** — генератор конфигураций Cloudflare WARP с поддержкой параметров AmneziaWG.
 - **[Xray-core](https://github.com/XTLS/Xray-core)** — универсальное ядро сетевых прокси протоколов (VLESS Reality, Shadowsocks, Trojan, VMess).
+- **[OpenFlux](https://github.com/p1neappleXpress/OpenFlux)** от p1neappleXpress — инновационная технология обхода белых списков (Б/С) через Яндекс Документы, Волгу, Mail.ru, Cups.online Centrifugo и MAX/OneMe WebRTC.
+- **[OpenFluxAndroid](https://github.com/p1neappleXpress/OpenFlux)** — официальный мобильный клиент и наработки OpenFLUX для платформы Android.
 
 ---
 
