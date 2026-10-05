@@ -51,6 +51,7 @@ class ByeDpiVpnService : LifecycleVpnService() {
         super.onStartCommand(intent, flags, startId)
         return when (val action = intent?.action) {
             START_ACTION -> {
+                startForeground()
                 lifecycleScope.launch { start() }
                 START_STICKY
             }

@@ -20,7 +20,7 @@
             android:title="@string/accent_color_setting"
             android:entries="@array/accent_colors"
             android:entryValues="@array/accent_colors_entries"
-            android:defaultValue="blue"
+            android:defaultValue="dynamic"
             app:useSimpleSummaryProvider="true" />
 
         <DropDownPreference

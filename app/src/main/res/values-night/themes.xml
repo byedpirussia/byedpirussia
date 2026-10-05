@@ -65,4 +65,37 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
+    <!-- Тема Pink / Rose (Material 3 Розовый) Темная -->
+    <style name="Theme.ByeDPI.Pink" parent="Theme.ByeDPI">
+        <item name="colorPrimary">#F48FB1</item>
+        <item name="colorPrimaryContainer">#880E4F</item>
+        <item name="colorOnPrimaryContainer">#FCE4EC</item>
+    </style>
+    <style name="Theme.ByeDPI.Pink.NoActionBar" parent="Theme.ByeDPI.Pink">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Тема Cyan / Sky (Material 3 Голубой/Циан) Темная -->
+    <style name="Theme.ByeDPI.Cyan" parent="Theme.ByeDPI">
+        <item name="colorPrimary">#38BDF8</item>
+        <item name="colorPrimaryContainer">#0369A1</item>
+        <item name="colorOnPrimaryContainer">#E0F2FE</item>
+    </style>
+    <style name="Theme.ByeDPI.Cyan.NoActionBar" parent="Theme.ByeDPI.Cyan">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Тема Amber / Gold (Material 3 Янтарный/Золотой) Темная -->
+    <style name="Theme.ByeDPI.Amber" parent="Theme.ByeDPI">
+        <item name="colorPrimary">#FBBF24</item>
+        <item name="colorPrimaryContainer">#78350F</item>
+        <item name="colorOnPrimaryContainer">#FEF3C7</item>
+    </style>
+    <style name="Theme.ByeDPI.Amber.NoActionBar" parent="Theme.ByeDPI.Amber">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
 </resources>

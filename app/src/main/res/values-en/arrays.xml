@@ -12,18 +12,26 @@
     </array>
 
     <array name="accent_colors">
+        <item name="dynamic">Material You (Dynamic Color)</item>
         <item name="blue">Blue (Indigo)</item>
         <item name="purple">Purple (Deep Purple)</item>
         <item name="green">Emerald (Teal)</item>
         <item name="orange">Orange (Sunset)</item>
         <item name="red">Red (Crimson)</item>
+        <item name="pink">Pink (Rose)</item>
+        <item name="cyan">Cyan (Sky Blue)</item>
+        <item name="amber">Amber (Gold)</item>
     </array>
     <array name="accent_colors_entries">
+        <item name="dynamic">dynamic</item>
         <item name="blue">blue</item>
         <item name="purple">purple</item>
         <item name="green">green</item>
         <item name="orange">orange</item>
         <item name="red">red</item>
+        <item name="pink">pink</item>
+        <item name="cyan">cyan</item>
+        <item name="amber">amber</item>
     </array>
 
     <array name="languages">

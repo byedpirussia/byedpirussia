@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -183,7 +183,7 @@ class VlessListActivity : BaseActivity() {
             setSelection(text.length)
         }
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.vless_add_single)
             .setView(input)
             .setPositiveButton("Добавить") { _, _ ->
@@ -216,7 +216,7 @@ class VlessListActivity : BaseActivity() {
 
         val existingSubs = VlessManager.getSubscriptions(this).map { it.trim().lowercase() }.toSet()
 
-        val dialog = AlertDialog.Builder(this)
+        val dialog = MaterialAlertDialogBuilder(this)
             .setView(dialogView)
             .setNegativeButton("Закрыть", null)
             .create()
@@ -330,7 +330,7 @@ class VlessListActivity : BaseActivity() {
         container.addView(tvServer)
         container.addView(spServer)
 
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.chain_title)
             .setView(container)
             .setPositiveButton("Создать") { _, _ ->
@@ -469,7 +469,7 @@ class VlessListActivity : BaseActivity() {
     private fun deleteCurrentSubscription() {
         val subUrl = getCurrentSubUrl() ?: return
         val displayName = BuiltinSubscriptions.getDisplayName(subUrl)
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Удалить подписку?")
             .setMessage("Все серверы из подписки «$displayName» будут удалены.")
             .setPositiveButton("Удалить") { _, _ ->
@@ -483,7 +483,7 @@ class VlessListActivity : BaseActivity() {
     }
 
     private fun showDeleteConfirm(config: VlessConfig) {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setMessage("${getString(R.string.vless_delete_confirm)}\n${config.name}")
             .setPositiveButton("Удалить") { _, _ ->
                 VlessManager.removeConfig(this, config.id)

@@ -81,6 +81,7 @@ class VlessVpnService : VpnService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
+                startForegroundNotification("Подключение...")
                 startVless()
                 return START_STICKY
             }

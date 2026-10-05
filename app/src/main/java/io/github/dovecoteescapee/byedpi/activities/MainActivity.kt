@@ -159,7 +159,7 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         applyAccentTheme(noActionBar = true)
-        currentAccent = getPreferences().getString("accent_color", "blue")
+        currentAccent = getPreferences().getString("accent_color", "dynamic")
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -448,7 +448,7 @@ class MainActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        val savedAccent = getPreferences().getString("accent_color", "blue")
+        val savedAccent = getPreferences().getString("accent_color", "dynamic")
         if (currentAccent != savedAccent) {
             recreate()
             return

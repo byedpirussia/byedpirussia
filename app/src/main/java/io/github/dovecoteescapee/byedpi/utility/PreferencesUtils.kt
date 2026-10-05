@@ -20,12 +20,24 @@ fun SharedPreferences.mode(): Mode =
     Mode.fromString(getStringNotNull("byedpi_mode", "vpn"))
 
 fun Context.applyAccentTheme(noActionBar: Boolean = true) {
-    val accent = getPreferences().getString("accent_color", "blue") ?: "blue"
+    val accent = getPreferences().getString("accent_color", "dynamic") ?: "dynamic"
+    if (accent == "dynamic" && com.google.android.material.color.DynamicColors.isDynamicColorAvailable()) {
+        val baseTheme = if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI
+        setTheme(baseTheme)
+        if (this is android.app.Activity) {
+            com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this)
+        }
+        return
+    }
+
     val themeRes = when (accent) {
         "purple" -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Purple_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Purple
         "green" -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Green_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Green
         "orange" -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Orange_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Orange
         "red" -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Red_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Red
+        "pink" -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Pink_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Pink
+        "cyan" -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Cyan_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Cyan
+        "amber" -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Amber_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_Amber
         else -> if (noActionBar) io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI_NoActionBar else io.github.dovecoteescapee.byedpi.R.style.Theme_ByeDPI
     }
     setTheme(themeRes)

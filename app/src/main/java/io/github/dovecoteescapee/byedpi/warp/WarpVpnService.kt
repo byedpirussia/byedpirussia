@@ -142,6 +142,7 @@ class WarpVpnService : VpnService() {
         when (intent?.action) {
             ACTION_START -> {
                 isUserExplicitStop = false
+                startForegroundNotification("Подключение к Cloudflare WARP...")
                 startTunnel()
                 registerNetworkCallbackIfNeeded()
                 return START_STICKY
@@ -533,7 +534,12 @@ class WarpVpnService : VpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             try {
                 val cm = connectivityManager
-                val currentNet = cm?.allNetworks?.firstOrNull { net ->
+                val currentNet = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    cm?.activeNetwork?.takeIf { net ->
+                        val c = cm.getNetworkCapabilities(net)
+                        c != null && !c.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+                    }
+                } else null ?: cm?.allNetworks?.firstOrNull { net ->
                     val c = cm.getNetworkCapabilities(net)
                     c != null && !c.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
                 }
