@@ -17,11 +17,11 @@
 ## 📥 Скачать приложение (Download)
 
 ### 📱 Android:
-[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.2.7-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.3.0-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
 [![Telegram Channel](https://img.shields.io/badge/Telegram_Канал-t.me%2FByedpirussia-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Byedpirussia)
 [![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F66%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)
 
-- **[APK v1.2.7 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[APK v1.3.0 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
 - **[Официальный Telegram-канал t.me/Byedpirussia](https://t.me/Byedpirussia)** — свежие релизы и новости проекта.
 - **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
@@ -39,19 +39,20 @@
 
 Универсальное Android-приложение для восстановления доступа к заблокированным ресурсам (YouTube, Discord, Telegram и др.) без необходимости аренды зарубежных серверов и сложных настроек.
 
-Приложение объединяет в себе четыре независимых инструмента (ByeDPI, Telegram Proxy, AmneziaWG WARP, VLESS / Shadowsocks / VMess / Trojan / Hysteria 2), доступных прямо с главного экрана, полностью обновленный интерфейс **Material Design 3 (MT3)** с возможностью переключения на классический стиль, поддержку **цепочек прокси (Proxy Chaining)**, встроенные **проверенные подписки белых списков (ru-wbl)**, **шторку быстрых настроек (Quick Settings Tiles)**, многоязычный интерфейс (**Русский / English**), гибкое **раздельное туннелирование (Split Tunneling)** с автоматическим исключением российских приложений (банки, Госуслуги), мастер **первоначальной настройки**, а также **кастомизацию оформления** (динамические цвета Material You и акцентные темы).
+Приложение объединяет в себе пять независимых инструментов (**ByeDPI**, **Telegram Proxy**, **AmneziaWG WARP**, **Xray VLESS / Shadowsocks / VMess / Trojan / Hysteria 2**, **OpenFLUX обход белых списков**), доступных прямо с главного экрана, полностью обновленный интерфейс **Material Design 3 (MT3)** с возможностью переключения на классический стиль, поддержку **цепочек прокси (Proxy Chaining)**, встроенные **проверенные подписки белых списков (ru-wbl)**, **шторку быстрых настроек (Quick Settings Tiles)**, многоязычный интерфейс (**Русский / English**), гибкое **раздельное туннелирование (Split Tunneling)** с автоматическим исключением российских приложений (банки, Госуслуги), мастер **первоначальной настройки**, а также **кастомизацию оформления** (динамические цвета Material You и акцентные темы).
 
 ---
 
 ## 🌟 Основные возможности
 
 - 🎨 **Современный интерфейс Material Design 3**: интуитивная Hero-карточка общего статуса безопасности, быстрое отключение всех служб одной кнопкой, эргономичные карточки с переключателями `MaterialSwitch` и возможность переключиться в классический режим в Настройках.
+- 🌊 **OpenFLUX (Обход белых списков / Б/С)**: инновационный метод обхода блокировок через разрешенные сервисы (Яндекс Документы, Яндекс Волга, Яндекс Доски, Mail.ru Документы, Cups.online Centrifugo, MAX/OneMe WebRTC, Direct). Поддержка VPN-туннеля и локального SOCKS5-прокси, импорт ссылок `openflux://`, пресеты из коробки.
 - 🚀 **ByeDPI Engine**: локальная десинхронизация TCP/DNS/TLS, фрагментация пакетов, фейковые SNI и автоматический подбор рабочих параметров под вашего провайдера (32 стратегии).
 - ✈️ **Telegram MTProto Proxy**: встроенный WebSocket-прокси через Cloudflare для обхода блокировок Telegram в 1 клик. **Постоянный секрет** — сохраняется в настройках и больше не сбрасывается при перезапуске!
 - 🌐 **AmneziaWG Cloudflare WARP**: генерация и подключение обфусцированных WireGuard-туннелей (AWG 2.0). Включает **авто-переподключение**, замер пинга в реальном времени и расширенный выбор DNS-серверов с обходом ограничений Частного DNS (DoT).
 - ⚡ **Xray Core (VLESS Reality / Trojan / Shadowsocks / VMess / Hysteria 2)**: поддержка подписок, одиночных ключей, пинг-теста и **встроенных подписок белых списков (ru-wbl)** для работы при жестких ограничениях мобильной связи.
 - 🔗 **Цепочки прокси (Proxy Chaining)**: туннелирование трафика WARP через Shadowsocks / VLESS / Trojan и наоборот (`WARP over Proxy` / `Proxy over WARP`).
-- 🎛️ **Quick Settings Tiles**: плитки быстрой активации ByeDPI, Telegram Proxy и WARP прямо из шторки Android.
+- 🎛️ **Quick Settings Tiles**: плитки быстрой активации ByeDPI, Telegram Proxy, WARP и OpenFLUX прямо из шторки Android.
 - 🌍 **Многоязычность**: поддержка русского и английского языков с возможностью выбора при первом запуске или в меню «Настройки».
 - 🔀 **Split Tunneling**: гибкая маршрутизация по приложениям с автоматическим исключением российских сервисов.
 

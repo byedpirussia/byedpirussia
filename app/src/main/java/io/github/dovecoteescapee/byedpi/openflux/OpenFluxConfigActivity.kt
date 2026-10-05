@@ -96,20 +96,35 @@ class OpenFluxConfigActivity : BaseActivity() {
     private fun importFromClipboard() {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = clipboard.primaryClip
-        val text = clipData?.getItemAt(0)?.text?.toString()?.trim()
+        val clipText = clipData?.getItemAt(0)?.text?.toString()?.trim() ?: ""
+        val initialText = if (clipText.startsWith("openflux://", ignoreCase = true)) clipText else ""
 
-        if (text.isNullOrBlank() || !text.startsWith("openflux://")) {
-            Toast.makeText(this, "В буфере обмена нет ссылки openflux://", Toast.LENGTH_LONG).show()
-            return
+        val input = android.widget.EditText(this).apply {
+            hint = "openflux://..."
+            setText(initialText)
+            setSelection(text.length)
         }
 
-        val config = OpenFluxManager.parseAndAddLink(this, text)
-        if (config != null) {
-            Toast.makeText(this, "Импортирован профиль: ${config.name}", Toast.LENGTH_SHORT).show()
-            loadProfiles()
-        } else {
-            Toast.makeText(this, "Не удалось распознать ссылку openflux://", Toast.LENGTH_LONG).show()
-        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Импорт ссылки OpenFLUX")
+            .setMessage("Вставьте ссылку в формате openflux://:")
+            .setView(input)
+            .setPositiveButton("Импортировать") { _, _ ->
+                val link = input.text.toString().trim()
+                if (link.isBlank() || !link.startsWith("openflux://", ignoreCase = true)) {
+                    Toast.makeText(this, "Неверный формат ссылки openflux://", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                val config = OpenFluxManager.parseAndAddLink(this, link)
+                if (config != null) {
+                    Toast.makeText(this, "Импортирован профиль: ${config.name}", Toast.LENGTH_SHORT).show()
+                    loadProfiles()
+                } else {
+                    Toast.makeText(this, "Не удалось распознать ссылку openflux://", Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun resetPresets() {
