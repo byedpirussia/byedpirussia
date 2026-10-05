@@ -149,10 +149,43 @@
             </intent-filter>
         </service>
 
+        <service android:name=".openflux.OpenFluxVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:foregroundServiceType="specialUse"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.VpnService"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.net.VpnService.SUPPORTS_ALWAYS_ON"
+                android:value="false" />
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="vpn" />
+        </service>
+
+        <activity
+            android:name=".openflux.OpenFluxConfigActivity"
+            android:label="OpenFLUX"
+            android:theme="@style/Theme.ByeDPI.NoActionBar"
+            android:exported="false" />
+
         <service
             android:name=".warp.WarpTileService"
             android:icon="@drawable/ic_notification"
             android:label="@string/tile_warp"
+            android:exported="true"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".openflux.OpenFluxTileService"
+            android:icon="@drawable/ic_notification"
+            android:label="OpenFLUX"
             android:exported="true"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>

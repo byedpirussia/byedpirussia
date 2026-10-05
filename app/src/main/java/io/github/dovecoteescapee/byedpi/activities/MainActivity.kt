@@ -40,6 +40,9 @@ import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessManager
 import io.github.dovecoteescapee.byedpi.vless.VlessVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessListActivity
+import io.github.dovecoteescapee.byedpi.openflux.OpenFluxConfigActivity
+import io.github.dovecoteescapee.byedpi.openflux.OpenFluxManager
+import io.github.dovecoteescapee.byedpi.openflux.OpenFluxVpnService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -87,6 +90,15 @@ class MainActivity : BaseActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
                 VlessVpnService.start(this)
+            } else {
+                Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    private val openFluxVpnRegister =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                OpenFluxVpnService.start(this)
             } else {
                 Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_SHORT).show()
             }
@@ -210,6 +222,7 @@ class MainActivity : BaseActivity() {
         setupTelegramProxyCard()
         setupWarpCard()
         setupVlessCard()
+        setupOpenFluxCard()
         setupTgChannelBanner()
         setupAdvancedSettingsCard()
         setupM3Interface()
@@ -233,7 +246,8 @@ class MainActivity : BaseActivity() {
         val isByeDpiVpn = byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN
         val isWarpVpn = WarpVpnService.isRunning.value
         val isVlessVpn = VlessVpnService.isRunning.value
-        return isByeDpiVpn || isWarpVpn || isVlessVpn
+        val isOpenFluxVpn = OpenFluxVpnService.isRunning.value
+        return isByeDpiVpn || isWarpVpn || isVlessVpn || isOpenFluxVpn
     }
 
     private fun startWarpVpn() {
@@ -243,6 +257,9 @@ class MainActivity : BaseActivity() {
         }
         if (VlessVpnService.isRunning.value) {
             VlessVpnService.stop(this)
+        }
+        if (OpenFluxVpnService.isRunning.value) {
+            OpenFluxVpnService.stop(this)
         }
         val intentPrepare = VpnService.prepare(this)
         if (intentPrepare != null) {
@@ -261,6 +278,9 @@ class MainActivity : BaseActivity() {
                 }
                 if (VlessVpnService.isRunning.value) {
                     VlessVpnService.stop(this)
+                }
+                if (OpenFluxVpnService.isRunning.value) {
+                    OpenFluxVpnService.stop(this)
                 }
                 when (getPreferences().mode()) {
                     Mode.VPN -> {
@@ -307,12 +327,51 @@ class MainActivity : BaseActivity() {
             if (WarpVpnService.isRunning.value) {
                 WarpVpnService.stop(this)
             }
+            if (OpenFluxVpnService.isRunning.value) {
+                OpenFluxVpnService.stop(this)
+            }
 
             val intentPrepare = VpnService.prepare(this)
             if (intentPrepare != null) {
                 vlessVpnRegister.launch(intentPrepare)
             } else {
                 VlessVpnService.start(this)
+            }
+        }
+    }
+
+    private fun toggleOpenFlux() {
+        if (OpenFluxVpnService.isRunning.value) {
+            OpenFluxVpnService.stop(this)
+        } else {
+            val selectedConfig = OpenFluxManager.getSelectedConfig(this)
+            if (selectedConfig == null) {
+                Toast.makeText(this, "Сначала настройте профиль OpenFLUX", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, OpenFluxConfigActivity::class.java)
+                startActivity(intent)
+                return
+            }
+
+            val (byedpiStatus, byedpiMode) = appStatus
+            if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
+                ServiceManager.stop(this)
+            }
+            if (WarpVpnService.isRunning.value) {
+                WarpVpnService.stop(this)
+            }
+            if (VlessVpnService.isRunning.value) {
+                VlessVpnService.stop(this)
+            }
+
+            if (selectedConfig.routingMode == "vpn") {
+                val intentPrepare = VpnService.prepare(this)
+                if (intentPrepare != null) {
+                    openFluxVpnRegister.launch(intentPrepare)
+                } else {
+                    OpenFluxVpnService.start(this)
+                }
+            } else {
+                OpenFluxVpnService.start(this)
             }
         }
     }
@@ -338,6 +397,10 @@ class MainActivity : BaseActivity() {
         }
         if (VlessVpnService.isRunning.value) {
             VlessVpnService.stop(this)
+            disconnectedAny = true
+        }
+        if (OpenFluxVpnService.isRunning.value) {
+            OpenFluxVpnService.stop(this)
             disconnectedAny = true
         }
         if (TgWsProxyService.isRunning.value) {
@@ -574,6 +637,7 @@ class MainActivity : BaseActivity() {
         updateStatus()
         updateStrategyBadge()
         updateVlessSubtitle()
+        updateOpenFluxSubtitle()
         updateM3State()
     }
 
@@ -942,6 +1006,59 @@ class MainActivity : BaseActivity() {
         updateM3State()
     }
 
+    private fun setupOpenFluxCard() {
+        updateOpenFluxSubtitle()
+
+        binding.btnOpenfluxManage.setOnClickListener {
+            val intent = Intent(this, OpenFluxConfigActivity::class.java)
+            startActivity(intent)
+        }
+
+        binding.btnActionOpenflux.setOnClickListener {
+            toggleOpenFlux()
+        }
+
+        lifecycleScope.launch {
+            OpenFluxVpnService.isRunning.collectLatest { running ->
+                if (running) {
+                    binding.openfluxStatusBadge.text = "🟢 Подключен"
+                    binding.openfluxStatusBadge.setTextColor(getColor(R.color.accent_green))
+                    binding.btnActionOpenflux.text = "Отключить OpenFLUX"
+                } else {
+                    binding.openfluxStatusBadge.text = "⚪ Отключено"
+                    binding.openfluxStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
+                    binding.btnActionOpenflux.text = "Включить OpenFLUX"
+                }
+                updateM3State()
+            }
+        }
+
+        lifecycleScope.launch {
+            OpenFluxVpnService.connectionStatus.collectLatest { status ->
+                if (OpenFluxVpnService.isRunning.value) {
+                    binding.openfluxStatusBadge.text = status
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            OpenFluxVpnService.trafficStats.collectLatest { stats ->
+                updateM3State()
+            }
+        }
+    }
+
+    private fun updateOpenFluxSubtitle() {
+        val selected = OpenFluxManager.getSelectedConfig(this)
+        if (selected != null) {
+            val modeStr = if (selected.routingMode == "vpn") "VPN" else "SOCKS5"
+            binding.openfluxSubtitleText.text = "${selected.name} • ${selected.transportType} • $modeStr"
+        } else {
+            binding.openfluxSubtitleText.text = "Туннель через белые списки"
+        }
+        updateM3State()
+    }
+
     private fun setupAdvancedSettingsCard() {
         binding.cardOpenAdvanced.setOnClickListener {
             val intent = Intent(this, AdvancedSettingsActivity::class.java)
@@ -981,6 +1098,12 @@ class MainActivity : BaseActivity() {
         binding.m3CardVless.setOnClickListener { toggleVless() }
         binding.m3BtnVlessServers.setOnClickListener {
             startActivity(Intent(this, VlessListActivity::class.java))
+        }
+
+        binding.m3SwitchOpenflux.setOnClickListener { toggleOpenFlux() }
+        binding.m3CardOpenflux.setOnClickListener { toggleOpenFlux() }
+        binding.m3BtnOpenfluxServers.setOnClickListener {
+            startActivity(Intent(this, OpenFluxConfigActivity::class.java))
         }
 
         binding.m3SwitchTg.setOnClickListener { toggleTgProxy() }
@@ -1052,7 +1175,8 @@ class MainActivity : BaseActivity() {
         val isWarpRunning = WarpVpnService.isRunning.value
         val isVlessRunning = VlessVpnService.isRunning.value
         val isTgRunning = TgWsProxyService.isRunning.value
-        val isAnyRunning = isByeDpiRunning || isWarpRunning || isVlessRunning || isTgRunning
+        val isOpenFluxRunning = OpenFluxVpnService.isRunning.value
+        val isAnyRunning = isByeDpiRunning || isWarpRunning || isVlessRunning || isTgRunning || isOpenFluxRunning
 
         val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
         val colorPrimaryContainer = getThemeColor(com.google.android.material.R.attr.colorPrimaryContainer)
@@ -1076,6 +1200,7 @@ class MainActivity : BaseActivity() {
             if (isByeDpiRunning) activeList.add("ByeDPI")
             if (isWarpRunning) activeList.add("WARP")
             if (isVlessRunning) activeList.add("VLESS")
+            if (isOpenFluxRunning) activeList.add("OpenFLUX")
             if (isTgRunning) activeList.add("TG Proxy")
             binding.m3StatusSubtitle.text = "Активно: " + activeList.joinToString(", ")
             binding.m3BtnDisconnectAll.visibility = View.VISIBLE
@@ -1146,7 +1271,22 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        // 5. TG Proxy Switch & Subtitle
+        // 5. OpenFLUX Switch & Subtitle
+        val selectedOpenFlux = OpenFluxManager.getSelectedConfig(this)
+        val openFluxStats = OpenFluxVpnService.trafficStats.value
+        binding.m3SwitchOpenflux.isChecked = isOpenFluxRunning
+        if (isOpenFluxRunning) {
+            binding.m3IconBoxOpenflux.setCardBackgroundColor(colorPrimaryContainer)
+            val name = selectedOpenFlux?.name ?: "OpenFLUX"
+            val detail = if (openFluxStats.isNotBlank()) " • $openFluxStats" else ""
+            binding.m3SubOpenflux.text = "🟢 Подключен • $name$detail"
+        } else {
+            binding.m3IconBoxOpenflux.setCardBackgroundColor(colorSurfaceVariant)
+            val name = selectedOpenFlux?.name ?: "OpenFLUX"
+            binding.m3SubOpenflux.text = "⚪ Отключено • $name"
+        }
+
+        // 6. TG Proxy Switch & Subtitle
         binding.m3SwitchTg.isChecked = isTgRunning
         binding.m3BtnTgOpen.visibility = if (isTgRunning) View.VISIBLE else View.GONE
         val tgStats = TgWsProxyService.trafficStats.value
