@@ -24,6 +24,15 @@
             app:useSimpleSummaryProvider="true" />
 
         <DropDownPreference
+            android:key="app_ui_mode"
+            android:title="@string/app_ui_mode_setting"
+            android:summary="@string/app_ui_mode_summary"
+            android:entries="@array/ui_modes"
+            android:entryValues="@array/ui_modes_entries"
+            android:defaultValue="m3"
+            app:useSimpleSummaryProvider="true" />
+
+        <DropDownPreference
             android:key="app_language"
             android:title="@string/language_setting"
             android:entries="@array/languages"

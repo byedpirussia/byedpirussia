@@ -229,5 +229,12 @@
     <string name="builtin_subs_already_added">Уже добавлена</string>
     <string name="builtin_subs_add_btn">Импортировать</string>
     <string name="builtin_subs_load_custom_btn">Загрузить свою ссылку</string>
+
+    <!-- UI Style Switcher -->
+    <string name="app_ui_mode_setting">Стиль интерфейса</string>
+    <string name="app_ui_mode_summary">Выберите между новым стилем Material Design 3 и классическим стилем</string>
+    <string name="m3_status_protected">Защищено</string>
+    <string name="m3_status_unprotected">Не защищено</string>
+    <string name="m3_services_title">Службы обхода и VPN</string>
 </resources>
 

@@ -156,10 +156,12 @@ class MainActivity : BaseActivity() {
     }
 
     private var currentAccent: String? = null
+    private var currentUiMode: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         applyAccentTheme(noActionBar = true)
         currentAccent = getPreferences().getString("accent_color", "dynamic")
+        currentUiMode = getPreferences().getString(KEY_APP_UI_MODE, "m3")
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -202,14 +204,28 @@ class MainActivity : BaseActivity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
 
+        applyUiMode()
+
         setupByeDpiCard()
         setupTelegramProxyCard()
         setupWarpCard()
         setupVlessCard()
         setupTgChannelBanner()
         setupAdvancedSettingsCard()
+        setupM3Interface()
 
         checkInitialSetup()
+    }
+
+    private fun applyUiMode() {
+        val isM3 = isMaterial3UiMode()
+        if (isM3) {
+            binding.containerM3.visibility = View.VISIBLE
+            binding.containerClassic.visibility = View.GONE
+        } else {
+            binding.containerM3.visibility = View.GONE
+            binding.containerClassic.visibility = View.VISIBLE
+        }
     }
 
     private fun isAnyVpnActive(): Boolean {
@@ -233,6 +249,103 @@ class MainActivity : BaseActivity() {
             warpVpnRegister.launch(intentPrepare)
         } else {
             WarpVpnService.start(this)
+        }
+    }
+
+    private fun toggleByeDpi() {
+        val (status, _) = appStatus
+        when (status) {
+            AppStatus.Halted -> {
+                if (WarpVpnService.isRunning.value) {
+                    WarpVpnService.stop(this)
+                }
+                if (VlessVpnService.isRunning.value) {
+                    VlessVpnService.stop(this)
+                }
+                when (getPreferences().mode()) {
+                    Mode.VPN -> {
+                        val intentPrepare = VpnService.prepare(this)
+                        if (intentPrepare != null) {
+                            vpnRegister.launch(intentPrepare)
+                        } else {
+                            ServiceManager.start(this, Mode.VPN)
+                        }
+                    }
+                    Mode.Proxy -> ServiceManager.start(this, Mode.Proxy)
+                }
+            }
+            AppStatus.Running -> {
+                ServiceManager.stop(this)
+            }
+        }
+    }
+
+    private fun toggleWarp() {
+        if (WarpVpnService.isRunning.value) {
+            WarpVpnService.stop(this)
+        } else {
+            startWarpVpn()
+        }
+    }
+
+    private fun toggleVless() {
+        if (VlessVpnService.isRunning.value) {
+            VlessVpnService.stop(this)
+        } else {
+            val selectedConfig = VlessManager.getSelectedConfig(this)
+            if (selectedConfig == null) {
+                Toast.makeText(this, "Сначала добавьте VLESS сервер или подписку", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, VlessListActivity::class.java)
+                startActivity(intent)
+                return
+            }
+
+            val (byedpiStatus, byedpiMode) = appStatus
+            if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
+                ServiceManager.stop(this)
+            }
+            if (WarpVpnService.isRunning.value) {
+                WarpVpnService.stop(this)
+            }
+
+            val intentPrepare = VpnService.prepare(this)
+            if (intentPrepare != null) {
+                vlessVpnRegister.launch(intentPrepare)
+            } else {
+                VlessVpnService.start(this)
+            }
+        }
+    }
+
+    private fun toggleTgProxy() {
+        if (TgWsProxyService.isRunning.value) {
+            TgWsProxyService.stop(this)
+        } else {
+            TgWsProxyService.start(this, port = 1443)
+        }
+    }
+
+    private fun disconnectAllServices() {
+        var disconnectedAny = false
+        val (status, _) = appStatus
+        if (status == AppStatus.Running) {
+            ServiceManager.stop(this)
+            disconnectedAny = true
+        }
+        if (WarpVpnService.isRunning.value) {
+            WarpVpnService.stop(this)
+            disconnectedAny = true
+        }
+        if (VlessVpnService.isRunning.value) {
+            VlessVpnService.stop(this)
+            disconnectedAny = true
+        }
+        if (TgWsProxyService.isRunning.value) {
+            TgWsProxyService.stop(this)
+            disconnectedAny = true
+        }
+        if (disconnectedAny) {
+            Toast.makeText(this, "Все службы отключены", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -453,9 +566,15 @@ class MainActivity : BaseActivity() {
             recreate()
             return
         }
+        val savedUiMode = getPreferences().getString(KEY_APP_UI_MODE, "m3")
+        if (currentUiMode != savedUiMode) {
+            recreate()
+            return
+        }
         updateStatus()
         updateStrategyBadge()
         updateVlessSubtitle()
+        updateM3State()
     }
 
     override fun onDestroy() {
@@ -507,32 +626,7 @@ class MainActivity : BaseActivity() {
 
     private fun setupByeDpiCard() {
         binding.btnActionByedpi.setOnClickListener {
-            val (status, _) = appStatus
-            when (status) {
-                AppStatus.Halted -> {
-                    // Если активен WARP или VLESS VPN, выключаем их во избежание коллизий VpnService
-                    if (WarpVpnService.isRunning.value) {
-                        WarpVpnService.stop(this)
-                    }
-                    if (VlessVpnService.isRunning.value) {
-                        VlessVpnService.stop(this)
-                    }
-                    when (getPreferences().mode()) {
-                        Mode.VPN -> {
-                            val intentPrepare = VpnService.prepare(this)
-                            if (intentPrepare != null) {
-                                vpnRegister.launch(intentPrepare)
-                            } else {
-                                ServiceManager.start(this, Mode.VPN)
-                            }
-                        }
-                        Mode.Proxy -> ServiceManager.start(this, Mode.Proxy)
-                    }
-                }
-                AppStatus.Running -> {
-                    ServiceManager.stop(this)
-                }
-            }
+            toggleByeDpi()
         }
     }
 
@@ -541,6 +635,7 @@ class MainActivity : BaseActivity() {
         val currentId = sp.getString("selected_strategy_id", null) ?: StrategyCatalog.strategies[0].id
         val currentStrategy = StrategyCatalog.getStrategyById(currentId)
         binding.byedpiStrategyName.text = "${currentStrategy.name} (DPI Fix)"
+        updateM3State()
     }
 
     private fun updateStatus() {
@@ -568,19 +663,18 @@ class MainActivity : BaseActivity() {
                 binding.btnActionByedpi.setIconResource(R.drawable.ic_power_24)
             }
         }
+        updateM3State()
     }
 
     private fun setupTelegramProxyCard() {
+        TgWsProxyService.initSecret(this)
+
         binding.btnActionTg.setOnClickListener {
-            if (TgWsProxyService.isRunning.value) {
-                TgWsProxyService.stop(this)
-            } else {
-                TgWsProxyService.start(this, port = 1443)
-            }
+            toggleTgProxy()
         }
 
         binding.btnTgOpenClient.setOnClickListener {
-            val secret = TgWsProxyService.effectiveSecret.value ?: ""
+            val secret = TgWsProxyService.getEffectiveSecret(this)
             val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
             val intent = Intent(Intent.ACTION_VIEW, tgUri)
             try {
@@ -591,6 +685,11 @@ class MainActivity : BaseActivity() {
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(this, R.string.tg_proxy_copied, Toast.LENGTH_LONG).show()
             }
+        }
+
+        binding.btnTgOpenClient.setOnLongClickListener {
+            showTgProxyDetailsDialog()
+            true
         }
 
         lifecycleScope.launch {
@@ -606,6 +705,7 @@ class MainActivity : BaseActivity() {
                     binding.btnActionTg.text = getString(R.string.tg_inactive_btn)
                     binding.btnTgOpenClient.visibility = View.GONE
                 }
+                updateM3State()
             }
         }
 
@@ -616,6 +716,7 @@ class MainActivity : BaseActivity() {
                 } else {
                     binding.tgSubtitleText.text = "127.0.0.1:1443 (Cloudflare WS)"
                 }
+                updateM3State()
             }
         }
     }
@@ -624,31 +725,14 @@ class MainActivity : BaseActivity() {
         WarpConfigManager.init(this)
 
         binding.btnActionWarp.setOnClickListener {
-            if (WarpVpnService.isRunning.value) {
-                WarpVpnService.stop(this)
-            } else {
-                // Если запущен ByeDPI VPN, останавливаем его чтобы не конфликтовать с VpnService
-                val (byedpiStatus, byedpiMode) = appStatus
-                if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
-                    ServiceManager.stop(this)
-                }
-                if (VlessVpnService.isRunning.value) {
-                    VlessVpnService.stop(this)
-                }
-
-                val intentPrepare = VpnService.prepare(this)
-                if (intentPrepare != null) {
-                    warpVpnRegister.launch(intentPrepare)
-                } else {
-                    WarpVpnService.start(this)
-                }
-            }
+            toggleWarp()
         }
 
         // Авто переподключение Warp Switch
         binding.switchWarpAutoReconnect.isChecked = isWarpAutoReconnectEnabled()
         binding.switchWarpAutoReconnect.setOnCheckedChangeListener { _, isChecked ->
             setWarpAutoReconnectEnabled(isChecked)
+            binding.m3SwitchWarpAutoreconnect.isChecked = isChecked
             if (WarpVpnService.isRunning.value) {
                 // Перезапуск службы для обновления колбэков сети
                 WarpVpnService.start(this)
@@ -707,6 +791,7 @@ class MainActivity : BaseActivity() {
                     }
                     binding.btnActionWarp.text = getString(R.string.warp_inactive_btn)
                 }
+                updateM3State()
             }
         }
 
@@ -714,6 +799,7 @@ class MainActivity : BaseActivity() {
             WarpConfigManager.currentConfig.collectLatest { config ->
                 val endpoint = WarpConfigManager.extractEndpoint(config)
                 binding.warpSubtitleText.text = "Cloudflare WARP ($endpoint)"
+                updateM3State()
             }
         }
     }
@@ -827,33 +913,7 @@ class MainActivity : BaseActivity() {
         }
 
         binding.btnActionVless.setOnClickListener {
-            if (VlessVpnService.isRunning.value) {
-                VlessVpnService.stop(this)
-            } else {
-                val selectedConfig = VlessManager.getSelectedConfig(this)
-                if (selectedConfig == null) {
-                    Toast.makeText(this, "Сначала добавьте VLESS сервер или подписку", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, VlessListActivity::class.java)
-                    startActivity(intent)
-                    return@setOnClickListener
-                }
-
-                // Отключаем ByeDPI и WARP во избежание коллизий VpnService
-                val (byedpiStatus, byedpiMode) = appStatus
-                if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
-                    ServiceManager.stop(this)
-                }
-                if (WarpVpnService.isRunning.value) {
-                    WarpVpnService.stop(this)
-                }
-
-                val intentPrepare = VpnService.prepare(this)
-                if (intentPrepare != null) {
-                    vlessVpnRegister.launch(intentPrepare)
-                } else {
-                    VlessVpnService.start(this)
-                }
-            }
+            toggleVless()
         }
 
         lifecycleScope.launch {
@@ -867,6 +927,7 @@ class MainActivity : BaseActivity() {
                     binding.vlessStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
                     binding.btnActionVless.text = getString(R.string.vless_inactive_btn)
                 }
+                updateM3State()
             }
         }
     }
@@ -878,12 +939,223 @@ class MainActivity : BaseActivity() {
         } else {
             binding.vlessSubtitleText.text = getString(R.string.vless_no_servers)
         }
+        updateM3State()
     }
 
     private fun setupAdvancedSettingsCard() {
         binding.cardOpenAdvanced.setOnClickListener {
             val intent = Intent(this, AdvancedSettingsActivity::class.java)
             startActivity(intent)
+        }
+    }
+
+    private fun setupM3Interface() {
+        binding.m3BtnDisconnectAll.setOnClickListener {
+            disconnectAllServices()
+        }
+
+        binding.m3SwitchByedpi.setOnClickListener { toggleByeDpi() }
+        binding.m3CardByedpi.setOnClickListener { toggleByeDpi() }
+
+        binding.m3SwitchWarp.setOnClickListener { toggleWarp() }
+        binding.m3CardWarp.setOnClickListener { toggleWarp() }
+        binding.m3SwitchWarpAutoreconnect.isChecked = isWarpAutoReconnectEnabled()
+        binding.m3SwitchWarpAutoreconnect.setOnCheckedChangeListener { _, isChecked ->
+            setWarpAutoReconnectEnabled(isChecked)
+            binding.switchWarpAutoReconnect.isChecked = isChecked
+            if (WarpVpnService.isRunning.value) {
+                WarpVpnService.start(this)
+            }
+        }
+        binding.m3BtnWarpDns.setOnClickListener { showWarpDnsDialog() }
+        binding.m3BtnWarpPing.setOnClickListener {
+            if (WarpVpnService.isRunning.value) {
+                Toast.makeText(this, "Проверка пинга WARP...", Toast.LENGTH_SHORT).show()
+                WarpVpnService.checkPingAsync(lifecycleScope)
+            } else {
+                Toast.makeText(this, "WARP не подключен", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.m3SwitchVless.setOnClickListener { toggleVless() }
+        binding.m3CardVless.setOnClickListener { toggleVless() }
+        binding.m3BtnVlessServers.setOnClickListener {
+            startActivity(Intent(this, VlessListActivity::class.java))
+        }
+
+        binding.m3SwitchTg.setOnClickListener { toggleTgProxy() }
+        binding.m3CardTg.setOnClickListener { toggleTgProxy() }
+        binding.m3BtnTgOpen.setOnClickListener {
+            val secret = TgWsProxyService.getEffectiveSecret(this)
+            val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
+            val intent = Intent(Intent.ACTION_VIEW, tgUri)
+            try {
+                startActivity(intent)
+            } catch (e: Exception) {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Telegram MTProto Proxy", tgUri.toString())
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this, R.string.tg_proxy_copied, Toast.LENGTH_LONG).show()
+            }
+        }
+        binding.m3BtnTgOpen.setOnLongClickListener {
+            showTgProxyDetailsDialog()
+            true
+        }
+
+        binding.m3BtnTgChannel.setOnClickListener {
+            openTelegramWithVpnCheck()
+        }
+
+        binding.m3CardAdvanced.setOnClickListener {
+            startActivity(Intent(this, AdvancedSettingsActivity::class.java))
+        }
+
+        updateM3State()
+    }
+
+    private fun showTgProxyDetailsDialog() {
+        val secret = TgWsProxyService.getEffectiveSecret(this)
+        val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
+
+        val message = "Хост: 127.0.0.1\nПорт: 1443\nСекрет: $secret\n\nСекрет сохранён в настройках приложения и больше не сбрасывается при перезапусках прокси."
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Telegram MTProto Proxy")
+            .setMessage(message)
+            .setPositiveButton("Скопировать") { _, _ ->
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Telegram MTProto Proxy", tgUri.toString())
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this, R.string.tg_proxy_copied, Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Сбросить секрет") { _, _ ->
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                    .setTitle("Сброс секрета")
+                    .setMessage("Вы уверены, что хотите сгенерировать новый секрет? Потребуется заново применить прокси в Telegram.")
+                    .setPositiveButton("Сгенерировать") { _, _ ->
+                        TgWsProxyService.resetSecret(this)
+                        Toast.makeText(this, "Секрет сброшен и обновлён", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Отмена", null)
+                    .show()
+            }
+            .setNeutralButton("Закрыть", null)
+            .show()
+    }
+
+    private fun updateM3State() {
+        if (!::binding.isInitialized) return
+
+        val (status, _) = appStatus
+        val isByeDpiRunning = status == AppStatus.Running
+        val isWarpRunning = WarpVpnService.isRunning.value
+        val isVlessRunning = VlessVpnService.isRunning.value
+        val isTgRunning = TgWsProxyService.isRunning.value
+        val isAnyRunning = isByeDpiRunning || isWarpRunning || isVlessRunning || isTgRunning
+
+        val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
+        val colorPrimaryContainer = getThemeColor(com.google.android.material.R.attr.colorPrimaryContainer)
+        val colorOnPrimaryContainer = getThemeColor(com.google.android.material.R.attr.colorOnPrimaryContainer)
+        val colorSurface = getThemeColor(com.google.android.material.R.attr.colorSurface)
+        val colorSurfaceVariant = getThemeColor(com.google.android.material.R.attr.colorSurfaceVariant)
+        val colorOutline = getThemeColor(com.google.android.material.R.attr.colorOutline)
+        val colorOutlineVariant = getThemeColor(com.google.android.material.R.attr.colorOutlineVariant)
+        val colorOnSurface = getThemeColor(com.google.android.material.R.attr.colorOnSurface)
+
+        // 1. Hero Card
+        if (isAnyRunning) {
+            binding.m3StatusCircle.setCardBackgroundColor(colorPrimaryContainer)
+            binding.m3StatusCircle.strokeColor = colorPrimary
+            binding.m3StatusIcon.setImageResource(R.drawable.ic_shield_check_24)
+            binding.m3StatusIcon.imageTintList = ColorStateList.valueOf(colorOnPrimaryContainer)
+            binding.m3StatusTitle.text = getString(R.string.m3_status_protected)
+            binding.m3StatusTitle.setTextColor(colorPrimary)
+
+            val activeList = mutableListOf<String>()
+            if (isByeDpiRunning) activeList.add("ByeDPI")
+            if (isWarpRunning) activeList.add("WARP")
+            if (isVlessRunning) activeList.add("VLESS")
+            if (isTgRunning) activeList.add("TG Proxy")
+            binding.m3StatusSubtitle.text = "Активно: " + activeList.joinToString(", ")
+            binding.m3BtnDisconnectAll.visibility = View.VISIBLE
+        } else {
+            binding.m3StatusCircle.setCardBackgroundColor(colorSurface)
+            binding.m3StatusCircle.strokeColor = colorOutlineVariant
+            binding.m3StatusIcon.setImageResource(R.drawable.ic_shield_off_24)
+            binding.m3StatusIcon.imageTintList = ColorStateList.valueOf(colorOutline)
+            binding.m3StatusTitle.text = getString(R.string.m3_status_unprotected)
+            binding.m3StatusTitle.setTextColor(colorOnSurface)
+            binding.m3StatusSubtitle.text = "Все службы отключены"
+            binding.m3BtnDisconnectAll.visibility = View.GONE
+        }
+
+        // 2. ByeDPI Switch & Subtitle
+        val sp = getPreferences()
+        val currentStrategyId = sp.getString("selected_strategy_id", null) ?: StrategyCatalog.strategies[0].id
+        val currentStrategy = StrategyCatalog.getStrategyById(currentStrategyId)
+
+        binding.m3SwitchByedpi.isChecked = isByeDpiRunning
+        if (isByeDpiRunning) {
+            binding.m3IconBoxByedpi.setCardBackgroundColor(colorPrimaryContainer)
+            binding.m3IconByedpi.imageTintList = ColorStateList.valueOf(colorPrimary)
+            binding.m3SubByedpi.text = "🟢 Активно • ${currentStrategy.name}"
+        } else {
+            binding.m3IconBoxByedpi.setCardBackgroundColor(colorSurfaceVariant)
+            binding.m3IconByedpi.imageTintList = ColorStateList.valueOf(colorOutline)
+            binding.m3SubByedpi.text = "⚪ Отключено • ${currentStrategy.name}"
+        }
+
+        // 3. WARP Switch & Subtitle
+        val warpPing = WarpVpnService.warpPingMs.value
+        val warpStatus = WarpVpnService.connectionStatus.value
+        binding.m3SwitchWarp.isChecked = isWarpRunning
+        if (isWarpRunning) {
+            binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
+            binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)
+            if (warpPing != null && warpPing >= 0) {
+                binding.m3SubWarp.text = "🟢 Подключен ($warpPing ms) • AWG 2.0"
+            } else if (warpStatus.contains("Проверка") || warpStatus.contains("Переподключение") || warpStatus.contains("Потеря")) {
+                binding.m3SubWarp.text = "🟡 $warpStatus • AWG 2.0"
+            } else {
+                binding.m3SubWarp.text = "🟢 Подключен • AWG 2.0"
+            }
+        } else {
+            binding.m3IconBoxWarp.setCardBackgroundColor(colorSurfaceVariant)
+            binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorOutline)
+            if (warpStatus.contains("Ожидание") || warpStatus.contains("Переподключение") || warpStatus.contains("Потеря") || warpStatus.contains("Таймаут")) {
+                binding.m3SubWarp.text = "🟡 $warpStatus • Cloudflare WARP"
+            } else {
+                binding.m3SubWarp.text = "⚪ Отключено • Cloudflare WARP"
+            }
+        }
+
+        // 4. VLESS Switch & Subtitle
+        val selectedVless = VlessManager.getSelectedConfig(this)
+        binding.m3SwitchVless.isChecked = isVlessRunning
+        if (isVlessRunning) {
+            binding.m3IconBoxVless.setCardBackgroundColor(colorPrimaryContainer)
+            val serverName = selectedVless?.name ?: "VLESS"
+            binding.m3SubVless.text = "🟢 Подключен • $serverName"
+        } else {
+            binding.m3IconBoxVless.setCardBackgroundColor(colorSurfaceVariant)
+            if (selectedVless != null) {
+                binding.m3SubVless.text = "⚪ Отключено • ${selectedVless.name}"
+            } else {
+                binding.m3SubVless.text = getString(R.string.vless_no_servers)
+            }
+        }
+
+        // 5. TG Proxy Switch & Subtitle
+        binding.m3SwitchTg.isChecked = isTgRunning
+        binding.m3BtnTgOpen.visibility = if (isTgRunning) View.VISIBLE else View.GONE
+        val tgStats = TgWsProxyService.trafficStats.value
+        if (isTgRunning) {
+            binding.m3IconBoxTg.setCardBackgroundColor(colorPrimaryContainer)
+            binding.m3SubTg.text = "🟢 Работает • $tgStats"
+        } else {
+            binding.m3IconBoxTg.setCardBackgroundColor(colorSurfaceVariant)
+            binding.m3SubTg.text = "⚪ Отключено • 127.0.0.1:1443"
         }
     }
 

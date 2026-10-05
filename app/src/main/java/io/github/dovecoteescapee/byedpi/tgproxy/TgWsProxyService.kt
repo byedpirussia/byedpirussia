@@ -17,6 +17,10 @@ import io.github.dovecoteescapee.byedpi.activities.MainActivity
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import io.github.dovecoteescapee.byedpi.utility.getTgProxyBaseSecret
+import io.github.dovecoteescapee.byedpi.utility.setTgProxyBaseSecret
+import io.github.dovecoteescapee.byedpi.utility.getTgProxyEffectiveSecret
+import io.github.dovecoteescapee.byedpi.utility.setTgProxyEffectiveSecret
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
@@ -50,11 +54,42 @@ class TgWsProxyService : Service() {
         private val _effectiveSecret = MutableStateFlow<String?>(null)
         val effectiveSecret: StateFlow<String?> = _effectiveSecret
 
+        fun initSecret(context: Context) {
+            if (_effectiveSecret.value.isNullOrBlank()) {
+                val saved = context.getTgProxyEffectiveSecret()
+                if (!saved.isNullOrBlank()) {
+                    _effectiveSecret.value = saved
+                }
+            }
+        }
+
+        fun getEffectiveSecret(context: Context): String {
+            initSecret(context)
+            return _effectiveSecret.value ?: context.getTgProxyEffectiveSecret() ?: ""
+        }
+
+        fun resetSecret(context: Context): String {
+            val bytes = ByteArray(16)
+            SecureRandom().nextBytes(bytes)
+            val newBaseSecret = bytes.joinToString("") { "%02x".format(it) }
+            context.setTgProxyBaseSecret(newBaseSecret)
+            context.setTgProxyEffectiveSecret("")
+            _effectiveSecret.value = null
+            if (_isRunning.value) {
+                stop(context)
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    start(context, port = 1443, secret = newBaseSecret)
+                }, 500)
+            }
+            return newBaseSecret
+        }
+
         fun start(context: Context, port: Int = 1443, secret: String = "") {
+            val finalSecret = if (secret.isNotBlank()) secret else context.getTgProxyBaseSecret()
             val intent = Intent(context, TgWsProxyService::class.java).apply {
                 action = ACTION_START
                 putExtra(EXTRA_PORT, port)
-                putExtra(EXTRA_SECRET, secret)
+                putExtra(EXTRA_SECRET, finalSecret)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
@@ -74,13 +109,17 @@ class TgWsProxyService : Service() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        initSecret(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_START -> {
                 val port = intent.getIntExtra(EXTRA_PORT, 1443)
-                val secret = intent.getStringExtra(EXTRA_SECRET) ?: ""
+                var secret = intent.getStringExtra(EXTRA_SECRET) ?: ""
+                if (secret.isBlank()) {
+                    secret = getTgProxyBaseSecret()
+                }
                 startProxyServer(port, secret)
             }
             ACTION_STOP -> {
@@ -169,11 +208,13 @@ class TgWsProxyService : Service() {
                 NativeTgWsProxy.setCfProxyCacheDir(cacheDir.absolutePath)
                 NativeTgWsProxy.setCfProxyConfig(true, true, "")
 
-                val finalSecret = if (secretKey.isNotBlank()) secretKey else generateRandomSecret()
+                val finalSecret = if (secretKey.isNotBlank()) secretKey else getTgProxyBaseSecret()
+                setTgProxyBaseSecret(finalSecret)
                 val result = NativeTgWsProxy.startProxy(bindIp, port, "", finalSecret, 1)
 
                 if (result == 0) {
                     val secretWithPrefix = NativeTgWsProxy.getSecretWithPrefix() ?: finalSecret
+                    setTgProxyEffectiveSecret(secretWithPrefix)
                     _effectiveSecret.value = secretWithPrefix
                     _isRunning.value = true
                     updateNotification("MTProto работает на порту $port")

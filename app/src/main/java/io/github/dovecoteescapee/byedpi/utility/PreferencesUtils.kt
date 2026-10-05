@@ -127,3 +127,39 @@ fun Context.setWarpDnsForceOverride(force: Boolean) {
     getPreferences().edit().putBoolean(KEY_WARP_DNS_FORCE_OVERRIDE, force).apply()
 }
 
+const val KEY_APP_UI_MODE = "app_ui_mode" // "m3" (новый дизайн) or "classic" (классический)
+
+fun Context.isMaterial3UiMode(): Boolean =
+    getPreferences().getString(KEY_APP_UI_MODE, "m3") == "m3"
+
+fun Context.setMaterial3UiMode(m3: Boolean) {
+    getPreferences().edit().putString(KEY_APP_UI_MODE, if (m3) "m3" else "classic").apply()
+}
+
+const val KEY_TG_PROXY_BASE_SECRET = "tg_proxy_base_secret"
+const val KEY_TG_PROXY_EFFECTIVE_SECRET = "tg_proxy_effective_secret"
+
+fun Context.getTgProxyBaseSecret(): String {
+    val prefs = getPreferences()
+    var secret = prefs.getString(KEY_TG_PROXY_BASE_SECRET, null)
+    if (secret.isNullOrBlank()) {
+        val bytes = ByteArray(16)
+        java.security.SecureRandom().nextBytes(bytes)
+        secret = bytes.joinToString("") { "%02x".format(it) }
+        prefs.edit().putString(KEY_TG_PROXY_BASE_SECRET, secret).apply()
+    }
+    return secret
+}
+
+fun Context.setTgProxyBaseSecret(secret: String) {
+    getPreferences().edit().putString(KEY_TG_PROXY_BASE_SECRET, secret).apply()
+}
+
+fun Context.getTgProxyEffectiveSecret(): String? {
+    return getPreferences().getString(KEY_TG_PROXY_EFFECTIVE_SECRET, null)
+}
+
+fun Context.setTgProxyEffectiveSecret(effectiveSecret: String) {
+    getPreferences().edit().putString(KEY_TG_PROXY_EFFECTIVE_SECRET, effectiveSecret).apply()
+}
+

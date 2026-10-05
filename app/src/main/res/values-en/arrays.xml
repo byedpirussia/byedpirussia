@@ -11,6 +11,15 @@
         <item name="dark">dark</item>
     </array>
 
+    <array name="ui_modes">
+        <item name="m3">Material Design 3 (New style)</item>
+        <item name="classic">Classic style</item>
+    </array>
+    <array name="ui_modes_entries">
+        <item name="m3">m3</item>
+        <item name="classic">classic</item>
+    </array>
+
     <array name="accent_colors">
         <item name="dynamic">Material You (Dynamic Color)</item>
         <item name="blue">Blue (Indigo)</item>
