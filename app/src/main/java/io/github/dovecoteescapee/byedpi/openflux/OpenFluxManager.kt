@@ -139,6 +139,16 @@ object OpenFluxManager {
         prefs.edit().putString(KEY_SELECTED_ID, id).apply()
     }
 
+    fun getRoutingMode(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_ROUTING_MODE, "vpn") ?: "vpn"
+    }
+
+    fun setRoutingMode(context: Context, mode: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_ROUTING_MODE, mode).apply()
+    }
+
     fun getSelectedConfig(context: Context): OpenFluxConfig? {
         val list = getConfigs(context)
         val selectedId = getSelectedId(context)

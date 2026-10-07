@@ -26,6 +26,8 @@ import io.github.dovecoteescapee.byedpi.strategy.TestedStrategiesAdapter
 import io.github.dovecoteescapee.byedpi.utility.getPreferences
 import io.github.dovecoteescapee.byedpi.utility.isDynamicIslandEnabled
 import io.github.dovecoteescapee.byedpi.utility.setDynamicIslandEnabled
+import io.github.dovecoteescapee.byedpi.backup.BackupManager
+import io.github.dovecoteescapee.byedpi.tv.TvNavigationHelper
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
 import io.github.dovecoteescapee.byedpi.warp.WarpGenerator
 import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
@@ -52,6 +54,33 @@ class AdvancedSettingsActivity : BaseActivity() {
                 contentResolver.openInputStream(it)?.use { stream ->
                     val content = stream.bufferedReader().use { reader -> reader.readText() }
                     pendingImportConfSetter?.invoke(content)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this, "Не удалось прочитать файл: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private val createBackupFileLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
+        uri?.let {
+            try {
+                val json = BackupManager.createBackupJson(this)
+                contentResolver.openOutputStream(it)?.use { stream ->
+                    stream.write(json.toByteArray(Charsets.UTF_8))
+                }
+                Toast.makeText(this, "Резервная копия успешно сохранена", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Ошибка сохранения: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private val pickBackupFileLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            try {
+                contentResolver.openInputStream(it)?.use { stream ->
+                    val json = stream.bufferedReader().use { reader -> reader.readText() }
+                    confirmAndRestoreBackup(json)
                 }
             } catch (e: Exception) {
                 Toast.makeText(this, "Не удалось прочитать файл: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -114,8 +143,46 @@ class AdvancedSettingsActivity : BaseActivity() {
 
         setupWarpCard()
         setupDynamicIslandCard()
+        setupBackupCard()
+        setupTvFocus()
         updateStrategyView()
         updateSplitTunnelSummary()
+    }
+
+    private fun setupTvFocus() {
+        TvNavigationHelper.setupCardFocus(binding.strategyCard)
+        TvNavigationHelper.setupCardFocus(binding.autotuneCard)
+        TvNavigationHelper.setupCardFocus(binding.testedStrategiesCard)
+        TvNavigationHelper.setupCardFocus(binding.warpToolsCard)
+        TvNavigationHelper.setupCardFocus(binding.cardSplitTunnel) {
+            startActivity(Intent(this, io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelActivity::class.java))
+        }
+        TvNavigationHelper.setupCardFocus(binding.cardDynamicIsland) {
+            binding.switchDynamicIsland.toggle()
+        }
+        TvNavigationHelper.setupCardFocus(binding.cardBackup)
+        TvNavigationHelper.setupCardFocus(binding.cardKernelSettings) {
+            val (status, _) = appStatus
+            if (status == AppStatus.Halted) {
+                startActivity(Intent(this, SettingsActivity::class.java))
+            } else {
+                Toast.makeText(this, R.string.settings_unavailable, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        TvNavigationHelper.setupButtonFocus(binding.btnAutoTune)
+        TvNavigationHelper.setupButtonFocus(binding.btnSelectStrategy)
+        TvNavigationHelper.setupButtonFocus(binding.btnStopAutotune)
+        TvNavigationHelper.setupButtonFocus(binding.btnToggleTestedStrategies)
+        TvNavigationHelper.setupButtonFocus(binding.btnWarpGenerate)
+        TvNavigationHelper.setupButtonFocus(binding.btnWarpImport)
+        TvNavigationHelper.setupButtonFocus(binding.btnWarpCopy)
+        TvNavigationHelper.setupButtonFocus(binding.btnWarpOpenAmnezia)
+        TvNavigationHelper.setupButtonFocus(binding.btnExportBackup)
+        TvNavigationHelper.setupButtonFocus(binding.btnImportBackup)
+        TvNavigationHelper.setupButtonFocus(binding.btnCopyBackupJson)
+        TvNavigationHelper.setupButtonFocus(binding.btnPasteBackupJson)
+        TvNavigationHelper.setupButtonFocus(binding.btnOpenKernelSettings)
     }
 
     override fun onResume() {
@@ -135,6 +202,83 @@ class AdvancedSettingsActivity : BaseActivity() {
 
     private fun updateDynamicIslandView() {
         binding.switchDynamicIsland.isChecked = isDynamicIslandEnabled()
+    }
+
+    private fun setupBackupCard() {
+        binding.btnExportBackup.setOnClickListener {
+            try {
+                createBackupFileLauncher.launch(BackupManager.generateFileName())
+            } catch (e: Exception) {
+                shareBackupJson()
+            }
+        }
+
+        binding.btnImportBackup.setOnClickListener {
+            pickBackupFileLauncher.launch("*/*")
+        }
+
+        binding.btnCopyBackupJson.setOnClickListener {
+            val json = BackupManager.createBackupJson(this)
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText("ByeDPI Backup", json))
+            Toast.makeText(this, "Резервная копия скопирована в буфер обмена", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnPasteBackupJson.setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipText = clipboard.primaryClip?.getItemAt(0)?.text?.toString()?.trim()
+            if (clipText.isNullOrBlank()) {
+                Toast.makeText(this, "Буфер обмена пуст", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            confirmAndRestoreBackup(clipText)
+        }
+    }
+
+    private fun shareBackupJson() {
+        val json = BackupManager.createBackupJson(this)
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, json)
+            type = "application/json"
+        }
+        startActivity(Intent.createChooser(sendIntent, "Поделиться резервной копией"))
+    }
+
+    private fun confirmAndRestoreBackup(jsonStr: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Восстановление настроек")
+            .setMessage("Восстановить конфигурацию из резервной копии? Ваши текущие серверы VLESS, профиль WARP, OpenFLUX и правила туннелирования будут обновлены.")
+            .setPositiveButton("Восстановить") { _, _ ->
+                val result = BackupManager.restoreBackupJson(this, jsonStr)
+                result.onSuccess { summary ->
+                    updateStrategyView()
+                    updateSplitTunnelSummary()
+                    updateDynamicIslandView()
+
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("✅ Настройки восстановлены")
+                        .setMessage(
+                            "Успешно импортировано:\n" +
+                            "• Серверов VLESS: ${summary.vlessCount}\n" +
+                            "• Подписок: ${summary.subscriptionsCount}\n" +
+                            "• Конфигурация WARP: ${if (summary.warpRestored) "Обновлена" else "Без изменений"}\n" +
+                            "• Профилей OpenFLUX: ${summary.openFluxCount}\n" +
+                            "• Приложений в Split Tunnel: ${summary.splitTunnelAppsCount}\n" +
+                            "• Параметров приложения: ${summary.preferencesCount}"
+                        )
+                        .setPositiveButton("ОК", null)
+                        .show()
+                }.onFailure { e ->
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("❌ Ошибка импорта")
+                        .setMessage("Не удалось восстановить резервную копию: ${e.message}")
+                        .setPositiveButton("ОК", null)
+                        .show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun updateSplitTunnelSummary() {

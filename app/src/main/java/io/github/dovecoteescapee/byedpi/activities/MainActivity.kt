@@ -43,6 +43,7 @@ import io.github.dovecoteescapee.byedpi.vless.VlessListActivity
 import io.github.dovecoteescapee.byedpi.openflux.OpenFluxConfigActivity
 import io.github.dovecoteescapee.byedpi.openflux.OpenFluxManager
 import io.github.dovecoteescapee.byedpi.openflux.OpenFluxVpnService
+import io.github.dovecoteescapee.byedpi.tv.TvNavigationHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -842,6 +843,25 @@ class MainActivity : BaseActivity() {
         binding.m3CardAdvanced.setOnClickListener {
             startActivity(Intent(this, AdvancedSettingsActivity::class.java))
         }
+
+        // TV & D-Pad Remote Navigation
+        TvNavigationHelper.setupCardFocus(binding.m3HeroCard)
+        TvNavigationHelper.setupCardFocus(binding.m3CardByedpi) { toggleByeDpi() }
+        TvNavigationHelper.setupCardFocus(binding.m3CardWarp) { toggleWarp() }
+        TvNavigationHelper.setupCardFocus(binding.m3CardVless) { toggleVless() }
+        TvNavigationHelper.setupCardFocus(binding.m3CardOpenflux) { toggleOpenFlux() }
+        TvNavigationHelper.setupCardFocus(binding.m3CardTg) { toggleTgProxy() }
+        TvNavigationHelper.setupCardFocus(binding.m3CardAdvanced) {
+            startActivity(Intent(this, AdvancedSettingsActivity::class.java))
+        }
+
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnDisconnectAll)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpDns)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpPing)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnVlessServers)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnOpenfluxServers)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnTgOpen)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnTgChannel)
 
         lifecycleScope.launch {
             TgWsProxyService.isRunning.collectLatest { updateM3State() }

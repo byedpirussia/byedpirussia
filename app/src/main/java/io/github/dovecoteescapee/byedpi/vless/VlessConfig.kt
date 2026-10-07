@@ -56,6 +56,38 @@ data class VlessConfig(
             }
         }
 
+        fun fromJson(obj: JSONObject): VlessConfig {
+            return VlessConfig(
+                id = obj.optString("id", UUID.randomUUID().toString()),
+                subscriptionUrl = obj.optString("subscriptionUrl", ""),
+                name = obj.optString("name", "VLESS"),
+                address = obj.optString("address", ""),
+                port = obj.optInt("port", 443),
+                uuid = obj.optString("uuid", ""),
+                protocol = obj.optString("protocol", "vless"),
+                flow = obj.optString("flow", ""),
+                encryption = obj.optString("encryption", "none"),
+                transport = obj.optString("transport", "tcp"),
+                security = obj.optString("security", "none"),
+                sni = obj.optString("sni", ""),
+                pbk = obj.optString("pbk", ""),
+                sid = obj.optString("sid", ""),
+                fp = obj.optString("fp", "chrome"),
+                path = obj.optString("path", ""),
+                host = obj.optString("host", ""),
+                serviceName = obj.optString("serviceName", ""),
+                obfs = obj.optString("obfs", ""),
+                obfsPassword = obj.optString("obfsPassword", ""),
+                allowInsecure = obj.optBoolean("allowInsecure", false),
+                alterId = obj.optInt("alterId", 0),
+                rawUri = obj.optString("rawUri", ""),
+                isChain = obj.optBoolean("isChain", false),
+                chainMode = obj.optString("chainMode", ""),
+                chainHop1ConfigJson = obj.optString("chainHop1ConfigJson", ""),
+                chainWarpConfigText = obj.optString("chainWarpConfigText", "")
+            )
+        }
+
         fun parse(uriString: String, subscriptionUrl: String = ""): VlessConfig? {
             val trimmed = uriString.trim()
             val lower = trimmed.lowercase()
@@ -735,5 +767,37 @@ data class VlessConfig(
             }
         }
         return proxyOutbound
+    }
+
+    fun toJson(): JSONObject {
+        return JSONObject().apply {
+            put("id", id)
+            put("subscriptionUrl", subscriptionUrl)
+            put("name", name)
+            put("address", address)
+            put("port", port)
+            put("uuid", uuid)
+            put("protocol", protocol)
+            put("flow", flow)
+            put("encryption", encryption)
+            put("transport", transport)
+            put("security", security)
+            put("sni", sni)
+            put("pbk", pbk)
+            put("sid", sid)
+            put("fp", fp)
+            put("path", path)
+            put("host", host)
+            put("serviceName", serviceName)
+            put("obfs", obfs)
+            put("obfsPassword", obfsPassword)
+            put("allowInsecure", allowInsecure)
+            put("alterId", alterId)
+            put("rawUri", rawUri)
+            put("isChain", isChain)
+            put("chainMode", chainMode)
+            put("chainHop1ConfigJson", chainHop1ConfigJson)
+            put("chainWarpConfigText", chainWarpConfigText)
+        }
     }
 }
