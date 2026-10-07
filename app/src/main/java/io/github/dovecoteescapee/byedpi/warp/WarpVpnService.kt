@@ -519,7 +519,12 @@ class WarpVpnService : VpnService() {
             }
         }
 
-        builder.setMtu(finalParsed.mtu)
+        val effectiveMtu = if (io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isMtuClampEnabled(this@WarpVpnService)) {
+            minOf(finalParsed.mtu, 1280)
+        } else {
+            finalParsed.mtu
+        }
+        builder.setMtu(effectiveMtu)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             builder.setMetered(false)
         }

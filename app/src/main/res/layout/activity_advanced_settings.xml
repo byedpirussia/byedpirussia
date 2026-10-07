@@ -819,7 +819,81 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 8. ПАРАМЕТРЫ ЯДРА И ПРИЛОЖЕНИЯ (Интерактивная M3 карточка) -->
+            <!-- 8. ЭКСПЕРИМЕНТАЛЬНЫЕ НАСТРОЙКИ (Интерактивная M3 карточка) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_experimental_settings"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="20dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Filled"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardBackgroundColor="?attr/colorTertiaryContainer"
+                        app:cardElevation="0dp"
+                        android:layout_marginEnd="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="🧪"
+                            android:textSize="20sp" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Экспериментальные настройки"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:id="@+id/tv_experimental_summary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Экономия энергии, TCP Fast Open, QUIC, MTU"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOutline"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_expand_more_24"
+                        android:rotation="270"
+                        app:tint="?attr/colorOutline"
+                        android:layout_marginStart="8dp"
+                        tools:ignore="ContentDescription" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 9. ПАРАМЕТРЫ ЯДРА И ПРИЛОЖЕНИЯ (Интерактивная M3 карточка) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_kernel_settings"
                 style="@style/Widget.Material3.CardView.Outlined"

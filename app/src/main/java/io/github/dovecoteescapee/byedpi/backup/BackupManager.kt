@@ -60,6 +60,16 @@ object BackupManager {
             }
             put("preferences", prefsObj)
 
+            // Экспериментальные настройки
+            val expObj = JSONObject().apply {
+                put("battery_saver", io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isBatterySaverEnabled(context))
+                put("block_quic", io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isBlockQuicEnabled(context))
+                put("tcp_fast_open", io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isTcpFastOpenEnabled(context))
+                put("mtu_clamp", io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isMtuClampEnabled(context))
+                put("aggressive_keepalive", io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isAggressiveKeepAliveEnabled(context))
+            }
+            put("experimental", expObj)
+
             // 2. VLESS / Xray серверы и подписки
             val vlessObj = JSONObject().apply {
                 val subscriptions = VlessManager.getSubscriptions(context)
@@ -243,6 +253,15 @@ object BackupManager {
                     SplitTunnelManager.setSelectedPackages(context, set)
                     splitPkgsCount = set.size
                 }
+            }
+
+            // 6. Восстановление Экспериментальных настроек
+            root.optJSONObject("experimental")?.let { expObj ->
+                if (expObj.has("battery_saver")) io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.setBatterySaverEnabled(context, expObj.getBoolean("battery_saver"))
+                if (expObj.has("block_quic")) io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.setBlockQuicEnabled(context, expObj.getBoolean("block_quic"))
+                if (expObj.has("tcp_fast_open")) io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.setTcpFastOpenEnabled(context, expObj.getBoolean("tcp_fast_open"))
+                if (expObj.has("mtu_clamp")) io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.setMtuClampEnabled(context, expObj.getBoolean("mtu_clamp"))
+                if (expObj.has("aggressive_keepalive")) io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.setAggressiveKeepAliveEnabled(context, expObj.getBoolean("aggressive_keepalive"))
             }
 
             Result.success(

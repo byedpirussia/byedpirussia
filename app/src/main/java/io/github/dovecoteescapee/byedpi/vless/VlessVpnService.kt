@@ -129,7 +129,8 @@ class VlessVpnService : VpnService() {
                 val controller = Libv2ray.newCoreController(callback)
                 coreController = controller
 
-                val configJson = activeConfig.toXrayConfigJson(localSocksPort = SOCKS_PORT)
+                val isBlockQuic = io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isBlockQuicEnabled(this@VlessVpnService)
+                val configJson = activeConfig.toXrayConfigJson(localSocksPort = SOCKS_PORT, blockQuic = isBlockQuic)
                 Log.d(TAG, "Starting Xray Core with config:\n$configJson")
                 controller.startLoop(configJson, 0)
 
@@ -161,7 +162,8 @@ class VlessVpnService : VpnService() {
                 builder.addAddress("10.0.0.2", 30)
                 builder.addDnsServer("1.1.1.1")
                 builder.addRoute("0.0.0.0", 0)
-                builder.setMtu(8500)
+                val vlessMtu = if (io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isMtuClampEnabled(this@VlessVpnService)) 1280 else 8500
+                builder.setMtu(vlessMtu)
 
                 // Split tunneling
                 SplitTunnelManager.applySplitTunnel(builder, this@VlessVpnService)

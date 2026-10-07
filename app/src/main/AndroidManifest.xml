@@ -53,6 +53,12 @@
             android:exported="false" />
 
         <activity
+            android:name=".activities.ExperimentalSettingsActivity"
+            android:label="Экспериментальные настройки"
+            android:theme="@style/Theme.ByeDPI.NoActionBar"
+            android:exported="false" />
+
+        <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_settings"
             android:theme="@style/Theme.ByeDPI.NoActionBar"

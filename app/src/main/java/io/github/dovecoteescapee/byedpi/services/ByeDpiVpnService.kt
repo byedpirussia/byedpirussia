@@ -306,6 +306,12 @@ class ByeDpiVpnService : LifecycleVpnService() {
             builder.setMetered(false)
         }
 
+        if (io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isMtuClampEnabled(this)) {
+            builder.setMtu(1280)
+        } else {
+            builder.setMtu(1500)
+        }
+
         io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this)
 
         return builder

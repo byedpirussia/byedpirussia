@@ -330,7 +330,7 @@ data class VlessConfig(
         }
     }
 
-    fun toXrayConfigJson(localSocksPort: Int = 10808): String {
+    fun toXrayConfigJson(localSocksPort: Int = 10808, blockQuic: Boolean = false): String {
         val root = JSONObject()
 
         // Log config
@@ -462,6 +462,16 @@ data class VlessConfig(
                 put("outboundTag", "proxy")
                 put("port", "53")
             })
+
+            // Block QUIC (UDP 443) if requested
+            if (blockQuic) {
+                rules.put(JSONObject().apply {
+                    put("type", "field")
+                    put("outboundTag", "block")
+                    put("port", "443")
+                    put("network", "udp")
+                })
+            }
 
             // Default route to proxy
             rules.put(JSONObject().apply {

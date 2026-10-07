@@ -27,6 +27,7 @@ import io.github.dovecoteescapee.byedpi.utility.getPreferences
 import io.github.dovecoteescapee.byedpi.utility.isDynamicIslandEnabled
 import io.github.dovecoteescapee.byedpi.utility.setDynamicIslandEnabled
 import io.github.dovecoteescapee.byedpi.backup.BackupManager
+import io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager
 import io.github.dovecoteescapee.byedpi.tv.TvNavigationHelper
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
 import io.github.dovecoteescapee.byedpi.warp.WarpGenerator
@@ -141,12 +142,17 @@ class AdvancedSettingsActivity : BaseActivity() {
             startActivity(Intent(this, io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelActivity::class.java))
         }
 
+        binding.cardExperimentalSettings.setOnClickListener {
+            startActivity(Intent(this, ExperimentalSettingsActivity::class.java))
+        }
+
         setupWarpCard()
         setupDynamicIslandCard()
         setupBackupCard()
         setupTvFocus()
         updateStrategyView()
         updateSplitTunnelSummary()
+        updateExperimentalSummary()
     }
 
     private fun setupTvFocus() {
@@ -161,6 +167,9 @@ class AdvancedSettingsActivity : BaseActivity() {
             binding.switchDynamicIsland.toggle()
         }
         TvNavigationHelper.setupCardFocus(binding.cardBackup)
+        TvNavigationHelper.setupCardFocus(binding.cardExperimentalSettings) {
+            startActivity(Intent(this, ExperimentalSettingsActivity::class.java))
+        }
         TvNavigationHelper.setupCardFocus(binding.cardKernelSettings) {
             val (status, _) = appStatus
             if (status == AppStatus.Halted) {
@@ -190,6 +199,16 @@ class AdvancedSettingsActivity : BaseActivity() {
         updateStrategyView()
         updateSplitTunnelSummary()
         updateDynamicIslandView()
+        updateExperimentalSummary()
+    }
+
+    private fun updateExperimentalSummary() {
+        val count = ExperimentalConfigManager.getActiveCount(this)
+        binding.tvExperimentalSummary.text = if (count > 0) {
+            "Активно опций: $count (Экономия, QUIC, MTU и др.)"
+        } else {
+            "Экономия энергии, TCP Fast Open, QUIC, MTU"
+        }
     }
 
     private fun setupDynamicIslandCard() {
