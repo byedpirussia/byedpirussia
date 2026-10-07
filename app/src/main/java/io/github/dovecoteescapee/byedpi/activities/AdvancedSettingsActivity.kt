@@ -27,6 +27,10 @@ import io.github.dovecoteescapee.byedpi.utility.getPreferences
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
 import io.github.dovecoteescapee.byedpi.warp.WarpGenerator
 import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
+import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -37,6 +41,21 @@ class AdvancedSettingsActivity : BaseActivity() {
     private lateinit var testedAdapter: TestedStrategiesAdapter
     private var autoTuneJob: Job? = null
     private var isTestedListExpanded: Boolean = true
+
+    private var pendingImportConfSetter: ((String) -> Unit)? = null
+
+    private val pickConfigFileLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            try {
+                contentResolver.openInputStream(it)?.use { stream ->
+                    val content = stream.bufferedReader().use { reader -> reader.readText() }
+                    pendingImportConfSetter?.invoke(content)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this, "Не удалось прочитать файл: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -353,5 +372,90 @@ class AdvancedSettingsActivity : BaseActivity() {
                 }
             }
         }
+
+        binding.btnWarpImport.setOnClickListener {
+            showWarpImportDialog()
+        }
+    }
+
+    private fun showWarpImportDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_warp_import, null)
+        val etConf = dialogView.findViewById<TextInputEditText>(R.id.et_warp_conf)
+        val btnPaste = dialogView.findViewById<MaterialButton>(R.id.btn_import_from_clipboard)
+        val btnFile = dialogView.findViewById<MaterialButton>(R.id.btn_import_from_file)
+
+        etConf.setText(WarpConfigManager.currentConfig.value)
+
+        pendingImportConfSetter = { content ->
+            etConf.setText(content)
+            Toast.makeText(this, "Конфиг загружен из файла ✓", Toast.LENGTH_SHORT).show()
+        }
+
+        btnPaste.setOnClickListener {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = clipboard.primaryClip
+            if (clip != null && clip.itemCount > 0) {
+                val text = clip.getItemAt(0).text?.toString() ?: ""
+                if (text.isNotBlank()) {
+                    etConf.setText(text)
+                    Toast.makeText(this, "Вставлено из буфера обмена ✓", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Буфер обмена пуст", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Буфер обмена пуст", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnFile.setOnClickListener {
+            try {
+                pickConfigFileLauncher.launch("*/*")
+            } catch (e: Exception) {
+                Toast.makeText(this, "Ошибка открытия выбора файла: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setPositiveButton(R.string.warp_import_save, null)
+            .setNegativeButton(android.R.string.cancel) { d, _ ->
+                pendingImportConfSetter = null
+                d.dismiss()
+            }
+            .setOnDismissListener {
+                pendingImportConfSetter = null
+            }
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val text = etConf.text?.toString()?.trim() ?: ""
+                if (!text.contains("[Interface]", ignoreCase = true) || !text.contains("[Peer]", ignoreCase = true)) {
+                    Toast.makeText(this, R.string.warp_import_invalid, Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+
+                WarpConfigManager.saveConfig(this, text)
+                Toast.makeText(this, R.string.warp_import_success, Toast.LENGTH_SHORT).show()
+
+                val wasRunning = WarpVpnService.isRunning.value
+                if (wasRunning) {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("WARP активен")
+                        .setMessage("Переподключить WARP с новым профилем прямо сейчас?")
+                        .setPositiveButton("Переподключить") { _, _ ->
+                            WarpVpnService.stop(this)
+                            WarpVpnService.start(this)
+                        }
+                        .setNegativeButton("Позже", null)
+                        .show()
+                }
+
+                pendingImportConfSetter = null
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
     }
 }

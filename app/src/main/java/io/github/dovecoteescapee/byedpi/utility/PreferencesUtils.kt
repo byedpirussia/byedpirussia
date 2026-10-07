@@ -127,13 +127,12 @@ fun Context.setWarpDnsForceOverride(force: Boolean) {
     getPreferences().edit().putBoolean(KEY_WARP_DNS_FORCE_OVERRIDE, force).apply()
 }
 
-const val KEY_APP_UI_MODE = "app_ui_mode" // "m3" (новый дизайн) or "classic" (классический)
+const val KEY_APP_UI_MODE = "app_ui_mode" // Material Design 3
 
-fun Context.isMaterial3UiMode(): Boolean =
-    getPreferences().getString(KEY_APP_UI_MODE, "m3") == "m3"
+fun Context.isMaterial3UiMode(): Boolean = true
 
-fun Context.setMaterial3UiMode(m3: Boolean) {
-    getPreferences().edit().putString(KEY_APP_UI_MODE, if (m3) "m3" else "classic").apply()
+fun Context.setMaterial3UiMode(m3: Boolean = true) {
+    getPreferences().edit().putString(KEY_APP_UI_MODE, "m3").apply()
 }
 
 const val KEY_TG_PROXY_BASE_SECRET = "tg_proxy_base_secret"

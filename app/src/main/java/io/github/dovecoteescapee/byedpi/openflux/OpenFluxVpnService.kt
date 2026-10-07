@@ -358,7 +358,7 @@ class OpenFluxVpnService : VpnService() {
     private fun startForegroundNotification(initialStatus: String) {
         val notification = createNotification(initialStatus)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(FOREGROUND_SERVICE_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED)
+            startForeground(FOREGROUND_SERVICE_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         } else {
             startForeground(FOREGROUND_SERVICE_ID, notification)
         }

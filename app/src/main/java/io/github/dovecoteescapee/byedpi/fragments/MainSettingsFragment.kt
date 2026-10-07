@@ -54,12 +54,6 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
-        findPreferenceNotNull<DropDownPreference>("app_ui_mode")
-            .setOnPreferenceChangeListener { _, _ ->
-                activity?.recreate()
-                true
-            }
-
         findPreferenceNotNull<DropDownPreference>("app_language")
             .setOnPreferenceChangeListener { _, newValue ->
                 context?.let { ctx ->

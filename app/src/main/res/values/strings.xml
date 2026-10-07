@@ -96,7 +96,7 @@
     <string name="warp_card_title">Cloudflare WARP (AmneziaWG)</string>
     <string name="warp_card_subtitle">Обфусцированный WireGuard против ТСПУ</string>
     <string name="warp_btn_generate">✨ Сгенерировать новый WARP</string>
-    <string name="warp_btn_copy">📋 Скопировать конфиг (.conf)</string>
+    <string name="warp_btn_copy">Скопировать конфиг (.conf)</string>
     <string name="warp_btn_connect">Включить WARP</string>
     <string name="warp_btn_disconnect">Отключить WARP</string>
     <string name="warp_btn_open_amnezia">Поделиться / Amnezia</string>
@@ -230,11 +230,17 @@
     <string name="builtin_subs_add_btn">Импортировать</string>
     <string name="builtin_subs_load_custom_btn">Загрузить свою ссылку</string>
 
-    <!-- UI Style Switcher -->
-    <string name="app_ui_mode_setting">Стиль интерфейса</string>
-    <string name="app_ui_mode_summary">Выберите между новым стилем Material Design 3 и классическим стилем</string>
+    <!-- Material Design 3 -->
     <string name="m3_status_protected">Защищено</string>
     <string name="m3_status_unprotected">Не защищено</string>
     <string name="m3_services_title">Службы обхода и VPN</string>
+    <string name="warp_btn_import">Импорт профиля (.conf)</string>
+    <string name="warp_import_dialog_title">Импорт профиля WARP (AWG)</string>
+    <string name="warp_import_dialog_msg">Вставьте текст конфигурации WireGuard / AmneziaWG (.conf) или выберите файл:</string>
+    <string name="warp_import_from_file">Выбрать файл .conf</string>
+    <string name="warp_import_from_clipboard">Вставить из буфера</string>
+    <string name="warp_import_save">Сохранить и применить</string>
+    <string name="warp_import_invalid">Ошибка: в конфигурации не найдены обязательные секции [Interface] или [Peer]</string>
+    <string name="warp_import_success">Конфигурация WARP успешно импортирована!</string>
 </resources>
 

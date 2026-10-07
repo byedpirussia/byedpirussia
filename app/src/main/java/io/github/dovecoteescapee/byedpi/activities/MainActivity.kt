@@ -168,12 +168,11 @@ class MainActivity : BaseActivity() {
     }
 
     private var currentAccent: String? = null
-    private var currentUiMode: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         applyAccentTheme(noActionBar = true)
         currentAccent = getPreferences().getString("accent_color", "dynamic")
-        currentUiMode = getPreferences().getString(KEY_APP_UI_MODE, "m3")
+        setMaterial3UiMode(true)
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -216,29 +215,8 @@ class MainActivity : BaseActivity() {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1)
         }
 
-        applyUiMode()
-
-        setupByeDpiCard()
-        setupTelegramProxyCard()
-        setupWarpCard()
-        setupVlessCard()
-        setupOpenFluxCard()
-        setupTgChannelBanner()
-        setupAdvancedSettingsCard()
         setupM3Interface()
-
         checkInitialSetup()
-    }
-
-    private fun applyUiMode() {
-        val isM3 = isMaterial3UiMode()
-        if (isM3) {
-            binding.containerM3.visibility = View.VISIBLE
-            binding.containerClassic.visibility = View.GONE
-        } else {
-            binding.containerM3.visibility = View.GONE
-            binding.containerClassic.visibility = View.VISIBLE
-        }
     }
 
     private fun isAnyVpnActive(): Boolean {
@@ -435,12 +413,6 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private fun setupTgChannelBanner() {
-        binding.btnOpenTgChannel.setOnClickListener {
-            openTelegramWithVpnCheck()
-        }
-    }
-
     fun showInitialSetupDialog(force: Boolean = false) {
         if (!force && isInitialSetupDone()) return
 
@@ -504,7 +476,7 @@ class MainActivity : BaseActivity() {
                 btnAction.text = getString(R.string.setup_wizard_close)
                 btnAction.setOnClickListener {
                     setInitialSetupDone(true)
-                    updateStrategyBadge()
+                    updateM3State()
                     dialog.dismiss()
                     checkTgChannelAnnouncement()
                 }
@@ -629,15 +601,6 @@ class MainActivity : BaseActivity() {
             recreate()
             return
         }
-        val savedUiMode = getPreferences().getString(KEY_APP_UI_MODE, "m3")
-        if (currentUiMode != savedUiMode) {
-            recreate()
-            return
-        }
-        updateStatus()
-        updateStrategyBadge()
-        updateVlessSubtitle()
-        updateOpenFluxSubtitle()
         updateM3State()
     }
 
@@ -688,184 +651,8 @@ class MainActivity : BaseActivity() {
         }
     }
 
-    private fun setupByeDpiCard() {
-        binding.btnActionByedpi.setOnClickListener {
-            toggleByeDpi()
-        }
-    }
-
-    private fun updateStrategyBadge() {
-        val sp = getPreferences()
-        val currentId = sp.getString("selected_strategy_id", null) ?: StrategyCatalog.strategies[0].id
-        val currentStrategy = StrategyCatalog.getStrategyById(currentId)
-        binding.byedpiStrategyName.text = "${currentStrategy.name} (DPI Fix)"
-        updateM3State()
-    }
-
     private fun updateStatus() {
-        val (status, _) = appStatus
-        val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
-        val colorOutline = getThemeColor(com.google.android.material.R.attr.colorOutline)
-
-        when (status) {
-            AppStatus.Halted -> {
-                binding.byedpiStatusBadge.text = "⚪ Отключено"
-                binding.byedpiStatusBadge.setTextColor(colorOutline)
-                binding.byedpiIcon.setImageResource(R.drawable.ic_shield_off_24)
-                binding.byedpiIcon.imageTintList = ColorStateList.valueOf(colorOutline)
-
-                binding.btnActionByedpi.text = getString(R.string.byedpi_inactive_btn)
-                binding.btnActionByedpi.setIconResource(R.drawable.ic_power_24)
-            }
-            AppStatus.Running -> {
-                binding.byedpiStatusBadge.text = "🟢 Активно"
-                binding.byedpiStatusBadge.setTextColor(getColor(R.color.accent_green))
-                binding.byedpiIcon.setImageResource(R.drawable.ic_shield_check_24)
-                binding.byedpiIcon.imageTintList = ColorStateList.valueOf(colorPrimary)
-
-                binding.btnActionByedpi.text = getString(R.string.byedpi_active_btn)
-                binding.btnActionByedpi.setIconResource(R.drawable.ic_power_24)
-            }
-        }
         updateM3State()
-    }
-
-    private fun setupTelegramProxyCard() {
-        TgWsProxyService.initSecret(this)
-
-        binding.btnActionTg.setOnClickListener {
-            toggleTgProxy()
-        }
-
-        binding.btnTgOpenClient.setOnClickListener {
-            val secret = TgWsProxyService.getEffectiveSecret(this)
-            val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
-            val intent = Intent(Intent.ACTION_VIEW, tgUri)
-            try {
-                startActivity(intent)
-            } catch (e: Exception) {
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                val clip = ClipData.newPlainText("Telegram MTProto Proxy", tgUri.toString())
-                clipboard.setPrimaryClip(clip)
-                Toast.makeText(this, R.string.tg_proxy_copied, Toast.LENGTH_LONG).show()
-            }
-        }
-
-        binding.btnTgOpenClient.setOnLongClickListener {
-            showTgProxyDetailsDialog()
-            true
-        }
-
-        lifecycleScope.launch {
-            TgWsProxyService.isRunning.collectLatest { running ->
-                if (running) {
-                    binding.tgStatusBadge.text = "🟢 Работает"
-                    binding.tgStatusBadge.setTextColor(getColor(R.color.accent_green))
-                    binding.btnActionTg.text = getString(R.string.tg_active_btn)
-                    binding.btnTgOpenClient.visibility = View.VISIBLE
-                } else {
-                    binding.tgStatusBadge.text = "⚪ Отключено"
-                    binding.tgStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
-                    binding.btnActionTg.text = getString(R.string.tg_inactive_btn)
-                    binding.btnTgOpenClient.visibility = View.GONE
-                }
-                updateM3State()
-            }
-        }
-
-        lifecycleScope.launch {
-            TgWsProxyService.trafficStats.collectLatest { stats ->
-                if (TgWsProxyService.isRunning.value) {
-                    binding.tgSubtitleText.text = "127.0.0.1:1443 • $stats"
-                } else {
-                    binding.tgSubtitleText.text = "127.0.0.1:1443 (Cloudflare WS)"
-                }
-                updateM3State()
-            }
-        }
-    }
-
-    private fun setupWarpCard() {
-        WarpConfigManager.init(this)
-
-        binding.btnActionWarp.setOnClickListener {
-            toggleWarp()
-        }
-
-        // Авто переподключение Warp Switch
-        binding.switchWarpAutoReconnect.isChecked = isWarpAutoReconnectEnabled()
-        binding.switchWarpAutoReconnect.setOnCheckedChangeListener { _, isChecked ->
-            setWarpAutoReconnectEnabled(isChecked)
-            binding.m3SwitchWarpAutoreconnect.isChecked = isChecked
-            if (WarpVpnService.isRunning.value) {
-                // Перезапуск службы для обновления колбэков сети
-                WarpVpnService.start(this)
-            }
-        }
-
-        // Помощь (?) по Авто переподключению
-        binding.btnWarpAutoReconnectHelp.setOnClickListener {
-            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.warp_auto_reconnect_title)
-                .setMessage(R.string.warp_auto_reconnect_help)
-                .setPositiveButton("OK", null)
-                .show()
-        }
-
-        // Настройка DNS для WARP
-        binding.btnWarpDnsSettings.setOnClickListener {
-            showWarpDnsDialog()
-        }
-
-        // Клик по бейджу для ручной проверки пинга
-        binding.warpStatusBadge.setOnClickListener {
-            if (WarpVpnService.isRunning.value) {
-                Toast.makeText(this, "Проверка пинга WARP...", Toast.LENGTH_SHORT).show()
-                WarpVpnService.checkPingAsync(lifecycleScope)
-            }
-        }
-
-        lifecycleScope.launch {
-            combine(
-                WarpVpnService.isRunning,
-                WarpVpnService.warpPingMs,
-                WarpVpnService.connectionStatus
-            ) { running, ping, status ->
-                Triple(running, ping, status)
-            }.collectLatest { (running, ping, status) ->
-                if (running) {
-                    if (ping != null && ping >= 0) {
-                        binding.warpStatusBadge.text = "🟢 Подключен ($ping ms)"
-                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_green))
-                    } else if (status.contains("Проверка") || status.contains("Переподключение") || status.contains("Потеря")) {
-                        binding.warpStatusBadge.text = "🟡 $status"
-                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_orange))
-                    } else {
-                        binding.warpStatusBadge.text = "🟢 Подключен"
-                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_green))
-                    }
-                    binding.btnActionWarp.text = getString(R.string.warp_active_btn)
-                } else {
-                    if (status.contains("Ожидание") || status.contains("Переподключение") || status.contains("Потеря") || status.contains("Таймаут")) {
-                        binding.warpStatusBadge.text = "🟡 $status"
-                        binding.warpStatusBadge.setTextColor(getColor(R.color.accent_orange))
-                    } else {
-                        binding.warpStatusBadge.text = "⚪ Отключено"
-                        binding.warpStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
-                    }
-                    binding.btnActionWarp.text = getString(R.string.warp_inactive_btn)
-                }
-                updateM3State()
-            }
-        }
-
-        lifecycleScope.launch {
-            WarpConfigManager.currentConfig.collectLatest { config ->
-                val endpoint = WarpConfigManager.extractEndpoint(config)
-                binding.warpSubtitleText.text = "Cloudflare WARP ($endpoint)"
-                updateM3State()
-            }
-        }
     }
 
     private fun showWarpDnsDialog() {
@@ -968,105 +755,10 @@ class MainActivity : BaseActivity() {
         dialog.show()
     }
 
-    private fun setupVlessCard() {
-        updateVlessSubtitle()
-
-        binding.btnVlessManage.setOnClickListener {
-            val intent = Intent(this, VlessListActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnActionVless.setOnClickListener {
-            toggleVless()
-        }
-
-        lifecycleScope.launch {
-            VlessVpnService.isRunning.collectLatest { running ->
-                if (running) {
-                    binding.vlessStatusBadge.text = "🟢 Подключен"
-                    binding.vlessStatusBadge.setTextColor(getColor(R.color.accent_green))
-                    binding.btnActionVless.text = getString(R.string.vless_active_btn)
-                } else {
-                    binding.vlessStatusBadge.text = "⚪ Отключено"
-                    binding.vlessStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
-                    binding.btnActionVless.text = getString(R.string.vless_inactive_btn)
-                }
-                updateM3State()
-            }
-        }
-    }
-
-    private fun updateVlessSubtitle() {
-        val selected = VlessManager.getSelectedConfig(this)
-        if (selected != null) {
-            binding.vlessSubtitleText.text = "${selected.name} (${selected.address}:${selected.port})"
-        } else {
-            binding.vlessSubtitleText.text = getString(R.string.vless_no_servers)
-        }
-        updateM3State()
-    }
-
-    private fun setupOpenFluxCard() {
-        updateOpenFluxSubtitle()
-
-        binding.btnOpenfluxManage.setOnClickListener {
-            val intent = Intent(this, OpenFluxConfigActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnActionOpenflux.setOnClickListener {
-            toggleOpenFlux()
-        }
-
-        lifecycleScope.launch {
-            OpenFluxVpnService.isRunning.collectLatest { running ->
-                if (running) {
-                    binding.openfluxStatusBadge.text = "🟢 Подключен"
-                    binding.openfluxStatusBadge.setTextColor(getColor(R.color.accent_green))
-                    binding.btnActionOpenflux.text = "Отключить OpenFLUX"
-                } else {
-                    binding.openfluxStatusBadge.text = "⚪ Отключено"
-                    binding.openfluxStatusBadge.setTextColor(getThemeColor(com.google.android.material.R.attr.colorOutline))
-                    binding.btnActionOpenflux.text = "Включить OpenFLUX"
-                }
-                updateM3State()
-            }
-        }
-
-        lifecycleScope.launch {
-            OpenFluxVpnService.connectionStatus.collectLatest { status ->
-                if (OpenFluxVpnService.isRunning.value) {
-                    binding.openfluxStatusBadge.text = status
-                }
-            }
-        }
-
-        lifecycleScope.launch {
-            OpenFluxVpnService.trafficStats.collectLatest { stats ->
-                updateM3State()
-            }
-        }
-    }
-
-    private fun updateOpenFluxSubtitle() {
-        val selected = OpenFluxManager.getSelectedConfig(this)
-        if (selected != null) {
-            val modeStr = if (selected.routingMode == "vpn") "VPN" else "SOCKS5"
-            binding.openfluxSubtitleText.text = "${selected.name} • ${selected.transportType} • $modeStr"
-        } else {
-            binding.openfluxSubtitleText.text = "Туннель через белые списки"
-        }
-        updateM3State()
-    }
-
-    private fun setupAdvancedSettingsCard() {
-        binding.cardOpenAdvanced.setOnClickListener {
-            val intent = Intent(this, AdvancedSettingsActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
     private fun setupM3Interface() {
+        TgWsProxyService.initSecret(this)
+        WarpConfigManager.init(this)
+
         binding.m3BtnDisconnectAll.setOnClickListener {
             disconnectAllServices()
         }
@@ -1079,7 +771,6 @@ class MainActivity : BaseActivity() {
         binding.m3SwitchWarpAutoreconnect.isChecked = isWarpAutoReconnectEnabled()
         binding.m3SwitchWarpAutoreconnect.setOnCheckedChangeListener { _, isChecked ->
             setWarpAutoReconnectEnabled(isChecked)
-            binding.switchWarpAutoReconnect.isChecked = isChecked
             if (WarpVpnService.isRunning.value) {
                 WarpVpnService.start(this)
             }
@@ -1132,6 +823,35 @@ class MainActivity : BaseActivity() {
 
         binding.m3CardAdvanced.setOnClickListener {
             startActivity(Intent(this, AdvancedSettingsActivity::class.java))
+        }
+
+        lifecycleScope.launch {
+            TgWsProxyService.isRunning.collectLatest { updateM3State() }
+        }
+        lifecycleScope.launch {
+            TgWsProxyService.trafficStats.collectLatest { updateM3State() }
+        }
+        lifecycleScope.launch {
+            combine(
+                WarpVpnService.isRunning,
+                WarpVpnService.warpPingMs,
+                WarpVpnService.connectionStatus
+            ) { _, _, _ -> }.collectLatest { updateM3State() }
+        }
+        lifecycleScope.launch {
+            WarpConfigManager.currentConfig.collectLatest { updateM3State() }
+        }
+        lifecycleScope.launch {
+            VlessVpnService.isRunning.collectLatest { updateM3State() }
+        }
+        lifecycleScope.launch {
+            OpenFluxVpnService.isRunning.collectLatest { updateM3State() }
+        }
+        lifecycleScope.launch {
+            OpenFluxVpnService.connectionStatus.collectLatest { updateM3State() }
+        }
+        lifecycleScope.launch {
+            OpenFluxVpnService.trafficStats.collectLatest { updateM3State() }
         }
 
         updateM3State()

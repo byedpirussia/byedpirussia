@@ -35,739 +35,6 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- ================= КЛАССИЧЕСКИЙ ИНТЕРФЕЙС ================= -->
-            <LinearLayout
-                android:id="@+id/container_classic"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="64dp"
-                android:visibility="gone">
-
-                <!-- ================= КНОПКА / КАРТОЧКА 1: BYEDPI ================= -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/card_btn_byedpi"
-                    style="@style/Widget.Material3.CardView.Elevated"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-
-                        <ImageView
-                            android:id="@+id/byedpi_icon"
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:src="@drawable/ic_shield_check_24"
-                            app:tint="?attr/colorPrimary"
-                            android:layout_marginEnd="12dp"
-                            tools:ignore="ContentDescription" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="ByeDPI"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:id="@+id/byedpi_strategy_name"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Десинхронизация DPI"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOutline" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/byedpi_status_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⚪ Отключено"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOutline"
-                            android:background="@drawable/bg_status_badge"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/card_byedpi_desc"
-                        android:textSize="13sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Главная кнопка действия ByeDPI -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_action_byedpi"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:text="@string/byedpi_inactive_btn"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_power_24"
-                        app:iconGravity="textStart"
-                        app:iconPadding="10dp"
-                        app:iconSize="20dp" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= КНОПКА / КАРТОЧКА 2: TELEGRAM PROXY ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_btn_tg"
-                style="@style/Widget.Material3.CardView.Elevated"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-
-                        <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:text="✈️"
-                            android:textSize="20sp"
-                            android:gravity="center"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Telegram Proxy"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:id="@+id/tg_subtitle_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="127.0.0.1:1443 (Cloudflare WS)"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOutline" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tg_status_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⚪ Отключено"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOutline"
-                            android:background="@drawable/bg_status_badge"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/card_tg_desc"
-                        android:textSize="13sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Главная кнопка действия TG Proxy -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_action_tg"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:text="@string/tg_inactive_btn"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_power_24"
-                        app:iconGravity="textStart"
-                        app:iconPadding="10dp"
-                        app:iconSize="20dp" />
-
-                    <!-- Кнопка применения в Telegram (появляется при запуске) -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_tg_open_client"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:text="@string/tg_proxy_btn_apply"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="14dp"
-                        app:icon="@drawable/ic_telegram_24"
-                        app:iconGravity="textStart"
-                        app:iconPadding="8dp"
-                        app:iconSize="20dp"
-                        android:visibility="gone"
-                        android:layout_marginTop="8dp"
-                        tools:visibility="visible" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= КНОПКА / КАРТОЧКА 3: AMNEZIAWG WARP ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_btn_warp"
-                style="@style/Widget.Material3.CardView.Elevated"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
-
-                        <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:text="🛡️"
-                            android:textSize="20sp"
-                            android:gravity="center"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="AmneziaWG WARP"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:id="@+id/warp_subtitle_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Cloudflare WARP (AWG 2.0)"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOutline" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/warp_status_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⚪ Отключено"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOutline"
-                            android:background="@drawable/bg_status_badge"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/card_warp_desc"
-                        android:textSize="13sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Главная кнопка действия WARP -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_action_warp"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:text="@string/warp_inactive_btn"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_power_24"
-                        app:iconGravity="textStart"
-                        app:iconPadding="10dp"
-                        app:iconSize="20dp" />
-
-                    <!-- Разделитель -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="?attr/colorOutlineVariant"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="12dp"
-                        android:alpha="0.4" />
-
-                    <!-- Авто переподключение Warp -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/warp_auto_reconnect_title"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <ImageButton
-                                android:id="@+id/btn_warp_auto_reconnect_help"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_marginStart="4dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:contentDescription="Help"
-                                android:src="@drawable/ic_help_outline_24"
-                                app:tint="?attr/colorOutline" />
-                        </LinearLayout>
-
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/switch_warp_auto_reconnect"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
-
-                    <!-- Кнопка Настройка DNS для WARP -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_warp_dns_settings"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="46dp"
-                        android:layout_marginTop="10dp"
-                        android:text="@string/warp_dns_settings_btn"
-                        android:textSize="13sp"
-                        android:textAllCaps="false"
-                        app:cornerRadius="12dp" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= КАРТОЧКА 4: VLESS / REALITY (Xray) ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_vless"
-                style="@style/Widget.Material3.CardView.Filled"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="24dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant"
-                app:cardBackgroundColor="?attr/colorSurface">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:text="🔑"
-                            android:textSize="20sp"
-                            android:gravity="center"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/card_vless_title"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:id="@+id/vless_subtitle_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/vless_no_servers"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOutline" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/vless_status_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⚪ Отключено"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOutline"
-                            android:background="@drawable/bg_status_badge"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/card_vless_desc"
-                        android:textSize="13sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Главная кнопка действия VLESS -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_action_vless"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:text="@string/vless_inactive_btn"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_power_24"
-                        app:iconGravity="textStart"
-                        app:iconPadding="10dp"
-                        app:iconSize="20dp" />
-
-                    <!-- Кнопка управления серверами и подписками -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_vless_manage"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:text="@string/vless_manage_btn"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="14dp"
-                        android:layout_marginTop="8dp" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= КАРТОЧКА 5: OPENFLUX (Обход Б/С) ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_openflux"
-                style="@style/Widget.Material3.CardView.Filled"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="24dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant"
-                app:cardBackgroundColor="?attr/colorSurface">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:text="🌊"
-                            android:textSize="20sp"
-                            android:gravity="center"
-                            android:layout_marginEnd="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="OpenFLUX (Обход Б/С)"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:id="@+id/openflux_subtitle_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Туннель через сервисы РФ"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOutline" />
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/openflux_status_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="⚪ Отключено"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOutline"
-                            android:background="@drawable/bg_status_badge"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Обход белых списков через Яндекс.Документы, Волгу, Mail.ru, Cups.online Centrifugo или MAX. Сжатие zstd и шифрование."
-                        android:textSize="13sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:layout_marginBottom="16dp" />
-
-                    <!-- Главная кнопка действия OpenFLUX -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_action_openflux"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:text="Включить OpenFLUX"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="16dp"
-                        app:icon="@drawable/ic_power_24"
-                        app:iconGravity="textStart"
-                        app:iconPadding="10dp"
-                        app:iconSize="20dp" />
-
-                    <!-- Кнопка настройки профилей OpenFLUX -->
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_openflux_manage"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:text="Настройка профилей OpenFLUX"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="14dp"
-                        android:layout_marginTop="8dp" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= БАННЕР СВЯЗИ С РАЗРАБОТЧИКОМ ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_tg_channel_banner"
-                style="@style/Widget.Material3.CardView.Filled"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="20dp"
-                app:strokeWidth="1.5dp"
-                app:strokeColor="?attr/colorPrimary"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="10dp">
-
-                        <ImageView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:src="@drawable/ic_telegram_24"
-                            app:tint="?attr/colorPrimary"
-                            android:layout_marginEnd="12dp"
-                            tools:ignore="ContentDescription" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/tg_channel_banner_title"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurface" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/tg_channel_banner_text"
-                        android:textSize="13sp"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:lineSpacingExtra="2dp"
-                        android:layout_marginBottom="14dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_open_tg_channel"
-                        style="@style/Widget.Material3.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="46dp"
-                        android:text="@string/tg_channel_banner_btn"
-                        app:icon="@drawable/ic_telegram_24"
-                        app:iconGravity="textStart"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="14dp" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- ================= КНОПКА ПЕРЕХОДА В ПРОДВИНУТЫЕ НАСТРОЙКИ ================= -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_open_advanced"
-                style="@style/Widget.Material3.CardView.Filled"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardCornerRadius="20dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="18dp"
-                    android:paddingVertical="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="⚙️"
-                        android:textSize="22sp"
-                        android:layout_marginEnd="14dp" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/title_advanced_settings"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/nav_to_advanced_hint"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOutline"
-                            android:layout_marginTop="2dp" />
-                    </LinearLayout>
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_expand_more_24"
-                        android:rotation="270"
-                        app:tint="?attr/colorOutline"
-                        android:layout_marginStart="8dp"
-                        tools:ignore="ContentDescription" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-        <!-- Конец контейнера классического интерфейса -->
-
-        <!-- ================= НОВЫЙ ИНТЕРФЕЙС MATERIAL DESIGN 3 (MT3) ================= -->
-        <LinearLayout
             android:id="@+id/container_m3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -785,7 +52,9 @@
                 android:layout_marginBottom="16dp"
                 app:cardCornerRadius="28dp"
                 app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                app:strokeWidth="0dp">
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -798,9 +67,9 @@
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/m3_status_circle"
                         style="@style/Widget.Material3.CardView.Filled"
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
-                        app:cardCornerRadius="48dp"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        app:cardCornerRadius="50dp"
                         app:cardBackgroundColor="?attr/colorSurface"
                         app:cardElevation="0dp"
                         app:strokeWidth="2dp"
@@ -878,9 +147,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -950,16 +220,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="14dp">
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -1060,7 +331,8 @@
                             android:id="@+id/m3_btn_warp_dns"
                             style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="0dp"
-                            android:layout_height="38dp"
+                            android:layout_height="wrap_content"
+                            android:minHeight="40dp"
                             android:layout_weight="1"
                             android:text="⚙️ DNS настройки"
                             android:textSize="12sp"
@@ -1072,7 +344,8 @@
                             android:id="@+id/m3_btn_warp_ping"
                             style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="wrap_content"
-                            android:layout_height="38dp"
+                            android:layout_height="wrap_content"
+                            android:minHeight="40dp"
                             android:text="⚡ Пинг"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -1089,16 +362,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="14dp">
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -1160,11 +434,12 @@
                         android:id="@+id/m3_btn_vless_servers"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="match_parent"
-                        android:layout_height="42dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="44dp"
                         android:text="Серверы и подписки Б/С"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        app:cornerRadius="12dp"
+                        app:cornerRadius="14dp"
                         android:layout_marginTop="10dp" />
 
                 </LinearLayout>
@@ -1177,16 +452,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="14dp">
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -1247,11 +523,12 @@
                         android:id="@+id/m3_btn_openflux_servers"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="match_parent"
-                        android:layout_height="42dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="44dp"
                         android:text="Профили и транспорты OpenFLUX"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        app:cornerRadius="12dp"
+                        app:cornerRadius="14dp"
                         android:layout_marginTop="10dp" />
 
                 </LinearLayout>
@@ -1264,16 +541,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="14dp">
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -1334,11 +612,12 @@
                         android:id="@+id/m3_btn_tg_open"
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="match_parent"
-                        android:layout_height="42dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="44dp"
                         android:text="@string/tg_proxy_btn_apply"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        app:cornerRadius="12dp"
+                        app:cornerRadius="14dp"
                         app:icon="@drawable/ic_telegram_24"
                         app:iconSize="18dp"
                         android:visibility="gone"
@@ -1355,9 +634,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="14dp"
-                app:cardCornerRadius="20dp"
-                app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -1402,11 +683,12 @@
                         android:id="@+id/m3_btn_tg_channel"
                         style="@style/Widget.Material3.Button"
                         android:layout_width="wrap_content"
-                        android:layout_height="38dp"
+                        android:layout_height="wrap_content"
+                        android:minHeight="40dp"
                         android:text="Открыть"
                         android:textSize="12sp"
                         android:textStyle="bold"
-                        app:cornerRadius="12dp"
+                        app:cornerRadius="14dp"
                         android:paddingHorizontal="14dp" />
 
                 </LinearLayout>
@@ -1420,7 +702,9 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
                 app:strokeColor="?attr/colorOutlineVariant">
 
                 <LinearLayout
@@ -1429,14 +713,25 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="18dp"
-                    android:paddingVertical="14dp">
+                    android:paddingVertical="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="⚙️"
-                        android:textSize="20sp"
-                        android:layout_marginEnd="14dp" />
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Filled"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        app:cardCornerRadius="14dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                        app:cardElevation="0dp"
+                        android:layout_marginEnd="14dp">
+
+                        <ImageView
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_tune_24"
+                            app:tint="?attr/colorPrimary"
+                            tools:ignore="ContentDescription" />
+                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -1474,8 +769,6 @@
 
         </LinearLayout>
         <!-- Конец контейнера Material Design 3 -->
-
-        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

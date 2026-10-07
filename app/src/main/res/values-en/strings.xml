@@ -96,7 +96,7 @@
     <string name="warp_card_title">Cloudflare WARP (AmneziaWG)</string>
     <string name="warp_card_subtitle">Obfuscated WireGuard against DPI</string>
     <string name="warp_btn_generate">✨ Generate new WARP</string>
-    <string name="warp_btn_copy">📋 Copy config (.conf)</string>
+    <string name="warp_btn_copy">Copy config (.conf)</string>
     <string name="warp_btn_connect">Enable WARP</string>
     <string name="warp_btn_disconnect">Disable WARP</string>
     <string name="warp_btn_open_amnezia">Share / Amnezia</string>
@@ -230,11 +230,17 @@
     <string name="builtin_subs_add_btn">Import</string>
     <string name="builtin_subs_load_custom_btn">Load custom URL</string>
 
-    <!-- UI Style Switcher -->
-    <string name="app_ui_mode_setting">Interface Style</string>
-    <string name="app_ui_mode_summary">Choose between the new Material Design 3 style and the classic style</string>
+    <!-- Material Design 3 -->
     <string name="m3_status_protected">Protected</string>
     <string name="m3_status_unprotected">Unprotected</string>
     <string name="m3_services_title">Bypass &amp; VPN Services</string>
+    <string name="warp_btn_import">Import profile (.conf)</string>
+    <string name="warp_import_dialog_title">Import WARP Profile (AWG)</string>
+    <string name="warp_import_dialog_msg">Paste WireGuard / AmneziaWG configuration (.conf) text or choose a file:</string>
+    <string name="warp_import_from_file">Select .conf file</string>
+    <string name="warp_import_from_clipboard">Paste from clipboard</string>
+    <string name="warp_import_save">Save and apply</string>
+    <string name="warp_import_invalid">Error: [Interface] or [Peer] sections not found in configuration</string>
+    <string name="warp_import_success">WARP configuration imported successfully!</string>
 </resources>
 
