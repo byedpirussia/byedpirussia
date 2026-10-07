@@ -350,6 +350,8 @@ class OpenFluxVpnService : VpnService() {
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
             .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setSilent(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
 
         io.github.dovecoteescapee.byedpi.island.NotificationIslandHelper.applyHyperOsFocus(

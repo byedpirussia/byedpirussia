@@ -40,6 +40,7 @@ fun createConnectionNotification(
     val builder = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(R.drawable.ic_notification)
         .setSilent(true)
+        .setOnlyAlertOnce(true)
         .setContentTitle(context.getString(title))
         .setContentText(context.getString(content))
         .setContentIntent(

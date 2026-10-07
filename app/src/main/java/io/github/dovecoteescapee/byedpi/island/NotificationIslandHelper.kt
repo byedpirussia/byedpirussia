@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicLong
 object NotificationIslandHelper {
 
     private val sequence = AtomicLong(System.currentTimeMillis() / 1000)
+    private var lastMode: String? = null
 
     fun applyHyperOsFocus(
         builder: NotificationCompat.Builder,
@@ -20,6 +21,12 @@ object NotificationIslandHelper {
     ) {
         if (!context.isDynamicIslandEnabled()) {
             return
+        }
+
+        // Если режим сменился - увеличиваем sequence один раз для новой сессии
+        if (lastMode != currentMode) {
+            lastMode = currentMode
+            sequence.incrementAndGet()
         }
 
         val modeName = when (currentMode) {
@@ -37,6 +44,10 @@ object NotificationIslandHelper {
             putString("miui.focusNotificationType", "custom")
             putBoolean("show_in_status_bar", true)
             putBoolean("miui.showActionInStatusBar", true)
+            // Строго отключаем самопроизвольное всплывание/разворачивание (Float/Heads-up)
+            putBoolean("miui.enableFloat", false)
+            putBoolean("enableFloat", false)
+            putBoolean("float", false)
             putInt("miui.focusNotificationLevel", 1)
             putString("miui.focus.ticker", "ByeDPI Russia: $modeName")
 
@@ -67,7 +78,10 @@ object NotificationIslandHelper {
         builder.addExtras(extras)
         builder.setCategory(NotificationCompat.CATEGORY_SERVICE)
         builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        builder.setPriority(NotificationCompat.PRIORITY_HIGH)
+        // Только в статус-баре, без звука, вибрации и всплывающих heads-up баннеров
+        builder.setPriority(NotificationCompat.PRIORITY_LOW)
+        builder.setOnlyAlertOnce(true)
+        builder.setSilent(true)
         builder.setOngoing(true)
 
         // 2. Добавляем Action-кнопки переключения режимов прямо в уведомление / остров
@@ -178,12 +192,13 @@ object NotificationIslandHelper {
             put("business", business)
             put("protocol", 1)
             put("orderId", "byedpi_status")
-            put("islandFirstFloat", true)
-            put("enableFloat", true)
+            // Строго запрещаем самопроизвольное всплывание/разворачивание
+            put("islandFirstFloat", false)
+            put("enableFloat", false)
             put("updatable", true)
             put("outEffectSrc", "")
-            put("reopen", "reopen")
-            put("sequence", sequence.incrementAndGet())
+            put("reopen", "close")
+            put("sequence", sequence.get())
             put("aodTitle", "ByeDPI Russia: $modeName")
 
             put("baseInfo", JSONObject().apply {

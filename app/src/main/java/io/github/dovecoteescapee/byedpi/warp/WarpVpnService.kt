@@ -635,6 +635,8 @@ class WarpVpnService : VpnService() {
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setSilent(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
 
         io.github.dovecoteescapee.byedpi.island.NotificationIslandHelper.applyHyperOsFocus(
