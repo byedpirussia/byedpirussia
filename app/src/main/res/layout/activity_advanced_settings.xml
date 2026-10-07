@@ -594,7 +594,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 6. ДИНАМИЧЕСКИЙ ОСТРОВ (HyperOS / Android) -->
+            <!-- 6. ДИНАМИЧЕСКИЙ ОСТРОВ HYPEROS (Фокусные уведомления) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_dynamic_island"
                 style="@style/Widget.Material3.CardView.Elevated"
@@ -645,7 +645,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Динамический остров"
+                                android:text="Динамический остров HyperOS"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -653,7 +653,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="HyperOS &amp; Android"
+                                android:text="Статус-бар капсула и фокус-уведомление"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline" />
                         </LinearLayout>
@@ -667,25 +667,10 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Отображает плавающую интерактивную капсулу у камеры и фокусное уведомление HyperOS для быстрого переключения режимов (ByeDPI, WARP, VLESS, OpenFLUX) из любого приложения."
+                        android:text="Интеграция с фокусными уведомлениями Xiaomi HyperOS / MIUI. Отображает интерактивную статус-бар капсулу («Динамический остров») и кнопки мгновенного переключения режимов (ByeDPI, WARP, VLESS, OpenFLUX) прямо в строке состояния и шторке уведомлений."
                         android:textSize="13sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:lineSpacingExtra="3dp"
-                        android:layout_marginBottom="10dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_grant_island_permission"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="44dp"
-                        android:text="🔑 Разрешить отображение поверх окон"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        app:cornerRadius="14dp"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
+                        android:lineSpacingExtra="3dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

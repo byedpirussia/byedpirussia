@@ -129,39 +129,12 @@ class AdvancedSettingsActivity : BaseActivity() {
         binding.switchDynamicIsland.isChecked = isDynamicIslandEnabled()
         binding.switchDynamicIsland.setOnCheckedChangeListener { _, isChecked ->
             setDynamicIslandEnabled(isChecked)
-            if (isChecked && !android.provider.Settings.canDrawOverlays(this)) {
-                requestOverlayPermission()
-            }
-            io.github.dovecoteescapee.byedpi.island.DynamicIslandOverlayService.updateServiceState(this)
-            updateDynamicIslandView()
         }
-
-        binding.btnGrantIslandPermission.setOnClickListener {
-            requestOverlayPermission()
-        }
-
         updateDynamicIslandView()
     }
 
     private fun updateDynamicIslandView() {
-        val enabled = isDynamicIslandEnabled()
-        binding.switchDynamicIsland.isChecked = enabled
-        val hasOverlay = android.provider.Settings.canDrawOverlays(this)
-        binding.btnGrantIslandPermission.visibility = if (enabled && !hasOverlay) android.view.View.VISIBLE else android.view.View.GONE
-        io.github.dovecoteescapee.byedpi.island.DynamicIslandOverlayService.updateServiceState(this)
-    }
-
-    private fun requestOverlayPermission() {
-        try {
-            val intent = Intent(
-                android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                android.net.Uri.parse("package:$packageName")
-            )
-            startActivity(intent)
-        } catch (e: Exception) {
-            val intent = Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
-            startActivity(intent)
-        }
+        binding.switchDynamicIsland.isChecked = isDynamicIslandEnabled()
     }
 
     private fun updateSplitTunnelSummary() {

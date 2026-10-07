@@ -126,18 +126,18 @@
             transform: translateY(-1px);
         }
 
-        .grid-4 {
+        .grid-cards {
             display: grid;
             grid-template-columns: 1fr;
             gap: 24px;
         }
 
         @media (min-width: 768px) {
-            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-cards { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (min-width: 1024px) {
-            .grid-4 { grid-template-columns: repeat(4, 1fr); }
+            .grid-cards { grid-template-columns: repeat(3, 1fr); }
         }
 
         /* Hero секция */
@@ -364,15 +364,15 @@
         <section class="hero">
             <div class="badge-pill">
                 <span class="badge-dot"></span>
-                Обновление v1.3.0 для Android — Интеграция OpenFLUX & Material Design 3
+                Обновление v1.3.3 для Android — Динамический остров HyperOS & Material Design 3
             </div>
             <h1>Свободный интернет<br>в 3 простых клика</h1>
             <p>
-                Единый центр обхода блокировок. Новый интерфейс Material Design 3 с выбором классического стиля, обход жестких белых списков через OpenFLUX (Яндекс Документы, Волга, Mail.ru, Cups.online, OneMe WebRTC), прямой доступ к YouTube в 4K и Discord без зарубежных серверов, автономный Telegram MTProto-прокси с постоянным секретом, универсальный клиент Xray со встроенными подписками белых списков (ru-wbl), туннель Cloudflare WARP с AWG 2.0.
+                Единый центр обхода блокировок. Полный переход на современный интерфейс Material Design 3, нативная поддержка Динамического острова и фокусных уведомлений Xiaomi HyperOS для быстрого переключения режимов в 1 клик прямо из статус-бара, ручной импорт профилей WARP (.conf), обход жестких белых списков через OpenFLUX (Яндекс, Mail.ru, Cups.online, WebRTC), прямой доступ к YouTube в 4K и Discord без зарубежных серверов, автономный Telegram MTProto-прокси, универсальный клиент Xray со встроенными подписками ru-wbl.
             </p>
             <div class="hero-actions">
                 <a href="https://github.com/byedpirussia/byedpirussia/releases/latest" target="_blank" class="btn-download">
-                    <span>📱 Скачать APK v1.3.0</span>
+                    <span>📱 Скачать APK v1.3.3</span>
                 </a>
                 <a href="https://t.me/Byedpirussia" target="_blank" class="btn-download" style="background: linear-gradient(135deg, #229ED9, #0088cc);">
                     <span>✈️ Telegram-канал проекта</span>
@@ -407,48 +407,48 @@
             <h2 class="section-title">Всё необходимое в одном приложении</h2>
             <p class="section-subtitle">Гибкие протоколы и удобная настройка под ваши задачи</p>
 
-            <div class="grid-4">
-                <!-- Карточка 1 -->
+            <div class="grid-cards">
+                <!-- Карточка 1: Динамический остров -->
+                <div class="feature-card">
+                    <div class="feature-icon">🏝️</div>
+                    <h3 class="feature-title">Динамический остров</h3>
+                    <p class="feature-desc">
+                        Нативная интеграция с Xiaomi HyperOS Focus Notifications. Компактная статус-бар капсула вокруг выреза камеры и быстрые кнопки мгновенного переключения режимов (ByeDPI, WARP, VLESS, OpenFLUX) прямо из шторки.
+                    </p>
+                    <span class="feature-tag">HyperOS &amp; Focus</span>
+                </div>
+
+                <!-- Карточка 2: ByeDPI -->
                 <div class="feature-card">
                     <div class="feature-icon">🛡️</div>
-                    <h3 class="feature-title">ByeDPI</h3>
+                    <h3 class="feature-title">ByeDPI Engine</h3>
                     <p class="feature-desc">
                         Десинхронизация пакетов на уровне DPI (ТСПУ). Прямой доступ к YouTube, Discord и сайтам без потери скорости и без передачи трафика третьим лицам. 32 готовые стратегии и бенчмарк автоподбора.
                     </p>
                     <span class="feature-tag">Без потери скорости</span>
                 </div>
 
-                <!-- Карточка 2 -->
+                <!-- Карточка 3: Xray -->
                 <div class="feature-card">
                     <div class="feature-icon">🚀</div>
-                    <h3 class="feature-title">Xray & Подписки Б/С</h3>
+                    <h3 class="feature-title">Xray &amp; Подписки Б/С</h3>
                     <p class="feature-desc">
                         Универсальный клиент VLESS Reality, Shadowsocks, Trojan, HY2. Встроенные проверенные подписки белых списков (ru-wbl) для работы во время ограничений мобильной связи.
                     </p>
                     <span class="feature-tag">VLESS / Reality / ru-wbl</span>
                 </div>
 
-                <!-- Карточка 3 -->
+                <!-- Карточка 4: WARP -->
                 <div class="feature-card">
                     <div class="feature-icon">🌐</div>
                     <h3 class="feature-title">AmneziaWG WARP</h3>
                     <p class="feature-desc">
-                        Полноценный туннель Cloudflare WARP на ядре AmneziaWG (AWG 2.0). Автоматический генератор конфигов, авто-переподключение, замер пинга и гибкий выбор DNS-серверов.
+                        Полноценный туннель Cloudflare WARP на ядре AmneziaWG (AWG 2.0). Автоматический генератор конфигов, ручной импорт файлов .conf, авто-переподключение, замер пинга и выбор DNS-серверов.
                     </p>
-                    <span class="feature-tag">WireGuard 2.0 & DNS</span>
+                    <span class="feature-tag">WireGuard 2.0 &amp; Импорт</span>
                 </div>
 
-                <!-- Карточка 4 -->
-                <div class="feature-card">
-                    <div class="feature-icon">✈️</div>
-                    <h3 class="feature-title">Telegram MTProto</h3>
-                    <p class="feature-desc">
-                        Локальный WebSocket-прокси через Cloudflare. Постоянный сохранённый секрет (больше не сбрасывается!), запуск в один тап и защита от любых блокировок Telegram.
-                    </p>
-                    <span class="feature-tag">Постоянный секрет</span>
-                </div>
-
-                <!-- Карточка 5 -->
+                <!-- Карточка 5: OpenFLUX -->
                 <div class="feature-card">
                     <div class="feature-icon">🌊</div>
                     <h3 class="feature-title">OpenFLUX (Б/С)</h3>
@@ -456,6 +456,16 @@
                         Маскировка трафика через разрешенные сервисы («белые списки»): Яндекс Документы, Волга, Mail.ru, Cups.online Centrifugo, MAX/OneMe WebRTC. Режимы VPN и SOCKS5.
                     </p>
                     <span class="feature-tag">Обход белых списков</span>
+                </div>
+
+                <!-- Карточка 6: TG Proxy -->
+                <div class="feature-card">
+                    <div class="feature-icon">✈️</div>
+                    <h3 class="feature-title">Telegram MTProto</h3>
+                    <p class="feature-desc">
+                        Локальный WebSocket-прокси через Cloudflare. Постоянный сохранённый секрет (больше не сбрасывается!), запуск в один тап и защита от любых блокировок Telegram.
+                    </p>
+                    <span class="feature-tag">Постоянный секрет</span>
                 </div>
             </div>
         </section>

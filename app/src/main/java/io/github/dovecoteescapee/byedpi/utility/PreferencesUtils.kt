@@ -165,7 +165,7 @@ fun Context.setTgProxyEffectiveSecret(effectiveSecret: String) {
 const val KEY_DYNAMIC_ISLAND_ENABLED = "dynamic_island_enabled"
 
 fun Context.isDynamicIslandEnabled(): Boolean =
-    getPreferences().getBoolean(KEY_DYNAMIC_ISLAND_ENABLED, false)
+    getPreferences().getBoolean(KEY_DYNAMIC_ISLAND_ENABLED, true)
 
 fun Context.setDynamicIslandEnabled(enabled: Boolean) {
     getPreferences().edit().putBoolean(KEY_DYNAMIC_ISLAND_ENABLED, enabled).apply()

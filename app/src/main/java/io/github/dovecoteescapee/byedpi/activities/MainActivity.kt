@@ -620,7 +620,6 @@ class MainActivity : BaseActivity() {
             return
         }
         updateM3State()
-        io.github.dovecoteescapee.byedpi.island.DynamicIslandOverlayService.updateServiceState(this)
     }
 
     override fun onDestroy() {

@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
     <uses-feature android:name="android.software.leanback"
@@ -195,7 +194,7 @@
             </intent-filter>
         </service>
 
-        <!-- Динамический Остров (HyperOS & Android) -->
+        <!-- Переключение режимов из HyperOS Focus Notification / статус-бара -->
         <receiver
             android:name=".island.ModeSwitchReceiver"
             android:exported="false">
@@ -203,10 +202,6 @@
                 <action android:name="io.github.dovecoteescapee.byedpi.ACTION_SWITCH_MODE" />
             </intent-filter>
         </receiver>
-
-        <service
-            android:name=".island.DynamicIslandOverlayService"
-            android:exported="false" />
     </application>
 
 </manifest>
