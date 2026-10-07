@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/island_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- 1. СВЕРНУТЫЙ ОСТРОВ (Капсула вокруг камеры) -->
+    <LinearLayout
+        android:id="@+id/island_collapsed"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="14dp"
+        android:background="@drawable/bg_dynamic_island_collapsed"
+        android:clickable="true"
+        android:focusable="true">
+
+        <View
+            android:id="@+id/island_collapsed_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_island_dot"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/island_collapsed_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ByeDPI"
+            android:textColor="#FFFFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1" />
+
+        <TextView
+            android:id="@+id/island_collapsed_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🟢"
+            android:textSize="10sp"
+            android:layout_marginStart="6dp" />
+    </LinearLayout>
+
+    <!-- 2. РАЗВЕРНУТЫЙ ОСТРОВ (Интерактивное меню переключения) -->
+    <LinearLayout
+        android:id="@+id/island_expanded"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@drawable/bg_dynamic_island_expanded"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <!-- Верхняя строка: статус и кнопка закрытия -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:id="@+id/island_expanded_icon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_shield_check_24"
+                app:tint="#FF4CAF50"
+                android:layout_marginEnd="8dp"
+                tools:ignore="ContentDescription" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/island_expanded_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ByeDPI Активен"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/island_expanded_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Защита от ТСПУ и замедлений"
+                    android:textColor="#AAFFFFFF"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/btn_island_collapse"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_close"
+                app:tint="#88FFFFFF"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                tools:ignore="ContentDescription" />
+        </LinearLayout>
+
+        <!-- Разделитель -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#20FFFFFF"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Панель переключения 4 режимов -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp">
+
+            <!-- Кнопка ByeDPI -->
+            <LinearLayout
+                android:id="@+id/btn_mode_byedpi"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingVertical="8dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_island_chip"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡️"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_label_byedpi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ByeDPI"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Кнопка WARP -->
+            <LinearLayout
+                android:id="@+id/btn_mode_warp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingVertical="8dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="@drawable/bg_island_chip"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_label_warp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="WARP"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Кнопка VLESS -->
+            <LinearLayout
+                android:id="@+id/btn_mode_vless"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingVertical="8dp"
+                android:layout_marginHorizontal="2dp"
+                android:background="@drawable/bg_island_chip"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌐"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_label_vless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="VLESS"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+
+            <!-- Кнопка OpenFLUX -->
+            <LinearLayout
+                android:id="@+id/btn_mode_openflux"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingVertical="8dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_island_chip"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚀"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_label_openflux"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="OpenFLUX"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Нижняя строка: Кнопка Отключить и Кнопка приложения -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_island_stop"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:text="⏹️ Отключить"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#FFFF6B6B"
+                app:backgroundTint="#33FF4444"
+                android:padding="0dp"
+                app:cornerRadius="12dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_island_open_app"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:text="↗️ В приложение"
+                android:textSize="11sp"
+                android:textColor="#FFFFFFFF"
+                app:backgroundTint="#24FFFFFF"
+                android:padding="0dp"
+                app:cornerRadius="12dp"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

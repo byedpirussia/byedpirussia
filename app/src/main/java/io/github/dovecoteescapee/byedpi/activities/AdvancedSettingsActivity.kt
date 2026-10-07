@@ -24,6 +24,8 @@ import io.github.dovecoteescapee.byedpi.strategy.StrategyBenchmark
 import io.github.dovecoteescapee.byedpi.strategy.StrategyCatalog
 import io.github.dovecoteescapee.byedpi.strategy.TestedStrategiesAdapter
 import io.github.dovecoteescapee.byedpi.utility.getPreferences
+import io.github.dovecoteescapee.byedpi.utility.isDynamicIslandEnabled
+import io.github.dovecoteescapee.byedpi.utility.setDynamicIslandEnabled
 import io.github.dovecoteescapee.byedpi.warp.WarpConfigManager
 import io.github.dovecoteescapee.byedpi.warp.WarpGenerator
 import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
@@ -111,6 +113,7 @@ class AdvancedSettingsActivity : BaseActivity() {
         }
 
         setupWarpCard()
+        setupDynamicIslandCard()
         updateStrategyView()
         updateSplitTunnelSummary()
     }
@@ -119,6 +122,46 @@ class AdvancedSettingsActivity : BaseActivity() {
         super.onResume()
         updateStrategyView()
         updateSplitTunnelSummary()
+        updateDynamicIslandView()
+    }
+
+    private fun setupDynamicIslandCard() {
+        binding.switchDynamicIsland.isChecked = isDynamicIslandEnabled()
+        binding.switchDynamicIsland.setOnCheckedChangeListener { _, isChecked ->
+            setDynamicIslandEnabled(isChecked)
+            if (isChecked && !android.provider.Settings.canDrawOverlays(this)) {
+                requestOverlayPermission()
+            }
+            io.github.dovecoteescapee.byedpi.island.DynamicIslandOverlayService.updateServiceState(this)
+            updateDynamicIslandView()
+        }
+
+        binding.btnGrantIslandPermission.setOnClickListener {
+            requestOverlayPermission()
+        }
+
+        updateDynamicIslandView()
+    }
+
+    private fun updateDynamicIslandView() {
+        val enabled = isDynamicIslandEnabled()
+        binding.switchDynamicIsland.isChecked = enabled
+        val hasOverlay = android.provider.Settings.canDrawOverlays(this)
+        binding.btnGrantIslandPermission.visibility = if (enabled && !hasOverlay) android.view.View.VISIBLE else android.view.View.GONE
+        io.github.dovecoteescapee.byedpi.island.DynamicIslandOverlayService.updateServiceState(this)
+    }
+
+    private fun requestOverlayPermission() {
+        try {
+            val intent = Intent(
+                android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                android.net.Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
+        } catch (e: Exception) {
+            val intent = Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+            startActivity(intent)
+        }
     }
 
     private fun updateSplitTunnelSummary() {

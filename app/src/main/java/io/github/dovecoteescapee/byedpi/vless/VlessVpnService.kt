@@ -313,15 +313,21 @@ class VlessVpnService : VpnService() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("VLESS / Reality")
             .setContentText(content)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
-            .addAction(R.drawable.ic_close, "Отключить", stopIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+
+        io.github.dovecoteescapee.byedpi.island.NotificationIslandHelper.applyHyperOsFocus(
+            builder,
+            this,
+            io.github.dovecoteescapee.byedpi.island.ServiceSwitchController.MODE_VLESS
+        )
+
+        return builder.build()
     }
 
     private fun startForegroundNotification(text: String) {

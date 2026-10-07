@@ -344,15 +344,21 @@ class OpenFluxVpnService : VpnService() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("OpenFLUX (Обход Б/С)")
             .setContentText(statusText)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(openIntent)
-            .addAction(R.drawable.ic_notification, "Отключить", stopIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+
+        io.github.dovecoteescapee.byedpi.island.NotificationIslandHelper.applyHyperOsFocus(
+            builder,
+            this,
+            io.github.dovecoteescapee.byedpi.island.ServiceSwitchController.MODE_OPENFLUX
+        )
+
+        return builder.build()
     }
 
     private fun startForegroundNotification(initialStatus: String) {

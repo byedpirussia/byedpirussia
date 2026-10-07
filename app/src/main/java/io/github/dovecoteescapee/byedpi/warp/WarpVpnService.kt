@@ -629,14 +629,21 @@ class WarpVpnService : VpnService() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification: Notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Cloudflare WARP (AmneziaWG)")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .build()
+
+        io.github.dovecoteescapee.byedpi.island.NotificationIslandHelper.applyHyperOsFocus(
+            builder,
+            this,
+            io.github.dovecoteescapee.byedpi.island.ServiceSwitchController.MODE_WARP
+        )
+
+        val notification: Notification = builder.build()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(

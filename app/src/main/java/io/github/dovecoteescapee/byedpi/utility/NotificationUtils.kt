@@ -36,26 +36,27 @@ fun createConnectionNotification(
     @StringRes title: Int,
     @StringRes content: Int,
     service: Class<*>,
-): Notification =
-    NotificationCompat.Builder(context, channelId)
+): Notification {
+    val builder = NotificationCompat.Builder(context, channelId)
         .setSmallIcon(R.drawable.ic_notification)
         .setSilent(true)
-            .setContentTitle(context.getString(title))
-            .setContentText(context.getString(content))
-            .addAction(0, "Stop",
-                PendingIntent.getService(
-                    context,
-                    0,
-                    Intent(context, service).setAction(STOP_ACTION),
-                    PendingIntent.FLAG_IMMUTABLE,
-                )
+        .setContentTitle(context.getString(title))
+        .setContentText(context.getString(content))
+        .setContentIntent(
+            PendingIntent.getActivity(
+                context,
+                0,
+                Intent(context, MainActivity::class.java),
+                PendingIntent.FLAG_IMMUTABLE,
             )
-            .setContentIntent(
-                PendingIntent.getActivity(
-                    context,
-                    0,
-                    Intent(context, MainActivity::class.java),
-                    PendingIntent.FLAG_IMMUTABLE,
-                )
-            )
-        .build()
+        )
+        .setOngoing(true)
+
+    io.github.dovecoteescapee.byedpi.island.NotificationIslandHelper.applyHyperOsFocus(
+        builder,
+        context,
+        io.github.dovecoteescapee.byedpi.island.ServiceSwitchController.MODE_BYEDPI
+    )
+
+    return builder.build()
+}

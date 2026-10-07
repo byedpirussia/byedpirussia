@@ -217,6 +217,24 @@ class MainActivity : BaseActivity() {
 
         setupM3Interface()
         checkInitialSetup()
+        handleTriggerModeIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleTriggerModeIntent(intent)
+    }
+
+    private fun handleTriggerModeIntent(intent: Intent?) {
+        val trigger = intent?.getStringExtra("trigger_mode") ?: return
+        intent.removeExtra("trigger_mode")
+        when (trigger) {
+            "byedpi" -> toggleByeDpi()
+            "warp" -> startWarpVpn()
+            "vless" -> toggleVless()
+            "openflux" -> toggleOpenFlux()
+        }
     }
 
     private fun isAnyVpnActive(): Boolean {
@@ -602,6 +620,7 @@ class MainActivity : BaseActivity() {
             return
         }
         updateM3State()
+        io.github.dovecoteescapee.byedpi.island.DynamicIslandOverlayService.updateServiceState(this)
     }
 
     override fun onDestroy() {
