@@ -18,3 +18,7 @@ anddea_decompiled/
 temp_build/
 tg-ws-proxy-android-main/
 android-master/
+windows-desktop/bin/
+windows-desktop/obj/
+dist-windows/
+*.exe

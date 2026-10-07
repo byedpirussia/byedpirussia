@@ -26,12 +26,16 @@
 - **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
 ### 💻 Windows (ПК):
-[![Скачать Windows Beta](https://img.shields.io/badge/Скачать_Windows-v1.1.2--Beta-blue?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.1.2/ByeDPI-Russia-Windows-v1.1.2-Beta.zip)
-[![VirusTotal Windows](https://img.shields.io/badge/VirusTotal-3%2F67%20(Ложные%20срабатывания)-orange?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection)
+[![Скачать Windows](https://img.shields.io/badge/Скачать_Windows-v1.3.4-blue?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.3.4/ByeDPI-Russia-Windows-v1.3.4.zip)
+[![.NET 8](https://img.shields.io/badge/.NET-8.0%20WPF-purple?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F67%20Чисто-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/home/upload)
 
-- **[Скачать архив Windows v1.1.2-Beta (.ZIP)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.1.2/ByeDPI-Russia-Windows-v1.1.2-Beta.zip)** — портативная версия для Windows x64.
-- ⚠️ **Важное примечание по Windows-версии**: в версии `v1.1.2-Beta` **полноценно работает только режим ByeDPI** (прямой обход DPI, автоподбор стратегий, системный прокси). Режимы VLESS, Cloudflare WARP, Telegram Proxy и Wintun TUN временно отключены на доработку и будут включены в следующем релизе.
-- **[Отчёт VirusTotal Windows (3/67)](https://www.virustotal.com/gui/file/39fe27bc7bc19a583de073e42b9f544487aa456cc4a3f0ab0383c9931897bb06/detection)** — 3 ложных срабатывания (False Positive) из 67 антивирусов из-за включённых в поставку открытых сетевых утилит туннелирования (`tun2socks`). Все крупные антивирусы (Kaspersky, Microsoft Defender, ESET, DrWeb, Avast, BitDefender и др.) подтверждают чистоту файла.
+- **[Скачать архив Windows v1.3.4 (.ZIP)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.3.4/ByeDPI-Russia-Windows-v1.3.4.zip)** — новый нативный ПК-клиент на **C# / .NET 8 WPF** в стиле **Windows 11 Fluent Design** (распаковать архив и запустить `ByeDpiRussia.Desktop.exe`).
+- ⚡ **Все 32 стратегии из Android**: полный перенос мобильного каталога стратегий под Windows `ciadpi.exe` (YouTube 4K, Discord, ТСПУ).
+- 🏆 **Автоподбор стратегий (Бенчмарк)**: тестирование всех пресетов в реальном времени через TLS Handshake с замером пинга на YouTube и Discord и автовыбором лучшей.
+- ✨ **Генератор Cloudflare WARP**: создание и настройка свежего WireGuard-профиля с чистым эндпоинтом в 1 клик.
+- 🚀 **Полноценная работа всех модулей**: ByeDPI, Cloudflare WARP, VLESS Reality / Hysteria 2 / Shadowsocks, системный прокси для браузеров в 1 клик и виртуальный адаптер Wintun TUN для всего трафика системы и Discord Voice.
+- 🔔 **Системный трей**: сворачивание в трей при закрытии, контекстное меню, автозапуск с Windows и импорт бэкапов из Android.
 
 - **[Промо-сайт проекта (GitHub Pages)](https://byedpirussia.github.io/byedpirussia/)** — веб-страница проекта с описанием функций.
 
