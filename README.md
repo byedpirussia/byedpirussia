@@ -30,11 +30,12 @@
 [![.NET 8](https://img.shields.io/badge/.NET-8.0%20WPF-purple?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F67%20Чисто-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/home/upload)
 
-- **[Скачать архив Windows v1.3.4 (.ZIP)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.3.4/ByeDPI-Russia-Windows-v1.3.4.zip)** — новый нативный ПК-клиент на **C# / .NET 8 WPF** в стиле **Windows 11 Fluent Design** (распаковать архив и запустить `ByeDpiRussia.Desktop.exe`).
+- **[Скачать архив Windows v1.3.4 (.ZIP)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.3.4/ByeDPI-Russia-Windows-v1.3.4.zip)** — новый нативный ПК-клиент на **C# / .NET 8 WPF** в аутентичном стиле **Windows 11 Fluent Design & DWM Mica Alt** (распаковать архив и запустить `ByeDpiRussia.Desktop.exe`).
+- 🎨 **Интерфейс Windows 11 DWM**: нативный эффект полупрозрачности Mica Alt / Acrylic через Windows Desktop Window Manager API, скругленные углы и темная системная тема.
 - ⚡ **Все 32 стратегии из Android**: полный перенос мобильного каталога стратегий под Windows `ciadpi.exe` (YouTube 4K, Discord, ТСПУ).
 - 🏆 **Автоподбор стратегий (Бенчмарк)**: тестирование всех пресетов в реальном времени через TLS Handshake с замером пинга на YouTube и Discord и автовыбором лучшей.
-- ✨ **Генератор Cloudflare WARP**: создание и настройка свежего WireGuard-профиля с чистым эндпоинтом в 1 клик.
-- 🚀 **Полноценная работа всех модулей**: ByeDPI, Cloudflare WARP, VLESS Reality / Hysteria 2 / Shadowsocks, системный прокси для браузеров в 1 клик и виртуальный адаптер Wintun TUN для всего трафика системы и Discord Voice.
+- ✨ **Генератор и сохранение Cloudflare WARP**: создание и настройка свежего WireGuard-профиля в 1 клик с автоматическим сохранением конфигурации между запусками.
+- 🛡️ **Виртуальный адаптер Wintun TUN**: полнофункциональная маршрутизация всего трафика Windows (L3 через gVisor stack + перехват DNS без утечек) для игр и Discord Voice, а также системный прокси для браузеров.
 - 🔔 **Системный трей**: сворачивание в трей при закрытии, контекстное меню, автозапуск с Windows и импорт бэкапов из Android.
 
 - **[Промо-сайт проекта (GitHub Pages)](https://byedpirussia.github.io/byedpirussia/)** — веб-страница проекта с описанием функций.
