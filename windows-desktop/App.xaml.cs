@@ -14,6 +14,9 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        ModernWpf.ThemeManager.Current.ApplicationTheme = ModernWpf.ApplicationTheme.Dark;
+        ModernWpf.ThemeManager.Current.AccentColor = System.Windows.Media.Color.FromRgb(0, 120, 212);
+
         DispatcherUnhandledException += App_DispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
     }

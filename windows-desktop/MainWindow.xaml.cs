@@ -66,6 +66,12 @@ Endpoint = 188.114.98.8:854";
             LoadSettings();
         }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            DwmHelper.ApplyWindows11Backdrop(this, DwmHelper.BackdropType.Tabbed, darkMode: true);
+        }
+
         private void InitTrayIcon()
         {
             try
@@ -138,6 +144,23 @@ Endpoint = 188.114.98.8:854";
                 }
             }
             catch { }
+            finally
+            {
+                UpdateWarpStatusUI();
+            }
+        }
+
+        private void UpdateWarpStatusUI()
+        {
+            if (!string.IsNullOrWhiteSpace(_warpConfigText))
+            {
+                var endpoint = SingBoxConfigGenerator.ExtractRegex(_warpConfigText, @"Endpoint\s*=\s*(.+)") ?? "188.114.98.8:854";
+                TxtWarpStatus.Text = $"✅ Конфигурация сохранена (Сервер: {endpoint}). Готово к подключению без повторной генерации.";
+            }
+            else
+            {
+                TxtWarpStatus.Text = "Конфигурация не найдена. Нажмите «Сгенерировать ключ WARP» для создания нового профиля.";
+            }
         }
 
         private void SaveSettings()
@@ -261,7 +284,11 @@ Endpoint = 188.114.98.8:854";
 
                     if (_processManager.StartSingBox(configPath, out var err))
                     {
-                        if (!tunMode && ChkSystemProxy.IsChecked == true)
+                        if (tunMode)
+                        {
+                            SystemProxyManager.SetProxy(false);
+                        }
+                        else if (ChkSystemProxy.IsChecked == true)
                         {
                             SystemProxyManager.SetProxy(true, "127.0.0.1", 10808);
                         }
@@ -348,7 +375,11 @@ Endpoint = 188.114.98.8:854";
 
                     if (_processManager.StartSingBox(configPath, out var err))
                     {
-                        if (!tunMode && ChkSystemProxy.IsChecked == true)
+                        if (tunMode)
+                        {
+                            SystemProxyManager.SetProxy(false);
+                        }
+                        else if (ChkSystemProxy.IsChecked == true)
                         {
                             SystemProxyManager.SetProxy(true, "127.0.0.1", 10808);
                         }
@@ -481,6 +512,7 @@ Endpoint = 188.114.98.8:854";
             {
                 _warpConfigText = tb.Text.Trim();
                 SaveSettings();
+                UpdateWarpStatusUI();
                 dialog.Close();
                 MessageBox.Show("Конфигурация WARP успешно сохранена!", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
             };
@@ -508,6 +540,7 @@ Endpoint = 188.114.98.8:854";
                 {
                     _warpConfigText = File.ReadAllText(ofd.FileName);
                     SaveSettings();
+                    UpdateWarpStatusUI();
                     MessageBox.Show("Конфигурация WARP успешно загружена из файла!", "Успешно", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
@@ -715,6 +748,7 @@ Endpoint = 188.114.98.8:854";
                     }
 
                     SaveSettings();
+                    UpdateWarpStatusUI();
                     if (_vlessProfiles.Count > 0 && CmbVlessProfiles.SelectedItem == null)
                     {
                         CmbVlessProfiles.SelectedIndex = 0;

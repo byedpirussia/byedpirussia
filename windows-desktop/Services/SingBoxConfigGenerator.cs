@@ -45,6 +45,7 @@ namespace ByeDpiRussia.Desktop.Services
             var root = new JsonObject
             {
                 ["log"] = new JsonObject { ["level"] = "warn" },
+                ["dns"] = CreateDnsConfig("wg-ep"),
                 ["endpoints"] = new JsonArray
                 {
                     new JsonObject
@@ -71,11 +72,7 @@ namespace ByeDpiRussia.Desktop.Services
                 {
                     new JsonObject { ["type"] = "direct", ["tag"] = "direct" }
                 },
-                ["route"] = new JsonObject
-                {
-                    ["auto_detect_interface"] = true,
-                    ["final"] = "wg-ep"
-                }
+                ["route"] = CreateRouteConfig("wg-ep", tunMode)
             };
 
             var tmpPath = Path.Combine(Path.GetTempPath(), "byedpi_warp_singbox.json");
@@ -88,22 +85,60 @@ namespace ByeDpiRussia.Desktop.Services
             var root = new JsonObject
             {
                 ["log"] = new JsonObject { ["level"] = "warn" },
+                ["dns"] = CreateDnsConfig("proxy"),
                 ["inbounds"] = CreateInbounds(tunMode, localPort),
                 ["outbounds"] = new JsonArray
                 {
                     CreateVlessOutbound(profile),
                     new JsonObject { ["type"] = "direct", ["tag"] = "direct" }
                 },
-                ["route"] = new JsonObject
-                {
-                    ["auto_detect_interface"] = true,
-                    ["final"] = "proxy"
-                }
+                ["route"] = CreateRouteConfig("proxy", tunMode)
             };
 
             var tmpPath = Path.Combine(Path.GetTempPath(), "byedpi_vless_singbox.json");
             File.WriteAllText(tmpPath, root.ToJsonString());
             return tmpPath;
+        }
+
+        private static JsonObject CreateDnsConfig(string targetDetour)
+        {
+            return new JsonObject
+            {
+                ["servers"] = new JsonArray
+                {
+                    new JsonObject
+                    {
+                        ["type"] = "udp",
+                        ["tag"] = "dns-remote",
+                        ["server"] = "1.1.1.1",
+                        ["detour"] = targetDetour
+                    }
+                },
+                ["strategy"] = "prefer_ipv4"
+            };
+        }
+
+        private static JsonObject CreateRouteConfig(string finalTarget, bool tunMode)
+        {
+            var route = new JsonObject
+            {
+                ["auto_detect_interface"] = true,
+                ["final"] = finalTarget
+            };
+
+            if (tunMode)
+            {
+                route["rules"] = new JsonArray
+                {
+                    new JsonObject
+                    {
+                        ["protocol"] = "dns",
+                        ["action"] = "hijack-dns"
+                    }
+                };
+            }
+
+            return route;
         }
 
         private static JsonArray CreateInbounds(bool tunMode, int localPort)
@@ -126,10 +161,10 @@ namespace ByeDpiRussia.Desktop.Services
                     ["type"] = "tun",
                     ["tag"] = "tun-in",
                     ["interface_name"] = "byedpi-tun",
-                    ["address"] = new JsonArray { "172.19.0.1/30" },
+                    ["address"] = new JsonArray { "172.19.0.1/30", "fdfe:dcba:9876::1/126" },
                     ["auto_route"] = true,
-                    ["strict_route"] = false,
-                    ["stack"] = "system"
+                    ["strict_route"] = true,
+                    ["stack"] = "mixed"
                 });
             }
 
@@ -195,7 +230,7 @@ namespace ByeDpiRussia.Desktop.Services
             return outbound;
         }
 
-        private static string? ExtractRegex(string input, string pattern)
+        public static string? ExtractRegex(string input, string pattern)
         {
             var match = Regex.Match(input, pattern, RegexOptions.Multiline);
             return match.Success ? match.Groups[1].Value.Trim() : null;
