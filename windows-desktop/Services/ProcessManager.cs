@@ -83,6 +83,34 @@ namespace ByeDpiRussia.Desktop.Services
 
             try
             {
+                // Pre-flight validation
+                var checkPsi = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = $"check -c \"{configJsonPath}\"",
+                    WorkingDirectory = CoreDirectory,
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (var checkProc = Process.Start(checkPsi))
+                {
+                    if (checkProc != null)
+                    {
+                        var checkErr = checkProc.StandardError.ReadToEnd();
+                        var checkOut = checkProc.StandardOutput.ReadToEnd();
+                        checkProc.WaitForExit(3000);
+                        if (checkProc.ExitCode != 0)
+                        {
+                            error = !string.IsNullOrWhiteSpace(checkErr) ? checkErr : checkOut;
+                            return false;
+                        }
+                    }
+                }
+
+                // Run sing-box with stdout/stderr capture
                 var psi = new ProcessStartInfo
                 {
                     FileName = exePath,
@@ -90,12 +118,38 @@ namespace ByeDpiRussia.Desktop.Services
                     WorkingDirectory = CoreDirectory,
                     CreateNoWindow = true,
                     UseShellExecute = false,
-                    RedirectStandardOutput = false,
-                    RedirectStandardError = false
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
 
-                _singboxProcess = Process.Start(psi);
-                return _singboxProcess != null && !_singboxProcess.HasExited;
+                var errBuilder = new System.Text.StringBuilder();
+                _singboxProcess = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                _singboxProcess.ErrorDataReceived += (s, e) =>
+                {
+                    if (e.Data != null) lock (errBuilder) errBuilder.AppendLine(e.Data);
+                };
+                _singboxProcess.OutputDataReceived += (s, e) =>
+                {
+                    if (e.Data != null) lock (errBuilder) errBuilder.AppendLine(e.Data);
+                };
+
+                _singboxProcess.Start();
+                _singboxProcess.BeginErrorReadLine();
+                _singboxProcess.BeginOutputReadLine();
+
+                System.Threading.Thread.Sleep(400);
+
+                if (_singboxProcess.HasExited)
+                {
+                    lock (errBuilder) error = errBuilder.ToString().Trim();
+                    if (string.IsNullOrWhiteSpace(error))
+                    {
+                        error = $"Процесс sing-box завершился с кодом {_singboxProcess.ExitCode}.";
+                    }
+                    return false;
+                }
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -117,6 +171,7 @@ namespace ByeDpiRussia.Desktop.Services
             catch { }
             finally
             {
+                _singboxProcess?.Dispose();
                 _singboxProcess = null;
             }
 

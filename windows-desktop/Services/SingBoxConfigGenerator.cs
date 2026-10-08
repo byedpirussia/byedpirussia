@@ -45,26 +45,36 @@ namespace ByeDpiRussia.Desktop.Services
             var root = new JsonObject
             {
                 ["log"] = new JsonObject { ["level"] = "warn" },
-                ["inbounds"] = CreateInbounds(tunMode, localPort),
-                ["outbounds"] = new JsonArray
+                ["endpoints"] = new JsonArray
                 {
                     new JsonObject
                     {
                         ["type"] = "wireguard",
-                        ["tag"] = "proxy",
-                        ["server"] = endpointHost,
-                        ["server_port"] = endpointPort,
-                        ["local_address"] = localAddresses,
+                        ["tag"] = "wg-ep",
+                        ["address"] = localAddresses,
                         ["private_key"] = privKey,
-                        ["peer_public_key"] = pubKey,
-                        ["mtu"] = 1280
-                    },
+                        ["mtu"] = 1280,
+                        ["peers"] = new JsonArray
+                        {
+                            new JsonObject
+                            {
+                                ["address"] = endpointHost,
+                                ["port"] = endpointPort,
+                                ["public_key"] = pubKey,
+                                ["allowed_ips"] = new JsonArray { "0.0.0.0/0", "::/0" }
+                            }
+                        }
+                    }
+                },
+                ["inbounds"] = CreateInbounds(tunMode, localPort),
+                ["outbounds"] = new JsonArray
+                {
                     new JsonObject { ["type"] = "direct", ["tag"] = "direct" }
                 },
                 ["route"] = new JsonObject
                 {
                     ["auto_detect_interface"] = true,
-                    ["final"] = "proxy"
+                    ["final"] = "wg-ep"
                 }
             };
 
@@ -105,8 +115,7 @@ namespace ByeDpiRussia.Desktop.Services
                     ["type"] = "mixed",
                     ["tag"] = "mixed-in",
                     ["listen"] = "127.0.0.1",
-                    ["listen_port"] = localPort,
-                    ["sniff"] = true
+                    ["listen_port"] = localPort
                 }
             };
 
@@ -117,11 +126,10 @@ namespace ByeDpiRussia.Desktop.Services
                     ["type"] = "tun",
                     ["tag"] = "tun-in",
                     ["interface_name"] = "byedpi-tun",
-                    ["inet4_address"] = "172.19.0.1/30",
+                    ["address"] = new JsonArray { "172.19.0.1/30" },
                     ["auto_route"] = true,
                     ["strict_route"] = false,
-                    ["stack"] = "system",
-                    ["sniff"] = true
+                    ["stack"] = "system"
                 });
             }
 

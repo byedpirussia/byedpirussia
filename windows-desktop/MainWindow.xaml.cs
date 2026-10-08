@@ -29,6 +29,21 @@ namespace ByeDpiRussia.Desktop
         private CancellationTokenSource? _benchmarkCts;
         private System.Windows.Forms.NotifyIcon? _notifyIcon;
         private bool _isRealExit = false;
+        private bool _isSwitching = false;
+
+        private static bool IsAdministrator()
+        {
+            try
+            {
+                using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+                var principal = new System.Security.Principal.WindowsPrincipal(identity);
+                return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         private string _warpConfigText = @"[Interface]
 PrivateKey = Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc=
@@ -147,28 +162,55 @@ Endpoint = 188.114.98.8:854";
 
         private void SwitchByeDpi_Toggled(object sender, RoutedEventArgs e)
         {
+            if (_isSwitching) return;
+
             if (SwitchByeDpi.IsOn)
             {
-                // Disable other services
-                if (SwitchWarp.IsOn) SwitchWarp.IsOn = false;
-                if (SwitchVless.IsOn) SwitchVless.IsOn = false;
-
-                var strat = (Strategy)CmbByeDpiStrategies.SelectedItem;
-                var rawArgs = strat?.Args ?? "-d1 -d3+s -s6+s -r1+s";
-                var args = rawArgs.Contains("-i ") ? rawArgs : $"-i 127.0.0.1 -p 1080 {rawArgs}";
-
-                if (_processManager.StartByeDpi(args, out var err))
+                try
                 {
-                    if (ChkSystemProxy.IsChecked == true)
-                    {
-                        SystemProxyManager.SetProxy(true, "127.0.0.1", 1080);
-                    }
-                    UpdateHeroStatus("🟢 ByeDPI активен • Прямой обход DPI (YouTube в 4K, Discord)", true);
+                    _isSwitching = true;
+                    if (SwitchWarp.IsOn) SwitchWarp.IsOn = false;
+                    if (SwitchVless.IsOn) SwitchVless.IsOn = false;
                 }
-                else
+                finally
                 {
+                    _isSwitching = false;
+                }
+
+                try
+                {
+                    var strat = (Strategy)CmbByeDpiStrategies.SelectedItem;
+                    var rawArgs = strat?.Args ?? "-d1 -d3+s -s6+s -r1+s";
+                    var args = rawArgs.Contains("-i ") ? rawArgs : $"-i 127.0.0.1 -p 1080 {rawArgs}";
+
+                    if (_processManager.StartByeDpi(args, out var err))
+                    {
+                        if (ChkSystemProxy.IsChecked == true)
+                        {
+                            SystemProxyManager.SetProxy(true, "127.0.0.1", 1080);
+                        }
+                        UpdateHeroStatus("🟢 ByeDPI активен • Прямой обход DPI (YouTube в 4K, Discord)", true);
+                    }
+                    else
+                    {
+                        _isSwitching = true;
+                        SwitchByeDpi.IsOn = false;
+                        _isSwitching = false;
+                        _processManager.StopByeDpi();
+                        SystemProxyManager.SetProxy(false);
+                        CheckAnyActive();
+                        MessageBox.Show($"Не удалось запустить ByeDPI:\n\n{err}", "Ошибка запуска ByeDPI", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _isSwitching = true;
                     SwitchByeDpi.IsOn = false;
-                    MessageBox.Show($"Не удалось запустить ByeDPI:\n{err}", "Ошибка запуска", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _isSwitching = false;
+                    _processManager.StopByeDpi();
+                    SystemProxyManager.SetProxy(false);
+                    CheckAnyActive();
+                    MessageBox.Show($"Ошибка при запуске ByeDPI:\n\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
@@ -184,27 +226,68 @@ Endpoint = 188.114.98.8:854";
 
         private void SwitchWarp_Toggled(object sender, RoutedEventArgs e)
         {
+            if (_isSwitching) return;
+
             if (SwitchWarp.IsOn)
             {
-                if (SwitchByeDpi.IsOn) SwitchByeDpi.IsOn = false;
-                if (SwitchVless.IsOn) SwitchVless.IsOn = false;
+                try
+                {
+                    _isSwitching = true;
+                    if (SwitchByeDpi.IsOn) SwitchByeDpi.IsOn = false;
+                    if (SwitchVless.IsOn) SwitchVless.IsOn = false;
+                }
+                finally
+                {
+                    _isSwitching = false;
+                }
 
                 var tunMode = ChkTunMode.IsChecked == true;
-                var configPath = SingBoxConfigGenerator.GenerateWarpConfig(_warpConfigText, tunMode, 10808);
-
-                if (_processManager.StartSingBox(configPath, out var err))
+                if (tunMode && !IsAdministrator())
                 {
-                    if (!tunMode && ChkSystemProxy.IsChecked == true)
-                    {
-                        SystemProxyManager.SetProxy(true, "127.0.0.1", 10808);
-                    }
-                    var modeDesc = tunMode ? "Виртуальный адаптер Wintun" : "Системный прокси 127.0.0.1:10808";
-                    UpdateHeroStatus($"🟢 Cloudflare WARP подключен • {modeDesc}", true);
-                }
-                else
-                {
+                    _isSwitching = true;
                     SwitchWarp.IsOn = false;
-                    MessageBox.Show($"Не удалось запустить Cloudflare WARP:\n{err}", "Ошибка запуска", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _isSwitching = false;
+                    MessageBox.Show(
+                        "Для работы виртуального сетевого адаптера (Wintun TUN) требуются права администратора.\n\nЗапустите приложение от имени администратора или снимите флажок «Виртуальный адаптер Wintun», чтобы использовать системный прокси (работает без прав админа).",
+                        "Требуются права администратора",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                try
+                {
+                    var configPath = SingBoxConfigGenerator.GenerateWarpConfig(_warpConfigText, tunMode, 10808);
+
+                    if (_processManager.StartSingBox(configPath, out var err))
+                    {
+                        if (!tunMode && ChkSystemProxy.IsChecked == true)
+                        {
+                            SystemProxyManager.SetProxy(true, "127.0.0.1", 10808);
+                        }
+                        var modeDesc = tunMode ? "Виртуальный адаптер Wintun" : "Системный прокси 127.0.0.1:10808";
+                        UpdateHeroStatus($"🟢 Cloudflare WARP подключен • {modeDesc}", true);
+                    }
+                    else
+                    {
+                        _isSwitching = true;
+                        SwitchWarp.IsOn = false;
+                        _isSwitching = false;
+                        _processManager.StopSingBox();
+                        SystemProxyManager.SetProxy(false);
+                        CheckAnyActive();
+                        MessageBox.Show($"Не удалось запустить Cloudflare WARP:\n\n{err}", "Ошибка запуска WARP", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _isSwitching = true;
+                    SwitchWarp.IsOn = false;
+                    _isSwitching = false;
+                    _processManager.StopSingBox();
+                    SystemProxyManager.SetProxy(false);
+                    CheckAnyActive();
+                    MessageBox.Show($"Ошибка при настройке Cloudflare WARP:\n\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
@@ -220,35 +303,78 @@ Endpoint = 188.114.98.8:854";
 
         private void SwitchVless_Toggled(object sender, RoutedEventArgs e)
         {
+            if (_isSwitching) return;
+
             if (SwitchVless.IsOn)
             {
                 if (_vlessProfiles.Count == 0)
                 {
+                    _isSwitching = true;
                     SwitchVless.IsOn = false;
+                    _isSwitching = false;
                     MessageBox.Show("Сначала добавьте хотя бы один сервер VLESS / Hysteria 2 с помощью кнопки «+ Добавить ключ / ссылку».", "Нет серверов", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if (SwitchByeDpi.IsOn) SwitchByeDpi.IsOn = false;
-                if (SwitchWarp.IsOn) SwitchWarp.IsOn = false;
-
-                var profile = (VlessProfile)CmbVlessProfiles.SelectedItem ?? _vlessProfiles.First();
-                var tunMode = ChkTunMode.IsChecked == true;
-                var configPath = SingBoxConfigGenerator.GenerateVlessConfig(profile, tunMode, 10808);
-
-                if (_processManager.StartSingBox(configPath, out var err))
+                try
                 {
-                    if (!tunMode && ChkSystemProxy.IsChecked == true)
-                    {
-                        SystemProxyManager.SetProxy(true, "127.0.0.1", 10808);
-                    }
-                    var modeDesc = tunMode ? "Wintun TUN" : "Прокси 127.0.0.1:10808";
-                    UpdateHeroStatus($"🟢 {profile.Name} подключен • {modeDesc}", true);
+                    _isSwitching = true;
+                    if (SwitchByeDpi.IsOn) SwitchByeDpi.IsOn = false;
+                    if (SwitchWarp.IsOn) SwitchWarp.IsOn = false;
                 }
-                else
+                finally
                 {
+                    _isSwitching = false;
+                }
+
+                var tunMode = ChkTunMode.IsChecked == true;
+                if (tunMode && !IsAdministrator())
+                {
+                    _isSwitching = true;
                     SwitchVless.IsOn = false;
-                    MessageBox.Show($"Не удалось запустить VLESS:\n{err}", "Ошибка запуска", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _isSwitching = false;
+                    MessageBox.Show(
+                        "Для работы виртуального сетевого адаптера (Wintun TUN) требуются права администратора.\n\nЗапустите приложение от имени администратора или снимите флажок «Виртуальный адаптер Wintun», чтобы использовать системный прокси (работает без прав админа).",
+                        "Требуются права администратора",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                try
+                {
+                    var profile = (VlessProfile)CmbVlessProfiles.SelectedItem ?? _vlessProfiles.First();
+                    var configPath = SingBoxConfigGenerator.GenerateVlessConfig(profile, tunMode, 10808);
+
+                    if (_processManager.StartSingBox(configPath, out var err))
+                    {
+                        if (!tunMode && ChkSystemProxy.IsChecked == true)
+                        {
+                            SystemProxyManager.SetProxy(true, "127.0.0.1", 10808);
+                        }
+                        var modeDesc = tunMode ? "Wintun TUN" : "Прокси 127.0.0.1:10808";
+                        UpdateHeroStatus($"🟢 {profile.Name} подключен • {modeDesc}", true);
+                    }
+                    else
+                    {
+                        _isSwitching = true;
+                        SwitchVless.IsOn = false;
+                        _isSwitching = false;
+                        _processManager.StopSingBox();
+                        SystemProxyManager.SetProxy(false);
+                        CheckAnyActive();
+                        MessageBox.Show($"Не удалось запустить VLESS:\n\n{err}", "Ошибка запуска", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _isSwitching = true;
+                    SwitchVless.IsOn = false;
+                    _isSwitching = false;
+                    _processManager.StopSingBox();
+                    SystemProxyManager.SetProxy(false);
+                    CheckAnyActive();
+                    MessageBox.Show($"Ошибка при запуске VLESS:\n\n{ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
