@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
-        ui:WindowHelper.UseModernWindowStyle="True"
         Title="ByeDPI Russia — Единый центр обхода блокировок"
         Height="760" Width="850"
         MinHeight="620" MinWidth="720"
@@ -38,7 +37,7 @@
 
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                            <Border Background="LinearGradient 0,0 1,1 #0078D4 #6366F1" Width="30" Height="30" CornerRadius="8" Margin="0,0,10,0">
+                            <Border Background="#0078D4" Width="30" Height="30" CornerRadius="8" Margin="0,0,10,0">
                                 <TextBlock Text="🛡️" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <TextBlock Text="ByeDPI Russia" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
