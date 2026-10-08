@@ -55,6 +55,19 @@
             android:title="@string/disguise_setting_title"
             android:summary="@string/disguise_setting_summary" />
 
+        <SwitchPreference
+            android:key="pref_camouflage_fake_ui_enabled"
+            android:title="@string/disguise_fake_ui_title"
+            android:summary="@string/disguise_fake_ui_summary"
+            android:defaultValue="true" />
+
+        <com.takisoft.preferencex.EditTextPreference
+            android:key="pref_camouflage_unlock_code"
+            android:title="@string/disguise_unlock_code_title"
+            android:summary="@string/disguise_unlock_code_summary"
+            android:defaultValue="1337"
+            app:useSimpleSummaryProvider="true" />
+
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

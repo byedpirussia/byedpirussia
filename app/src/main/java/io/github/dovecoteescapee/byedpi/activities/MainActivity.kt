@@ -44,8 +44,11 @@ import io.github.dovecoteescapee.byedpi.openflux.OpenFluxConfigActivity
 import io.github.dovecoteescapee.byedpi.openflux.OpenFluxManager
 import io.github.dovecoteescapee.byedpi.openflux.OpenFluxVpnService
 import io.github.dovecoteescapee.byedpi.tv.TvNavigationHelper
+import androidx.activity.addCallback
 import io.github.dovecoteescapee.byedpi.security.TamperGuard
 import io.github.dovecoteescapee.byedpi.security.ModifiedBannerDialog
+import io.github.dovecoteescapee.byedpi.security.CamouflageManager
+import io.github.dovecoteescapee.byedpi.security.DisguiseUiController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -54,6 +57,7 @@ import java.io.IOException
 
 class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var disguiseUiController: DisguiseUiController
 
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
@@ -219,6 +223,20 @@ class MainActivity : BaseActivity() {
         }
 
         setupM3Interface()
+
+        disguiseUiController = DisguiseUiController(this)
+        updateDisguiseUi()
+
+        onBackPressedDispatcher.addCallback(this) {
+            if (binding.camouflageOverlay.visibility == View.VISIBLE) {
+                moveTaskToBack(true)
+            } else {
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+                isEnabled = true
+            }
+        }
+
         if (TamperGuard.isModified(this) && !TamperGuard.verifyExecutionPermitted(this)) {
             ModifiedBannerDialog.show(this) {
                 checkInitialSetup()
@@ -645,6 +663,7 @@ class MainActivity : BaseActivity() {
             return
         }
         updateM3State()
+        updateDisguiseUi()
     }
 
     override fun onDestroy() {
@@ -656,6 +675,12 @@ class MainActivity : BaseActivity() {
         val (status, _) = appStatus
 
         return when (item.itemId) {
+            R.id.action_lock_camouflage -> {
+                CamouflageManager.isUnlockedInSession = false
+                updateDisguiseUi()
+                true
+            }
+
             R.id.action_telegram -> {
                 openTelegramWithVpnCheck()
                 true
@@ -691,6 +716,35 @@ class MainActivity : BaseActivity() {
             }
 
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun updateDisguiseUi() {
+        val currentDisguise = CamouflageManager.getCurrentDisguise(this)
+        if (currentDisguise != CamouflageManager.DisguiseMode.DEFAULT) {
+            val disguiseTitle = CamouflageManager.updateActivityIdentity(this, currentDisguise)
+            if (!CamouflageManager.isUnlockedInSession && CamouflageManager.isFakeUiEnabled(this)) {
+                binding.toolbar.title = disguiseTitle
+                binding.toolbar.subtitle = null
+            } else {
+                binding.toolbar.title = getString(R.string.app_name)
+                binding.toolbar.subtitle = getString(R.string.app_subtitle_clean)
+            }
+        } else {
+            binding.toolbar.title = getString(R.string.app_name)
+            binding.toolbar.subtitle = getString(R.string.app_subtitle_clean)
+            CamouflageManager.updateActivityIdentity(this, CamouflageManager.DisguiseMode.DEFAULT)
+        }
+
+        binding.toolbar.menu.findItem(R.id.action_lock_camouflage)?.isVisible =
+            (currentDisguise != CamouflageManager.DisguiseMode.DEFAULT &&
+             CamouflageManager.isFakeUiEnabled(this) &&
+             CamouflageManager.isUnlockedInSession)
+
+        disguiseUiController.attachOverlay(binding.camouflageOverlay) {
+            binding.toolbar.title = getString(R.string.app_name)
+            binding.toolbar.subtitle = getString(R.string.app_subtitle_clean)
+            binding.toolbar.menu.findItem(R.id.action_lock_camouflage)?.isVisible = true
         }
     }
 

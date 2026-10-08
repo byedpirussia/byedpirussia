@@ -65,13 +65,24 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
             }
 
         findPreference<Preference>("app_camouflage")?.let { pref ->
-            val updateCamouflageSummary = {
+            val fakeUiPref = findPreference<SwitchPreference>("pref_camouflage_fake_ui_enabled")
+            val unlockCodePref = findPreference<EditTextPreference>("pref_camouflage_unlock_code")
+
+            val updateCamouflageSubPrefs = {
                 context?.let { ctx ->
                     val current = io.github.dovecoteescapee.byedpi.security.CamouflageManager.getCurrentDisguise(ctx)
                     pref.summary = getString(current.titleRes)
+                    val isDisguised = current != io.github.dovecoteescapee.byedpi.security.CamouflageManager.DisguiseMode.DEFAULT
+                    fakeUiPref?.isVisible = isDisguised
+                    unlockCodePref?.isVisible = isDisguised && (fakeUiPref?.isChecked == true)
                 }
             }
-            updateCamouflageSummary()
+            updateCamouflageSubPrefs()
+
+            fakeUiPref?.setOnPreferenceChangeListener { _, newValue ->
+                unlockCodePref?.isVisible = newValue as Boolean
+                true
+            }
 
             pref.setOnPreferenceClickListener {
                 context?.let { ctx ->
@@ -92,7 +103,7 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                                     getString(R.string.disguise_applied_toast, label),
                                     android.widget.Toast.LENGTH_LONG
                                 ).show()
-                                pref.summary = label
+                                updateCamouflageSubPrefs()
                             }
                             dialog.dismiss()
                         }

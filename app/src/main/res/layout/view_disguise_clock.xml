@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/clock_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Clock Toolbar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/clock_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/disguise_clock"
+        app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge" />
+
+    <!-- Digital Clock Section -->
+    <LinearLayout
+        android:id="@+id/layout_digital_clock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingVertical="40dp">
+
+        <TextView
+            android:id="@+id/tv_clock_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:00:00"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="56sp"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/tv_clock_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Сегодня"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="24dp"
+        android:background="?attr/colorOutlineVariant" />
+
+    <!-- Stopwatch Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/disguise_clock_stopwatch"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tv_stopwatch_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00.0"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="48sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:layout_marginBottom="32dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_stopwatch_start_pause"
+                android:layout_width="120dp"
+                android:layout_height="56dp"
+                android:layout_marginEnd="12dp"
+                android:text="@string/disguise_start"
+                style="@style/Widget.Material3.Button" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_stopwatch_reset"
+                android:layout_width="120dp"
+                android:layout_height="56dp"
+                android:text="@string/disguise_reset"
+                style="@style/Widget.Material3.Button.TonalButton" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

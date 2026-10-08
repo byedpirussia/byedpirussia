@@ -260,5 +260,20 @@
     <string name="disguise_notes">Notes</string>
     <string name="disguise_clock">Clock</string>
     <string name="disguise_applied_toast">Icon and title changed to \"%1$s\". Changes will take effect in launcher in a few seconds.</string>
+    <string name="disguise_fake_ui_title">Camouflage Screen on Launch</string>
+    <string name="disguise_fake_ui_summary">Open functional calculator, notes or clock instead of VPN screen</string>
+    <string name="disguise_unlock_code_title">Secret Unlock Code</string>
+    <string name="disguise_unlock_code_summary">Code to unlock ByeDPI (default: 1337)</string>
+    <string name="disguise_lock_action">Lock under Camouflage</string>
+    <string name="disguise_notes_title">Quick Notes</string>
+    <string name="disguise_notes_hint">Write your note here...</string>
+    <string name="disguise_notes_save">Save</string>
+    <string name="disguise_notes_saved">Note saved ✓</string>
+    <string name="disguise_clock_title">World Clock &amp; Stopwatch</string>
+    <string name="disguise_clock_stopwatch">Stopwatch</string>
+    <string name="disguise_start">Start</string>
+    <string name="disguise_pause">Pause</string>
+    <string name="disguise_reset">Reset</string>
+    <string name="disguise_unlocked_toast">Camouflage unlocked ✓</string>
 </resources>
 

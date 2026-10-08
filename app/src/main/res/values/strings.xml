@@ -260,5 +260,20 @@
     <string name="disguise_notes">Заметки</string>
     <string name="disguise_clock">Часы</string>
     <string name="disguise_applied_toast">Иконка изменена на «%1$s». Изменения вступят в силу через несколько секунд.</string>
+    <string name="disguise_fake_ui_title">Защитный экран при запуске</string>
+    <string name="disguise_fake_ui_summary">Открывать рабочий калькулятор, заметки или часы вместо экрана VPN</string>
+    <string name="disguise_unlock_code_title">Секретный код разблокировки</string>
+    <string name="disguise_unlock_code_summary">Код для перехода в ByeDPI (по умолчанию: 1337)</string>
+    <string name="disguise_lock_action">Скрыть под камуфляж</string>
+    <string name="disguise_notes_title">Быстрые заметки</string>
+    <string name="disguise_notes_hint">Введите текст заметки...</string>
+    <string name="disguise_notes_save">Сохранить</string>
+    <string name="disguise_notes_saved">Заметка сохранена ✓</string>
+    <string name="disguise_clock_title">Мировое время и секундомер</string>
+    <string name="disguise_clock_stopwatch">Секундомер</string>
+    <string name="disguise_start">Старт</string>
+    <string name="disguise_pause">Пауза</string>
+    <string name="disguise_reset">Сброс</string>
+    <string name="disguise_unlocked_toast">Камуфляж разблокирован ✓</string>
 </resources>
 

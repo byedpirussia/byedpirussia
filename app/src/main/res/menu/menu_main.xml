@@ -5,6 +5,14 @@
     tools:context=".activities.MainActivity">
 
     <item
+        android:id="@+id/action_lock_camouflage"
+        android:orderInCategory="0"
+        android:title="@string/disguise_lock_action"
+        android:icon="@drawable/ic_lock_24"
+        app:showAsAction="ifRoom"
+        android:visible="false" />
+
+    <item
         android:id="@+id/action_telegram"
         android:orderInCategory="1"
         android:title="@string/tg_channel_title"
