@@ -64,6 +64,45 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
+        findPreference<Preference>("app_camouflage")?.let { pref ->
+            val updateCamouflageSummary = {
+                context?.let { ctx ->
+                    val current = io.github.dovecoteescapee.byedpi.security.CamouflageManager.getCurrentDisguise(ctx)
+                    pref.summary = getString(current.titleRes)
+                }
+            }
+            updateCamouflageSummary()
+
+            pref.setOnPreferenceClickListener {
+                context?.let { ctx ->
+                    val modes = io.github.dovecoteescapee.byedpi.security.CamouflageManager.DisguiseMode.entries.toTypedArray()
+                    val labels = modes.map { getString(it.titleRes) }.toTypedArray()
+                    val current = io.github.dovecoteescapee.byedpi.security.CamouflageManager.getCurrentDisguise(ctx)
+                    val currentIndex = modes.indexOf(current).coerceAtLeast(0)
+
+                    com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
+                        .setTitle(R.string.disguise_dialog_title)
+                        .setSingleChoiceItems(labels, currentIndex) { dialog, which ->
+                            val selectedMode = modes[which]
+                            val success = io.github.dovecoteescapee.byedpi.security.CamouflageManager.applyDisguise(ctx, selectedMode)
+                            if (success) {
+                                val label = getString(selectedMode.titleRes)
+                                android.widget.Toast.makeText(
+                                    ctx,
+                                    getString(R.string.disguise_applied_toast, label),
+                                    android.widget.Toast.LENGTH_LONG
+                                ).show()
+                                pref.summary = label
+                            }
+                            dialog.dismiss()
+                        }
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                }
+                true
+            }
+        }
+
         val switchCommandLineSettings = findPreferenceNotNull<SwitchPreference>(
             "byedpi_enable_cmd_settings"
         )

@@ -50,6 +50,11 @@
             android:title="@string/ipv6_setting"
             android:defaultValue="false" />
 
+        <Preference
+            android:key="app_camouflage"
+            android:title="@string/disguise_setting_title"
+            android:summary="@string/disguise_setting_summary" />
+
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory

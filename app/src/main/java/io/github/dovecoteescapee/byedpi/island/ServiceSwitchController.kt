@@ -53,6 +53,11 @@ object ServiceSwitchController {
 
     fun switchTo(context: Context, targetMode: String) {
         val appContext = context.applicationContext
+        if (targetMode != MODE_STOP && !io.github.dovecoteescapee.byedpi.security.TamperGuard.verifyExecutionPermitted(appContext)) {
+            Toast.makeText(appContext, io.github.dovecoteescapee.byedpi.R.string.tamper_guard_blocked, Toast.LENGTH_LONG).show()
+            return
+        }
+
         when (targetMode) {
             MODE_STOP -> {
                 stopAll(appContext)

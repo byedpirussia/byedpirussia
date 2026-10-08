@@ -242,5 +242,23 @@
     <string name="warp_import_save">Save and apply</string>
     <string name="warp_import_invalid">Error: [Interface] or [Peer] sections not found in configuration</string>
     <string name="warp_import_success">WARP configuration imported successfully!</string>
+
+    <!-- Anti-Tamper / Modified Banner -->
+    <string name="tamper_banner_title">⚠️ Unofficial Modification</string>
+    <string name="tamper_banner_message">This application build has been modified or re-signed with a third-party certificate.\n\nThe original developer of ByeDPI Russia is not responsible for data security, credentials, or stability of modified builds.\n\nYou can always download the official, safe and verified release on GitHub.</string>
+    <string name="tamper_banner_btn_github">Download Official from GitHub</string>
+    <string name="tamper_banner_btn_continue_format">Continue (%1$d)</string>
+    <string name="tamper_banner_btn_continue">Continue</string>
+    <string name="tamper_guard_blocked">Launch blocked: application integrity compromised.</string>
+
+    <!-- Stealth / Camouflage Mode -->
+    <string name="disguise_setting_title">App Camouflage</string>
+    <string name="disguise_setting_summary">Disguise app icon and launcher title</string>
+    <string name="disguise_dialog_title">Select camouflage mode</string>
+    <string name="disguise_default">Default (ByeDPI Russia)</string>
+    <string name="disguise_calculator">Calculator</string>
+    <string name="disguise_notes">Notes</string>
+    <string name="disguise_clock">Clock</string>
+    <string name="disguise_applied_toast">Icon and title changed to \"%1$s\". Changes will take effect in launcher in a few seconds.</string>
 </resources>
 

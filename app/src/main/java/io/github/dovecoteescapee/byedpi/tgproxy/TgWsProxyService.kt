@@ -113,6 +113,11 @@ class TgWsProxyService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_START && !io.github.dovecoteescapee.byedpi.security.TamperGuard.verifyExecutionPermitted(this)) {
+            Log.e(TAG, "TG Proxy start rejected: app integrity compromised")
+            stopSelf()
+            return START_NOT_STICKY
+        }
         when (intent?.action) {
             ACTION_START -> {
                 val port = intent.getIntExtra(EXTRA_PORT, 1443)

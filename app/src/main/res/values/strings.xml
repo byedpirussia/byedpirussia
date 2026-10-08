@@ -242,5 +242,23 @@
     <string name="warp_import_save">Сохранить и применить</string>
     <string name="warp_import_invalid">Ошибка: в конфигурации не найдены обязательные секции [Interface] или [Peer]</string>
     <string name="warp_import_success">Конфигурация WARP успешно импортирована!</string>
+
+    <!-- Anti-Tamper / Modified Banner -->
+    <string name="tamper_banner_title">⚠️ Неофициальная модификация</string>
+    <string name="tamper_banner_message">Обнаружено, что данная сборка приложения была модифицирована или переподписана сторонним сертификатом.\n\nРазработчик оригинального ByeDPI Russia не несёт ответственности за безопасность ваших данных, сохранность паролей и стабильность работы сторонних модов.\n\nОфициальную, безопасную и проверенную версию вы всегда можете скачать на GitHub.</string>
+    <string name="tamper_banner_btn_github">Скачать с GitHub</string>
+    <string name="tamper_banner_btn_continue_format">Продолжить (%1$d)</string>
+    <string name="tamper_banner_btn_continue">Продолжить</string>
+    <string name="tamper_guard_blocked">Запуск заблокирован: целостность приложения нарушена.</string>
+
+    <!-- Stealth / Camouflage Mode -->
+    <string name="disguise_setting_title">Камуфляж приложения</string>
+    <string name="disguise_setting_summary">Маскировка иконки и названия приложения</string>
+    <string name="disguise_dialog_title">Выберите режим камуфляжа</string>
+    <string name="disguise_default">По умолчанию (ByeDPI Russia)</string>
+    <string name="disguise_calculator">Калькулятор</string>
+    <string name="disguise_notes">Заметки</string>
+    <string name="disguise_clock">Часы</string>
+    <string name="disguise_applied_toast">Иконка изменена на «%1$s». Изменения вступят в силу через несколько секунд.</string>
 </resources>
 

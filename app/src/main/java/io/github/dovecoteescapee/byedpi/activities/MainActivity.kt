@@ -44,6 +44,8 @@ import io.github.dovecoteescapee.byedpi.openflux.OpenFluxConfigActivity
 import io.github.dovecoteescapee.byedpi.openflux.OpenFluxManager
 import io.github.dovecoteescapee.byedpi.openflux.OpenFluxVpnService
 import io.github.dovecoteescapee.byedpi.tv.TvNavigationHelper
+import io.github.dovecoteescapee.byedpi.security.TamperGuard
+import io.github.dovecoteescapee.byedpi.security.ModifiedBannerDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -217,7 +219,13 @@ class MainActivity : BaseActivity() {
         }
 
         setupM3Interface()
-        checkInitialSetup()
+        if (TamperGuard.isModified(this) && !TamperGuard.verifyExecutionPermitted(this)) {
+            ModifiedBannerDialog.show(this) {
+                checkInitialSetup()
+            }
+        } else {
+            checkInitialSetup()
+        }
         handleTriggerModeIntent(intent)
     }
 
@@ -248,6 +256,10 @@ class MainActivity : BaseActivity() {
     }
 
     private fun startWarpVpn() {
+        if (!TamperGuard.verifyExecutionPermitted(this)) {
+            Toast.makeText(this, R.string.tamper_guard_blocked, Toast.LENGTH_LONG).show()
+            return
+        }
         val (byedpiStatus, byedpiMode) = appStatus
         if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
             ServiceManager.stop(this)
@@ -270,6 +282,10 @@ class MainActivity : BaseActivity() {
         val (status, _) = appStatus
         when (status) {
             AppStatus.Halted -> {
+                if (!TamperGuard.verifyExecutionPermitted(this)) {
+                    Toast.makeText(this, R.string.tamper_guard_blocked, Toast.LENGTH_LONG).show()
+                    return
+                }
                 if (WarpVpnService.isRunning.value) {
                     WarpVpnService.stop(this)
                 }
@@ -309,6 +325,10 @@ class MainActivity : BaseActivity() {
         if (VlessVpnService.isRunning.value) {
             VlessVpnService.stop(this)
         } else {
+            if (!TamperGuard.verifyExecutionPermitted(this)) {
+                Toast.makeText(this, R.string.tamper_guard_blocked, Toast.LENGTH_LONG).show()
+                return
+            }
             val selectedConfig = VlessManager.getSelectedConfig(this)
             if (selectedConfig == null) {
                 Toast.makeText(this, "Сначала добавьте VLESS сервер или подписку", Toast.LENGTH_SHORT).show()
@@ -341,6 +361,10 @@ class MainActivity : BaseActivity() {
         if (OpenFluxVpnService.isRunning.value) {
             OpenFluxVpnService.stop(this)
         } else {
+            if (!TamperGuard.verifyExecutionPermitted(this)) {
+                Toast.makeText(this, R.string.tamper_guard_blocked, Toast.LENGTH_LONG).show()
+                return
+            }
             val selectedConfig = OpenFluxManager.getSelectedConfig(this)
             if (selectedConfig == null) {
                 Toast.makeText(this, "Сначала настройте профиль OpenFLUX", Toast.LENGTH_SHORT).show()

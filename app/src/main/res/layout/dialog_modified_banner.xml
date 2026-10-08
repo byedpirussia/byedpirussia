@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp"
+    app:strokeColor="#44EF4444"
+    app:strokeWidth="1.5dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header with Warning Icon -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="24dp"
+                app:cardBackgroundColor="#26EF4444"
+                app:strokeWidth="0dp">
+
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_dialog_alert"
+                    app:tint="#EF4444"
+                    android:contentDescription="@null" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/tv_tamper_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="14dp"
+                android:text="@string/tamper_banner_title"
+                android:textColor="#EF4444"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Message Body -->
+        <TextView
+            android:id="@+id/tv_tamper_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tamper_banner_message"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Download from GitHub Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_tamper_github"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/tamper_banner_btn_github"
+            app:cornerRadius="14dp"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:textColor="?attr/colorOnSecondaryContainer"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Continue Button (7s Timer) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_tamper_continue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Продолжить (7)"
+            android:enabled="false"
+            app:cornerRadius="14dp"
+            style="@style/Widget.Material3.Button"
+            android:backgroundTint="#EF4444"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

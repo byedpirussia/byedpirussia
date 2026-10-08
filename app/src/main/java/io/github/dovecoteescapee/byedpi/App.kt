@@ -30,5 +30,13 @@ class App : Application() {
         } catch (e: Exception) {
             Log.w(TAG, "Failed to apply dynamic colors", e)
         }
+
+        try {
+            if (io.github.dovecoteescapee.byedpi.security.TamperGuard.isModified(this)) {
+                Log.w(TAG, "Running unofficial or modified build.")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Integrity check exception", e)
+        }
     }
 }

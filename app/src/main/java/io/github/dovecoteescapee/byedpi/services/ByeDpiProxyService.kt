@@ -43,7 +43,13 @@ class ByeDpiProxyService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        return when (val action = intent?.action) {
+        val action = intent?.action
+        if (action == START_ACTION && !io.github.dovecoteescapee.byedpi.security.TamperGuard.verifyExecutionPermitted(this)) {
+            Log.e(TAG, "Proxy start rejected: app integrity compromised")
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        return when (action) {
             START_ACTION -> {
                 lifecycleScope.launch { start() }
                 START_STICKY

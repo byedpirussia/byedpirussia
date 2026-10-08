@@ -6,4 +6,7 @@
     <color name="primary_accent">#5976DF</color>
     <color name="accent_green">#34C759</color>
     <color name="accent_orange">#FF9800</color>
+    <color name="ic_calc_background">#1E293B</color>
+    <color name="ic_notes_background">#D97706</color>
+    <color name="ic_clock_background">#1E1B4B</color>
 </resources>

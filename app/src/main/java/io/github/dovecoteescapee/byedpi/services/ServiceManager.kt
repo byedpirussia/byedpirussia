@@ -12,6 +12,10 @@ object ServiceManager {
     private val TAG: String = ServiceManager::class.java.simpleName
 
     fun start(context: Context, mode: Mode) {
+        if (!io.github.dovecoteescapee.byedpi.security.TamperGuard.verifyExecutionPermitted(context)) {
+            Log.e(TAG, "Start blocked: app integrity compromised")
+            return
+        }
         when (mode) {
             Mode.VPN -> {
                 Log.i(TAG, "Starting VPN")

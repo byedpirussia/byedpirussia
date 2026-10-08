@@ -17,11 +17,11 @@
 ## 📥 Скачать приложение (Download)
 
 ### 📱 Android:
-[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.3.4-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.3.5-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
 [![Telegram Channel](https://img.shields.io/badge/Telegram_Канал-t.me%2FByedpirussia-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Byedpirussia)
 [![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F66%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)
 
-- **[APK v1.3.4 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[APK v1.3.5 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
 - **[Официальный Telegram-канал t.me/Byedpirussia](https://t.me/Byedpirussia)** — свежие релизы и новости проекта.
 - **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
@@ -44,12 +44,14 @@
 
 Универсальное Android-приложение для восстановления доступа к заблокированным ресурсам (YouTube, Discord, Telegram и др.) без необходимости аренды зарубежных серверов и сложных настроек.
 
-Приложение объединяет в себе пять независимых инструментов (**ByeDPI**, **Telegram Proxy**, **AmneziaWG WARP**, **Xray VLESS / Shadowsocks / VMess / Trojan / Hysteria 2**, **OpenFLUX обход белых списков**), доступных прямо с главного экрана, полный переход на современный интерфейс **Material Design 3 (M3)**, встроенную поддержку **Динамического Острова (Dynamic Island)** и **Xiaomi HyperOS Focus Notification**, полную поддержку **Android TV и медиаприставок с навигацией по D-Pad с пульта ДУ**, **резервное копирование и перенос всех настроек (Backup & Restore в JSON)**, ручной **импорт профилей WARP / AmneziaWG (.conf)**, поддержку **цепочек прокси (Proxy Chaining)**, встроенные **проверенные подписки белых списков (ru-wbl)**, **шторку быстрых настроек (Quick Settings Tiles)**, многоязычный интерфейс (**Русский / English**), гибкое **раздельное туннелирование (Split Tunneling)** с автоматическим исключением российских приложений (банки, Госуслуги), мастер **первоначальной настройки**, а также **кастомизацию оформления** (динамические цвета Material You и акцентные темы).
+Приложение объединяет в себе пять независимых инструментов (**ByeDPI**, **Telegram Proxy**, **AmneziaWG WARP**, **Xray VLESS / Shadowsocks / VMess / Trojan / Hysteria 2**, **OpenFLUX обход белых списков**), доступных прямо с главного экрана, полный переход на современный интерфейс **Material Design 3 (M3)**, режим **маскировки и камуфляжа (Калькулятор, Заметки, Часы)**, встроенную систему **защиты от модификаций (Anti-Tamper Redflag)**, поддержку **Динамического Острова (Dynamic Island)** и **Xiaomi HyperOS Focus Notification**, полную поддержку **Android TV и медиаприставок с навигацией по D-Pad с пульта ДУ**, **резервное копирование и перенос всех настроек (Backup & Restore в JSON)**, ручной **импорт профилей WARP / AmneziaWG (.conf)**, поддержку **цепочек прокси (Proxy Chaining)**, встроенные **проверенные подписки белых списков (ru-wbl)**, **шторку быстрых настроек (Quick Settings Tiles)**, многоязычный интерфейс (**Русский / English**), гибкое **раздельное туннелирование (Split Tunneling)** с автоматическим исключением российских приложений (банки, Госуслуги), мастер **первоначальной настройки**, а также **кастомизацию оформления** (динамические цвета Material You и акцентные темы).
 
 ---
 
 ## 🌟 Основные возможности
 
+- 🎭 **Режим маскировки и камуфляжа (Stealth / Camouflage):** скрытие приложения в системе под видом «Калькулятора», «Заметок» или «Часов». Мгновенное переключение иконки и заголовка в лаунчере через системные `activity-alias` прямо в настройках!
+- 🛡️ **Защита от неофициальных модификаций (Anti-Tamper Redflag):** проверка целостности APK и оригинальной подписи разработчика. Предупреждающий баннер со ссылкой на официальный GitHub и 7-секундным таймером, а также криптографическая блокировка ядра VPN от попыток вырезать защиту.
 - 💾 **Резервное копирование и перенос (Backup & Restore):** полный экспорт всех конфигураций (серверы VLESS, подписки, профили WARP, OpenFLUX, правила Split Tunneling и настройки интерфейса) в единый JSON-файл или буфер обмена. Мгновенный перенос настроек на новое устройство или ТВ в один клик!
 - 📺 **Android TV и навигация с пульта (D-Pad):** официальный баннер Leanback для домашнего экрана ТВ, плавная подсветка карточек и кнопок в фокусе с анимацией масштабирования и приподнятой тенью, удобное переключение всех служб по нажатию центральной кнопки пульта (DPAD_CENTER).
 - 🏝️ **Динамический Остров (Dynamic Island) и HyperOS Focus:** интерактивный плавающий M3-остров вокруг выреза камеры и интеграция с фокус-уведомлениями Xiaomi HyperOS / MIUI. Переключайтесь между ByeDPI, WARP, VLESS, OpenFLUX или останавливайте службу в 1 тап прямо из острова или шторки!

@@ -139,6 +139,11 @@ class WarpVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_START && !io.github.dovecoteescapee.byedpi.security.TamperGuard.verifyExecutionPermitted(this)) {
+            Log.e(TAG, "WARP VPN start rejected: app integrity compromised")
+            stopSelf()
+            return START_NOT_STICKY
+        }
         when (intent?.action) {
             ACTION_START -> {
                 isUserExplicitStop = false

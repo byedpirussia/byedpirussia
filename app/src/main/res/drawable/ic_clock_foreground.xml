@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Clock Outer Dial -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,26 C38.54,26 26,38.54 26,54 C26,69.46 38.54,82 54,82 C69.46,82 82,69.46 82,54 C82,38.54 69.46,26 54,26 Z" />
+    <!-- Clock Inner Face -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M54,30 C40.75,30 30,40.75 30,54 C30,67.25 40.75,78 54,78 C67.25,78 78,67.25 78,54 C78,40.75 67.25,30 54,30 Z" />
+    <!-- Hour Ticks -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M53,33 h2 v5 h-2 Z M53,70 h2 v5 h-2 Z M33,53 h5 v2 h-5 Z M70,53 h5 v2 h-5 Z" />
+    <!-- Hour Hand (pointing towards 10 o'clock) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M54,54 L44,42" />
+    <!-- Minute Hand (pointing towards 2 o'clock) -->
+    <path
+        android:fillColor="#38BDF8"
+        android:strokeColor="#38BDF8"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M54,54 L66,38" />
+    <!-- Center Pin -->
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M54,51 C52.34,51 51,52.34 51,54 C51,55.66 52.34,57 54,57 C55.66,57 57,55.66 57,54 C57,52.34 55.66,51 54,51 Z" />
+</vector>

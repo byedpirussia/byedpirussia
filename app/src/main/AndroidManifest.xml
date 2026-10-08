@@ -32,13 +32,73 @@
             android:theme="@style/Theme.ByeDPI.NoActionBar"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity>
 
+        <!-- Default launcher alias: ByeDPI Russia -->
+        <activity-alias
+            android:name=".activities.MainActivityDefault"
+            android:targetActivity=".activities.MainActivity"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
+
+        <!-- Disguise: Calculator -->
+        <activity-alias
+            android:name=".activities.MainActivityCalculator"
+            android:targetActivity=".activities.MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_calc"
+            android:roundIcon="@mipmap/ic_launcher_calc_round"
+            android:label="@string/disguise_calculator">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Disguise: Notes -->
+        <activity-alias
+            android:name=".activities.MainActivityNotes"
+            android:targetActivity=".activities.MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_notes"
+            android:roundIcon="@mipmap/ic_launcher_notes_round"
+            android:label="@string/disguise_notes">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- Disguise: Clock -->
+        <activity-alias
+            android:name=".activities.MainActivityClock"
+            android:targetActivity=".activities.MainActivity"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_clock"
+            android:roundIcon="@mipmap/ic_launcher_clock_round"
+            android:label="@string/disguise_clock">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <activity
             android:name=".splittunnel.SplitTunnelActivity"

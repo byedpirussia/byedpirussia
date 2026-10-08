@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Paper Sheet -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,24 h34 l14,14 v42 c0,4.4 -3.6,8 -8,8 h-40 c-4.4,0 -8,-3.6 -8,-8 v-48 c0,-4.4 3.6,-8 8,-8 Z" />
+    <!-- Folded Corner -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M66,24 v14 h14 Z" />
+    <!-- Notepad Lines -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M38,44 h32 v3 h-32 Z M38,52 h32 v3 h-32 Z M38,60 h32 v3 h-32 Z M38,68 h22 v3 h-22 Z" />
+    <!-- Bookmark/Marker Tab -->
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M42,22 h8 v14 l-4,-3 l-4,3 Z" />
+</vector>
