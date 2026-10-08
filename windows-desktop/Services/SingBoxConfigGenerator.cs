@@ -79,7 +79,7 @@ namespace ByeDpiRussia.Desktop.Services
             };
 
             var tmpPath = Path.Combine(Path.GetTempPath(), "byedpi_warp_singbox.json");
-            File.WriteAllText(tmpPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(tmpPath, root.ToJsonString());
             return tmpPath;
         }
 
@@ -102,7 +102,7 @@ namespace ByeDpiRussia.Desktop.Services
             };
 
             var tmpPath = Path.Combine(Path.GetTempPath(), "byedpi_vless_singbox.json");
-            File.WriteAllText(tmpPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(tmpPath, root.ToJsonString());
             return tmpPath;
         }
 

@@ -153,7 +153,7 @@ Endpoint = 188.114.98.8:854";
                     ["vless_profiles"] = JsonSerializer.SerializeToNode(_vlessProfiles)
                 };
 
-                File.WriteAllText(SettingsFilePath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+                File.WriteAllText(SettingsFilePath, root.ToJsonString());
             }
             catch { }
         }
