@@ -57,6 +57,35 @@ class WarpVpnService : VpnService() {
         private val _warpPingMs = MutableStateFlow<Long?>(-1L)
         val warpPingMs: StateFlow<Long?> = _warpPingMs
 
+        const val PREF_WARP_IPV6_ENABLED = "pref_warp_ipv6_enabled"
+        const val PREF_WARP_TG_FIX_ENABLED = "pref_warp_tg_fix_enabled"
+
+        fun isWarpIpv6Enabled(context: Context): Boolean {
+            // По умолчанию выключено: предотвращает зависание Telegram и черный ход IPv6 в РФ
+            return context.getSharedPreferences("warp_config_prefs", Context.MODE_PRIVATE)
+                .getBoolean(PREF_WARP_IPV6_ENABLED, false)
+        }
+
+        fun setWarpIpv6Enabled(context: Context, enabled: Boolean) {
+            context.getSharedPreferences("warp_config_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(PREF_WARP_IPV6_ENABLED, enabled)
+                .apply()
+        }
+
+        fun isWarpTgFixEnabled(context: Context): Boolean {
+            // По умолчанию включено: гарантирует маршрутизацию подсетей Telegram DC
+            return context.getSharedPreferences("warp_config_prefs", Context.MODE_PRIVATE)
+                .getBoolean(PREF_WARP_TG_FIX_ENABLED, true)
+        }
+
+        fun setWarpTgFixEnabled(context: Context, enabled: Boolean) {
+            context.getSharedPreferences("warp_config_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(PREF_WARP_TG_FIX_ENABLED, enabled)
+                .apply()
+        }
+
         fun start(context: Context) {
             val intent = Intent(context, WarpVpnService::class.java).apply {
                 action = ACTION_START
@@ -467,12 +496,19 @@ class WarpVpnService : VpnService() {
             )
         )
 
+        val ipv6Enabled = isWarpIpv6Enabled(this@WarpVpnService)
+        val tgFixEnabled = isWarpTgFixEnabled(this@WarpVpnService)
+
         // Add Addresses
         for (addr in finalParsed.addresses) {
             try {
                 val parts = addr.split("/")
                 val ip = parts[0].trim()
-                val prefix = if (parts.size > 1) parts[1].trim().toInt() else if (ip.contains(":")) 128 else 32
+                val isV6 = ip.contains(":")
+                if (isV6 && !ipv6Enabled) {
+                    continue
+                }
+                val prefix = if (parts.size > 1) parts[1].trim().toInt() else if (isV6) 128 else 32
                 builder.addAddress(ip, prefix)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to parse address: $addr", e)
@@ -487,9 +523,13 @@ class WarpVpnService : VpnService() {
                 try {
                     val parts = aip.split("/")
                     val ip = parts[0].trim()
-                    val prefix = if (parts.size > 1) parts[1].trim().toInt() else if (ip.contains(":")) 128 else 32
+                    val isV6 = ip.contains(":")
+                    if (isV6 && !ipv6Enabled) {
+                        continue
+                    }
+                    val prefix = if (parts.size > 1) parts[1].trim().toInt() else if (isV6) 128 else 32
                     builder.addRoute(ip, prefix)
-                    if (ip.contains(":")) hasV6 = true else hasV4 = true
+                    if (isV6) hasV6 = true else hasV4 = true
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to parse allowed ip route: $aip", e)
                 }
@@ -497,11 +537,30 @@ class WarpVpnService : VpnService() {
         }
 
         if (!hasV4) builder.addRoute("0.0.0.0", 0)
-        if (!hasV6) {
+        if (ipv6Enabled && !hasV6) {
             try {
                 builder.addRoute("::", 0)
             } catch (e: Exception) {
                 Log.w(TAG, "IPv6 route not supported on interface", e)
+            }
+        }
+
+        // Dedicated Telegram IPv4 Direct DC routing
+        if (tgFixEnabled) {
+            val telegramSubnets = listOf(
+                "149.154.160.0" to 20,
+                "91.108.4.0" to 22,
+                "91.108.8.0" to 22,
+                "91.108.12.0" to 22,
+                "91.108.16.0" to 22,
+                "91.108.20.0" to 22,
+                "91.108.56.0" to 22,
+                "91.108.0.0" to 16
+            )
+            for ((tip, tprefix) in telegramSubnets) {
+                try {
+                    builder.addRoute(tip, tprefix)
+                } catch (_: Exception) {}
             }
         }
 
@@ -517,6 +576,8 @@ class WarpVpnService : VpnService() {
         }
 
         for (dns in dnsList) {
+            val isV6Dns = dns.contains(":")
+            if (isV6Dns && !ipv6Enabled) continue
             try {
                 builder.addDnsServer(dns.trim())
             } catch (e: Exception) {
@@ -524,11 +585,7 @@ class WarpVpnService : VpnService() {
             }
         }
 
-        val effectiveMtu = if (io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isMtuClampEnabled(this@WarpVpnService)) {
-            minOf(finalParsed.mtu, 1280)
-        } else {
-            finalParsed.mtu
-        }
+        val effectiveMtu = minOf(finalParsed.mtu, 1280)
         builder.setMtu(effectiveMtu)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             builder.setMetered(false)

@@ -30,27 +30,17 @@
         <activity
             android:name=".activities.MainActivity"
             android:theme="@style/Theme.ByeDPI.NoActionBar"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
-            </intent-filter>
-        </activity>
-
-        <!-- Default launcher alias: ByeDPI Russia -->
-        <activity-alias
-            android:name=".activities.MainActivityDefault"
-            android:targetActivity=".activities.MainActivity"
             android:enabled="true"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
-            android:label="@string/app_name">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
-        </activity-alias>
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+            </intent-filter>
+        </activity>
 
         <!-- Disguise: Calculator -->
         <activity-alias

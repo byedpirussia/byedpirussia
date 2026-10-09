@@ -49,7 +49,9 @@ import io.github.dovecoteescapee.byedpi.security.TamperGuard
 import io.github.dovecoteescapee.byedpi.security.ModifiedBannerDialog
 import io.github.dovecoteescapee.byedpi.security.CamouflageManager
 import io.github.dovecoteescapee.byedpi.security.DisguiseUiController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -852,6 +854,50 @@ class MainActivity : BaseActivity() {
         dialog.show()
     }
 
+    private fun showTelegramFixDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("✈️ Исправление работы Telegram")
+            .setMessage("РКН усилил блокировки и замедляет MTProto Telegram (пинг до 1000мс).\n\n" +
+                    "Данный фикс устраняет проблему:\n" +
+                    "• Отключает зависающий IPv6 туннель (Telegram переключается на быстрый IPv4)\n" +
+                    "• Добавляет прямые маршруты к DC серверам Telegram в обход ТСПУ\n" +
+                    "• Фиксирует MTU 1280 без фрагментации пакетов\n" +
+                    "• Переключает сервер WARP на неблокируемый порт 500")
+            .setPositiveButton("Применить фикс") { _, _ ->
+                WarpVpnService.setWarpIpv6Enabled(this, false)
+                WarpVpnService.setWarpTgFixEnabled(this, true)
+                lifecycleScope.launch {
+                    val (ep, ping) = WarpConfigManager.optimizeEndpoint(this@MainActivity)
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Telegram починен! Сервер: $ep ($ping ms)",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    if (WarpVpnService.isRunning.value) {
+                        WarpVpnService.stop(this@MainActivity)
+                        delay(500)
+                        WarpVpnService.start(this@MainActivity)
+                    }
+                }
+            }
+            .setNeutralButton("MTProto Прокси") { _, _ ->
+                if (!TgWsProxyService.isRunning.value) {
+                    TgWsProxyService.start(this)
+                }
+                val secret = TgWsProxyService.getEffectiveSecret(this)
+                val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, tgUri))
+                } catch (e: Exception) {
+                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Telegram Proxy", tgUri.toString()))
+                    Toast.makeText(this, R.string.tg_proxy_copied, Toast.LENGTH_LONG).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
     private fun setupM3Interface() {
         TgWsProxyService.initSecret(this)
         WarpConfigManager.init(this)
@@ -880,6 +926,27 @@ class MainActivity : BaseActivity() {
             } else {
                 Toast.makeText(this, "WARP не подключен", Toast.LENGTH_SHORT).show()
             }
+        }
+        binding.m3BtnWarpOptimize.setOnClickListener {
+            Toast.makeText(this, "Поиск неблокируемого сервера с минимальным пингом...", Toast.LENGTH_SHORT).show()
+            lifecycleScope.launch {
+                binding.m3BtnWarpOptimize.isEnabled = false
+                val (bestEp, ping) = WarpConfigManager.optimizeEndpoint(this@MainActivity)
+                binding.m3BtnWarpOptimize.isEnabled = true
+                Toast.makeText(
+                    this@MainActivity,
+                    "Выбран лучший сервер: $bestEp (пинг: $ping ms)",
+                    Toast.LENGTH_LONG
+                ).show()
+                if (WarpVpnService.isRunning.value) {
+                    WarpVpnService.stop(this@MainActivity)
+                    delay(500)
+                    WarpVpnService.start(this@MainActivity)
+                }
+            }
+        }
+        binding.m3BtnWarpTgFix.setOnClickListener {
+            showTelegramFixDialog()
         }
 
         binding.m3SwitchVless.setOnClickListener { toggleVless() }
@@ -936,6 +1003,8 @@ class MainActivity : BaseActivity() {
         TvNavigationHelper.setupButtonFocus(binding.m3BtnDisconnectAll)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpDns)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpPing)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpOptimize)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpTgFix)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnVlessServers)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnOpenfluxServers)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnTgOpen)

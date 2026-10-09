@@ -2,16 +2,20 @@ package io.github.dovecoteescapee.byedpi.warp
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.core.content.edit
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.withContext
 
 object WarpConfigManager {
 
+    private const val TAG = "WarpConfigManager"
     private const val PREFS_NAME = "warp_config_prefs"
     private const val KEY_CONFIG = "saved_warp_config"
 
-    // Начальный рабочий конфиг, предоставленный пользователем
+    // Оптимизированный рабочий конфиг с незаблокированным портом 500 и усиленным Jc=7
     const val DEFAULT_CONFIG = """[Interface]
 PrivateKey = Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc=
 Address = 172.16.0.2, 2606:4700:110:8700:31d8:595c:36c3:8014
@@ -21,7 +25,7 @@ S1 = 0
 S2 = 0
 S3 = 0
 S4 = 0
-Jc = 4
+Jc = 7
 Jmin = 40
 Jmax = 70
 H1 = 1
@@ -33,7 +37,7 @@ I1 = <b 0xce000000010897a297ecc34cd6dd000044d0ec2e2e1ea2991f467ace4222129b5a0988
 [Peer]
 PublicKey = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
 AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = 188.114.98.8:854"""
+Endpoint = 162.159.192.1:500"""
 
     private val _currentConfig = MutableStateFlow(DEFAULT_CONFIG)
     val currentConfig: StateFlow<String> = _currentConfig
@@ -45,7 +49,18 @@ Endpoint = 188.114.98.8:854"""
             _currentConfig.value = DEFAULT_CONFIG
             prefs.edit { putString(KEY_CONFIG, DEFAULT_CONFIG) }
         } else {
-            _currentConfig.value = saved
+            // Авто-миграция с заблокированных и замедленных РКН эндпоинтов (188.114.98.8:854)
+            if (saved.contains("188.114.98.8") || saved.contains(":854")) {
+                val upgraded = WarpEndpointOptimizer.optimizeConfigString(
+                    saved,
+                    WarpEndpointOptimizer.BEST_DEFAULT_ENDPOINT
+                )
+                _currentConfig.value = upgraded
+                prefs.edit { putString(KEY_CONFIG, upgraded) }
+                Log.i(TAG, "Автоматически обновлен заблокированный сервер WARP на неблокируемый порт 500")
+            } else {
+                _currentConfig.value = saved
+            }
         }
     }
 
@@ -58,6 +73,18 @@ Endpoint = 188.114.98.8:854"""
 
     fun extractEndpoint(config: String): String {
         val match = Regex("""(?m)^\s*Endpoint\s*=\s*(.+)$""").find(config)
-        return match?.groupValues?.get(1)?.trim() ?: "188.114.98.8:854"
+        return match?.groupValues?.get(1)?.trim() ?: WarpEndpointOptimizer.BEST_DEFAULT_ENDPOINT
+    }
+
+    /**
+     * Сканирует эндпоинты Cloudflare и мгновенно применяет сервер с минимальным пингом
+     */
+    suspend fun optimizeEndpoint(context: Context): Pair<String, Long> = withContext(Dispatchers.IO) {
+        val (bestEndpoint, ping) = WarpEndpointOptimizer.findBestEndpoint()
+        val current = _currentConfig.value
+        val optimized = WarpEndpointOptimizer.optimizeConfigString(current, bestEndpoint)
+        saveConfig(context, optimized)
+        Log.i(TAG, "WARP endpoint optimized to $bestEndpoint (ping: ${ping}ms)")
+        bestEndpoint to ping
     }
 }

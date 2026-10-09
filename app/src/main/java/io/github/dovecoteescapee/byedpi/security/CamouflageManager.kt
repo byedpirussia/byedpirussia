@@ -26,7 +26,7 @@ object CamouflageManager {
         val aliasSimpleName: String,
         val titleRes: Int
     ) {
-        DEFAULT("default", "MainActivityDefault", R.string.app_name),
+        DEFAULT("default", "MainActivity", R.string.app_name),
         CALCULATOR("calculator", "MainActivityCalculator", R.string.disguise_calculator),
         NOTES("notes", "MainActivityNotes", R.string.disguise_notes),
         CLOCK("clock", "MainActivityClock", R.string.disguise_clock);

@@ -18,8 +18,8 @@ object TamperGuard {
     const val OFFICIAL_CERT_SHA256 = "7D70DBDC42000A7153B73607C5CAC284735C52206D00AA9FDA9650C2279B7502"
     const val OFFICIAL_PACKAGE_NAME = "com.byedpifork.russia"
 
-    private const val PREF_TAMPER_ACK_TOKEN = "security_tamper_ack_token_v135"
-    private const val HMAC_SECRET_SALT = "BYEDPI_RUSSIA_TAMPER_SALT_2026_SECURE_GUARD_V135"
+    private const val PREF_TAMPER_ACK_TOKEN = "security_tamper_ack_token_v136"
+    private const val HMAC_SECRET_SALT = "BYEDPI_RUSSIA_TAMPER_SALT_2026_SECURE_GUARD_V136"
 
     // Runtime state
     @Volatile

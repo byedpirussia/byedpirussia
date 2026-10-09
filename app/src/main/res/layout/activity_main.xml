@@ -352,6 +352,39 @@
                             android:paddingHorizontal="8dp" />
                     </LinearLayout>
 
+                    <!-- Вторая полоска: Анти-ТСПУ оптимизация и Фикс Telegram -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="2dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/m3_btn_warp_optimize"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:minHeight="40dp"
+                            android:layout_weight="1"
+                            android:text="🚀 Снизить пинг (Анти-ТСПУ)"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="start|center_vertical"
+                            android:paddingHorizontal="4dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/m3_btn_warp_tg_fix"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="40dp"
+                            android:text="✈️ Фикс Telegram"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingHorizontal="8dp" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
