@@ -27,23 +27,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
-            app:cardCornerRadius="14dp"
-            app:cardBackgroundColor="@color/accent_orange"
+            app:cardCornerRadius="18dp"
+            app:cardBackgroundColor="?attr/colorErrorContainer"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorError"
             android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="16dp">
 
                 <TextView
                     android:id="@+id/tv_private_dns_warning"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/warp_dns_private_warning"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
+                    android:textColor="?attr/colorOnErrorContainer"
                     android:lineSpacingExtra="2dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -51,12 +53,11 @@
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="10dp"
                     android:text="@string/warp_dns_force_use_btn"
                     android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    app:cornerRadius="10dp" />
+                    app:cornerRadius="12dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -126,12 +127,13 @@
             android:id="@+id/btn_save_warp_dns"
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="16dp"
+            android:layout_height="wrap_content"
+            android:minHeight="52dp"
+            android:layout_marginTop="20dp"
             android:text="@string/warp_dns_save_btn"
-            android:textSize="14sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            app:cornerRadius="12dp" />
+            app:cornerRadius="16dp" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

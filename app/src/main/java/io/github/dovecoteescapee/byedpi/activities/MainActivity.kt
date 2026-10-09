@@ -1100,9 +1100,19 @@ class MainActivity : BaseActivity() {
         val colorOutline = getThemeColor(com.google.android.material.R.attr.colorOutline)
         val colorOutlineVariant = getThemeColor(com.google.android.material.R.attr.colorOutlineVariant)
         val colorOnSurface = getThemeColor(com.google.android.material.R.attr.colorOnSurface)
+        val colorSurfaceContainerHigh = getThemeColor(com.google.android.material.R.attr.colorSurfaceContainerHigh)
 
-        // 1. Hero Card
+        // 1. Hero Card & Status Badge
         if (isAnyRunning) {
+            binding.m3HeroCard.strokeColor = colorPrimary
+            binding.m3HeroCard.strokeWidth = dpToPx(2f)
+            binding.m3HeroCard.setCardBackgroundColor(colorSurfaceContainerHigh)
+
+            binding.m3StatusBadge.setCardBackgroundColor(colorPrimaryContainer)
+            binding.m3StatusBadge.strokeColor = colorPrimary
+            binding.m3StatusBadgeText.text = "🛡️ Система под защитой"
+            binding.m3StatusBadgeText.setTextColor(colorOnPrimaryContainer)
+
             binding.m3StatusCircle.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3StatusCircle.strokeColor = colorPrimary
             binding.m3StatusIcon.setImageResource(R.drawable.ic_shield_check_24)
@@ -1119,6 +1129,15 @@ class MainActivity : BaseActivity() {
             binding.m3StatusSubtitle.text = "Активно: " + activeList.joinToString(", ")
             binding.m3BtnDisconnectAll.visibility = View.VISIBLE
         } else {
+            binding.m3HeroCard.strokeColor = colorOutlineVariant
+            binding.m3HeroCard.strokeWidth = dpToPx(1f)
+            binding.m3HeroCard.setCardBackgroundColor(colorSurfaceVariant)
+
+            binding.m3StatusBadge.setCardBackgroundColor(colorSurface)
+            binding.m3StatusBadge.strokeColor = colorOutlineVariant
+            binding.m3StatusBadgeText.text = "⚪ Защита отключена"
+            binding.m3StatusBadgeText.setTextColor(colorOutline)
+
             binding.m3StatusCircle.setCardBackgroundColor(colorSurface)
             binding.m3StatusCircle.strokeColor = colorOutlineVariant
             binding.m3StatusIcon.setImageResource(R.drawable.ic_shield_off_24)
@@ -1135,6 +1154,8 @@ class MainActivity : BaseActivity() {
         val currentStrategy = StrategyCatalog.getStrategyById(currentStrategyId)
 
         binding.m3SwitchByedpi.isChecked = isByeDpiRunning
+        binding.m3CardByedpi.strokeColor = if (isByeDpiRunning) colorPrimary else colorOutlineVariant
+        binding.m3CardByedpi.strokeWidth = if (isByeDpiRunning) dpToPx(1.5f) else dpToPx(1f)
         if (isByeDpiRunning) {
             binding.m3IconBoxByedpi.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconByedpi.imageTintList = ColorStateList.valueOf(colorPrimary)
@@ -1149,6 +1170,8 @@ class MainActivity : BaseActivity() {
         val warpPing = WarpVpnService.warpPingMs.value
         val warpStatus = WarpVpnService.connectionStatus.value
         binding.m3SwitchWarp.isChecked = isWarpRunning
+        binding.m3CardWarp.strokeColor = if (isWarpRunning) colorPrimary else colorOutlineVariant
+        binding.m3CardWarp.strokeWidth = if (isWarpRunning) dpToPx(1.5f) else dpToPx(1f)
         if (isWarpRunning) {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)
@@ -1172,6 +1195,8 @@ class MainActivity : BaseActivity() {
         // 4. VLESS Switch & Subtitle
         val selectedVless = VlessManager.getSelectedConfig(this)
         binding.m3SwitchVless.isChecked = isVlessRunning
+        binding.m3CardVless.strokeColor = if (isVlessRunning) colorPrimary else colorOutlineVariant
+        binding.m3CardVless.strokeWidth = if (isVlessRunning) dpToPx(1.5f) else dpToPx(1f)
         if (isVlessRunning) {
             binding.m3IconBoxVless.setCardBackgroundColor(colorPrimaryContainer)
             val serverName = selectedVless?.name ?: "VLESS"
@@ -1189,6 +1214,8 @@ class MainActivity : BaseActivity() {
         val selectedOpenFlux = OpenFluxManager.getSelectedConfig(this)
         val openFluxStats = OpenFluxVpnService.trafficStats.value
         binding.m3SwitchOpenflux.isChecked = isOpenFluxRunning
+        binding.m3CardOpenflux.strokeColor = if (isOpenFluxRunning) colorPrimary else colorOutlineVariant
+        binding.m3CardOpenflux.strokeWidth = if (isOpenFluxRunning) dpToPx(1.5f) else dpToPx(1f)
         if (isOpenFluxRunning) {
             binding.m3IconBoxOpenflux.setCardBackgroundColor(colorPrimaryContainer)
             val name = selectedOpenFlux?.name ?: "OpenFLUX"
@@ -1202,6 +1229,8 @@ class MainActivity : BaseActivity() {
 
         // 6. TG Proxy Switch & Subtitle
         binding.m3SwitchTg.isChecked = isTgRunning
+        binding.m3CardTg.strokeColor = if (isTgRunning) colorPrimary else colorOutlineVariant
+        binding.m3CardTg.strokeWidth = if (isTgRunning) dpToPx(1.5f) else dpToPx(1f)
         binding.m3BtnTgOpen.visibility = if (isTgRunning) View.VISIBLE else View.GONE
         val tgStats = TgWsProxyService.trafficStats.value
         if (isTgRunning) {
@@ -1212,6 +1241,8 @@ class MainActivity : BaseActivity() {
             binding.m3SubTg.text = "⚪ Отключено • 127.0.0.1:1443"
         }
     }
+
+    private fun dpToPx(dp: Float): Int = (dp * resources.displayMetrics.density).toInt()
 
     private fun getThemeColor(attrId: Int): Int {
         val typedValue = TypedValue()

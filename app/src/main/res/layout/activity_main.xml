@@ -91,6 +91,30 @@
                         </FrameLayout>
                     </com.google.android.material.card.MaterialCardView>
 
+                    <!-- Material 3 Status Pill Badge -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/m3_status_badge"
+                        style="@style/Widget.Material3.CardView.Filled"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="50dp"
+                        app:cardBackgroundColor="?attr/colorSurface"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/colorOutlineVariant"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:id="@+id/m3_status_badge_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="14dp"
+                            android:paddingVertical="4dp"
+                            android:text="⚪ Защита отключена"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOutline" />
+                    </com.google.android.material.card.MaterialCardView>
+
                     <TextView
                         android:id="@+id/m3_status_title"
                         android:layout_width="wrap_content"
@@ -325,64 +349,64 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginTop="6dp">
+                        android:layout_marginTop="8dp">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/m3_btn_warp_dns"
-                            style="@style/Widget.Material3.Button.TextButton"
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:minHeight="40dp"
+                            android:minHeight="42dp"
                             android:layout_weight="1"
-                            android:text="⚙️ DNS настройки"
+                            android:layout_marginEnd="6dp"
+                            android:text="⚙️ DNS"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:gravity="start|center_vertical"
-                            android:paddingHorizontal="4dp" />
+                            app:cornerRadius="14dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/m3_btn_warp_ping"
-                            style="@style/Widget.Material3.Button.TextButton"
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="40dp"
+                            android:minHeight="42dp"
                             android:text="⚡ Пинг"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:paddingHorizontal="8dp" />
+                            app:cornerRadius="14dp" />
                     </LinearLayout>
 
-                    <!-- Вторая полоска: Анти-ТСПУ оптимизация и Фикс Telegram -->
+                    <!-- Вторая полоска: Анти-ТСПУ оптимизация и Спасение Telegram -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginTop="2dp">
+                        android:layout_marginTop="6dp">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/m3_btn_warp_optimize"
-                            style="@style/Widget.Material3.Button.TextButton"
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:minHeight="40dp"
+                            android:minHeight="42dp"
                             android:layout_weight="1"
-                            android:text="🚀 Снизить пинг (Анти-ТСПУ)"
+                            android:layout_marginEnd="6dp"
+                            android:text="🚀 Анти-ТСПУ"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:gravity="start|center_vertical"
-                            android:paddingHorizontal="4dp" />
+                            app:cornerRadius="14dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/m3_btn_warp_tg_fix"
-                            style="@style/Widget.Material3.Button.TextButton"
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="40dp"
-                            android:text="✈️ Фикс Telegram"
+                            android:minHeight="42dp"
+                            android:text="🚑 Спасти TG"
                             android:textSize="12sp"
                             android:textStyle="bold"
-                            android:paddingHorizontal="8dp" />
+                            app:cornerRadius="14dp" />
                     </LinearLayout>
 
                 </LinearLayout>

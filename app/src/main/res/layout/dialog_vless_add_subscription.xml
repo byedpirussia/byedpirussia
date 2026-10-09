@@ -56,10 +56,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusTopStart="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_custom_sub_url"
@@ -74,9 +74,11 @@
             android:id="@+id/btn_load_custom"
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:text="@string/builtin_subs_load_custom_btn"
-            app:cornerRadius="12dp" />
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:cornerRadius="16dp" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

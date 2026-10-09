@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="24dp"
+    app:cardCornerRadius="28dp"
     app:cardElevation="6dp"
-    app:strokeColor="#44EF4444"
+    app:strokeColor="?attr/colorError"
     app:strokeWidth="1.5dp"
-    app:cardBackgroundColor="?attr/colorSurfaceContainer">
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 app:cardCornerRadius="24dp"
-                app:cardBackgroundColor="#26EF4444"
+                app:cardBackgroundColor="?attr/colorErrorContainer"
                 app:strokeWidth="0dp">
 
                 <ImageView
@@ -35,7 +35,7 @@
                     android:layout_height="28dp"
                     android:layout_gravity="center"
                     android:src="@android:drawable/ic_dialog_alert"
-                    app:tint="#EF4444"
+                    app:tint="?attr/colorError"
                     android:contentDescription="@null" />
             </com.google.android.material.card.MaterialCardView>
 
@@ -46,7 +46,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="14dp"
                 android:text="@string/tamper_banner_title"
-                android:textColor="#EF4444"
+                android:textColor="?attr/colorError"
                 android:textSize="20sp"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -66,9 +66,9 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_tamper_github"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:text="@string/tamper_banner_btn_github"
-            app:cornerRadius="14dp"
+            app:cornerRadius="16dp"
             style="@style/Widget.Material3.Button.TonalButton"
             android:textColor="?attr/colorOnSecondaryContainer"
             android:layout_marginBottom="10dp" />
@@ -77,13 +77,13 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_tamper_continue"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:text="Продолжить (7)"
             android:enabled="false"
-            app:cornerRadius="14dp"
+            app:cornerRadius="16dp"
             style="@style/Widget.Material3.Button"
-            android:backgroundTint="#EF4444"
-            android:textColor="#FFFFFF" />
+            app:backgroundTint="?attr/colorError"
+            android:textColor="?attr/colorOnError" />
 
     </LinearLayout>
 

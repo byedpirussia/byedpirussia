@@ -47,7 +47,7 @@
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textAllCaps="false"
-                app:cornerRadius="12dp"
+                app:cornerRadius="16dp"
                 app:icon="@drawable/ic_content_copy_24"
                 app:iconSize="16dp"
                 app:iconGravity="textStart" />
@@ -64,7 +64,7 @@
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textAllCaps="false"
-                app:cornerRadius="12dp"
+                app:cornerRadius="16dp"
                 app:icon="@drawable/ic_file_upload_24"
                 app:iconSize="16dp"
                 app:iconGravity="textStart" />
@@ -78,10 +78,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Конфигурация .conf ([Interface], [Peer])"
-            app:boxCornerRadiusBottomEnd="14dp"
-            app:boxCornerRadiusBottomStart="14dp"
-            app:boxCornerRadiusTopEnd="14dp"
-            app:boxCornerRadiusTopStart="14dp">
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusTopStart="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_warp_conf"

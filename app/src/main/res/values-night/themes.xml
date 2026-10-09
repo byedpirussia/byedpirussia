@@ -13,6 +13,19 @@
         <item name="colorOnSurface">#E3E2E6</item>
         <item name="colorSurfaceVariant">#1E2028</item>
         <item name="colorOnSurfaceVariant">#C5C6D0</item>
+        <item name="colorSurfaceContainerLowest">#0E0E11</item>
+        <item name="colorSurfaceContainerLow">#191A1E</item>
+        <item name="colorSurfaceContainer">#1E1F24</item>
+        <item name="colorSurfaceContainerHigh">#282A30</item>
+        <item name="colorSurfaceContainerHighest">#33353D</item>
+        <item name="colorTertiary">#38BDF8</item>
+        <item name="colorOnTertiary">#003549</item>
+        <item name="colorTertiaryContainer">#004D68</item>
+        <item name="colorOnTertiaryContainer">#C2E8FF</item>
+        <item name="colorError">#FFB4AB</item>
+        <item name="colorOnError">#690005</item>
+        <item name="colorErrorContainer">#93000A</item>
+        <item name="colorOnErrorContainer">#FFDAD6</item>
         <item name="colorOutline">#8F909A</item>
         <item name="colorOutlineVariant">#363842</item>
     </style>
