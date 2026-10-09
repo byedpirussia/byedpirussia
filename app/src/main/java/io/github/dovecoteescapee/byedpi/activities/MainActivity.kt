@@ -856,43 +856,49 @@ class MainActivity : BaseActivity() {
 
     private fun showTelegramFixDialog() {
         MaterialAlertDialogBuilder(this)
-            .setTitle("✈️ Исправление работы Telegram")
-            .setMessage("РКН усилил блокировки и замедляет MTProto Telegram (пинг до 1000мс).\n\n" +
-                    "Данный фикс устраняет проблему:\n" +
-                    "• Отключает зависающий IPv6 туннель (Telegram переключается на быстрый IPv4)\n" +
-                    "• Добавляет прямые маршруты к DC серверам Telegram в обход ТСПУ\n" +
-                    "• Фиксирует MTU 1280 без фрагментации пакетов\n" +
-                    "• Переключает сервер WARP на неблокируемый порт 500")
-            .setPositiveButton("Применить фикс") { _, _ ->
+            .setTitle("✈️ Спасение Telegram (Анти-блокировка)")
+            .setMessage("РКН целенаправленно замедляет Telegram: блокирует голосовые, видео и фото, а пинг вырастает до 1000мс. Кроме того, серверы Telegram отклоняют прямые соединения из Cloudflare WARP.\n\n" +
+                    "🚀 Что делает спасательный комплекс:\n" +
+                    "1. Запускает встроенный MTProto Turbo-прокси (порт 1443) — шифрует трафик через TLS WebSocket и моментально оживляет Telegram\n" +
+                    "2. Оптимизирует WARP: отключает зависающий IPv6, фиксирует MTU 1280 и направляет трафик на быстрый сервер (порт 500)\n" +
+                    "3. Мгновенно открывает Telegram для подключения без лишних настроек!")
+            .setPositiveButton("🚑 Спасти Telegram") { _, _ ->
+                if (!TgWsProxyService.isRunning.value) {
+                    TgWsProxyService.start(this)
+                }
                 WarpVpnService.setWarpIpv6Enabled(this, false)
                 WarpVpnService.setWarpTgFixEnabled(this, true)
                 lifecycleScope.launch {
                     val (ep, ping) = WarpConfigManager.optimizeEndpoint(this@MainActivity)
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Telegram починен! Сервер: $ep ($ping ms)",
-                        Toast.LENGTH_LONG
-                    ).show()
                     if (WarpVpnService.isRunning.value) {
                         WarpVpnService.stop(this@MainActivity)
                         delay(500)
                         WarpVpnService.start(this@MainActivity)
+                    } else {
+                        WarpVpnService.start(this@MainActivity)
                     }
+                    delay(700)
+                    val secret = TgWsProxyService.getEffectiveSecret(this@MainActivity)
+                    val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, tgUri))
+                    } catch (e: Exception) {
+                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("Telegram Proxy", tgUri.toString()))
+                        Toast.makeText(this@MainActivity, R.string.tg_proxy_copied, Toast.LENGTH_LONG).show()
+                    }
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Telegram спасен! Сервер: $ep ($ping ms)",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
-            .setNeutralButton("MTProto Прокси") { _, _ ->
-                if (!TgWsProxyService.isRunning.value) {
-                    TgWsProxyService.start(this)
+            .setNeutralButton("Использовать VLESS") { _, _ ->
+                if (!VlessVpnService.isRunning.value) {
+                    toggleVless()
                 }
-                val secret = TgWsProxyService.getEffectiveSecret(this)
-                val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
-                try {
-                    startActivity(Intent(Intent.ACTION_VIEW, tgUri))
-                } catch (e: Exception) {
-                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    clipboard.setPrimaryClip(ClipData.newPlainText("Telegram Proxy", tgUri.toString()))
-                    Toast.makeText(this, R.string.tg_proxy_copied, Toast.LENGTH_LONG).show()
-                }
+                Toast.makeText(this, "VLESS активен — чистые европейские IP без блокировок Telegram!", Toast.LENGTH_LONG).show()
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -964,6 +970,9 @@ class MainActivity : BaseActivity() {
         binding.m3SwitchTg.setOnClickListener { toggleTgProxy() }
         binding.m3CardTg.setOnClickListener { toggleTgProxy() }
         binding.m3BtnTgOpen.setOnClickListener {
+            if (!TgWsProxyService.isRunning.value) {
+                TgWsProxyService.start(this)
+            }
             val secret = TgWsProxyService.getEffectiveSecret(this)
             val tgUri = Uri.parse("tg://proxy?server=127.0.0.1&port=1443&secret=$secret")
             val intent = Intent(Intent.ACTION_VIEW, tgUri)

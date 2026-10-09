@@ -181,6 +181,24 @@ class TgWsProxyService : Service() {
         }
     }
 
+    private fun ensureCfProxyCache() {
+        try {
+            val cacheFile = java.io.File(cacheDir, "cfproxy-domains-cache.txt")
+            val defaultDomains = listOf(
+                "virkgj.com", "vmmzovy.com", "mkuosckvso.com", "zaewayzmplad.com", "twdmbzcm.com",
+                "awzwsldi.com", "clngqrflngqin.com", "tjacxbqtj.com", "bxaxtxmrw.com", "dmohrsgmohcrwb.com",
+                "vwbmtmoi.com", "khgrre.com", "ulihssf.com", "tmhqsdqmfpmk.com", "xwuwoqbm.com",
+                "orgcnunpj.com", "zhkuldz.com", "zypoljnslxa.com", "efabnxaowuzs.com", "zaftuzsftqdq.com"
+            )
+            if (!cacheFile.exists() || cacheFile.length() == 0L) {
+                cacheFile.writeText(defaultDomains.joinToString("\n"))
+                Log.i(TAG, "Initialized cfproxy-domains-cache.txt with fallback domains")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to ensure cfproxy cache", e)
+        }
+    }
+
     private fun startProxyServer(port: Int, secretKey: String) {
         if (_isRunning.value || stopInProgress) return
 
@@ -208,6 +226,7 @@ class TgWsProxyService : Service() {
             }
 
             try {
+                ensureCfProxyCache()
                 // Settings matching tg-ws-proxy defaults
                 NativeTgWsProxy.setPoolSize(4)
                 NativeTgWsProxy.setCfProxyCacheDir(cacheDir.absolutePath)

@@ -642,6 +642,15 @@ class WarpVpnService : VpnService() {
         startForegroundNotification("WARP активен: ${parsed.peerEndpoint ?: "Cloudflare"}")
         Log.i(TAG, "WARP tunnel successfully activated. Handle: $handle")
 
+        if (tgFixEnabled && !io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.isRunning.value) {
+            try {
+                io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.start(this@WarpVpnService)
+                Log.i(TAG, "Auto-started TgWsProxyService for Telegram rescue")
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not auto-start TgWsProxyService", e)
+            }
+        }
+
         // Start ping and health watchdog
         startWatchdog()
     }
