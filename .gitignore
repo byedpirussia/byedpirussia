@@ -22,3 +22,6 @@ windows-desktop/bin/
 windows-desktop/obj/
 dist-windows/
 *.exe
+
+byedpi-core/target/
+

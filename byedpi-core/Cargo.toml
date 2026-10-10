@@ -1,0 +1,25 @@
+[package]
+name = "byedpi-core"
+version = "1.5.0-alpha.1"
+edition = "2021"
+authors = ["ByeDPI Russia Team"]
+description = "Core next-generation engine for ByeDPI Russia: Quantum Routing, DPI Desync, Packet Manipulation, and Protocol Handlers"
+
+[lib]
+name = "byedpi_core"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# JNI bindings for Android
+jni = { version = "0.21", default-features = false }
+
+# Serialization & Deserialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async & Networking
+tokio = { version = "1.40", features = ["full"] }
+
+[features]
+default = []
+ffi = []

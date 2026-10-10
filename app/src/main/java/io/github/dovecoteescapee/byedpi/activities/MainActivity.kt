@@ -998,6 +998,50 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(this, AdvancedSettingsActivity::class.java))
         }
 
+        // Quantum Core & AI Traffic Doctor
+        binding.m3BtnRunDoctor.setOnClickListener {
+            Toast.makeText(this, "Запуск сканирования сети AI Traffic Doctor...", Toast.LENGTH_SHORT).show()
+            lifecycleScope.launch {
+                val diagnosis = io.github.dovecoteescapee.byedpi.core.ByeDpiCoreLib.getTrafficDiagnosis()
+                val title = if (diagnosis.tspuThrottled || diagnosis.youtubeBlocked || diagnosis.telegramBlocked) {
+                    "⚠️ Обнаружены блокировки ТСПУ!"
+                } else {
+                    "✅ Сеть работает оптимально"
+                }
+                val msg = buildString {
+                    append("Статус: ${diagnosis.overallStatus}\n")
+                    if (diagnosis.tspuThrottled) append("• Замедление ТСПУ: ДА (>500ms)\n")
+                    if (diagnosis.youtubeBlocked) append("• YouTube дропы: ДА\n")
+                    if (diagnosis.telegramBlocked) append("• Telegram дропы: ДА\n\n")
+                    append("Рекомендация ядра: ${diagnosis.recommendedFix}")
+                }
+                com.google.android.material.dialog.MaterialAlertDialogBuilder(this@MainActivity)
+                    .setTitle(title)
+                    .setMessage(msg)
+                    .setPositiveButton("Применить фикс") { _, _ ->
+                        if (diagnosis.telegramBlocked && !TgWsProxyService.isRunning.value) {
+                            toggleTgProxy()
+                        }
+                        if (diagnosis.youtubeBlocked && appStatus.first != AppStatus.Running) {
+                            toggleByeDpi()
+                        }
+                        Toast.makeText(this@MainActivity, "Рекомендованные параметры применены!", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Закрыть", null)
+                    .show()
+            }
+        }
+
+        binding.m3BtnPipelineInfo.setOnClickListener {
+            val info = io.github.dovecoteescapee.byedpi.core.ByeDpiCoreLib.getDualPipelineInfo()
+            val version = io.github.dovecoteescapee.byedpi.core.ByeDpiCoreLib.getVersion()
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Dual Pipeline Architecture")
+                .setMessage("Стек конвейера:\n$info\n\nВерсия ядра:\n$version\n\nДвухстадийный обход: локальный сплиттинг TCP ClientHello защищает от распознавания сигнатуры при входе в туннель.")
+                .setPositiveButton("Понятно", null)
+                .show()
+        }
+
         // TV & D-Pad Remote Navigation
         TvNavigationHelper.setupCardFocus(binding.m3HeroCard)
         TvNavigationHelper.setupCardFocus(binding.m3CardByedpi) { toggleByeDpi() }
