@@ -120,8 +120,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/m3_status_unprotected"
-                        android:textSize="22sp"
+                        android:textSize="24sp"
+                        android:fontFamily="sans-serif-medium"
                         android:textStyle="bold"
+                        android:letterSpacing="-0.02"
                         android:textColor="?attr/colorOnSurface" />
 
                     <TextView
@@ -129,7 +131,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Все службы отключены"
-                        android:textSize="13sp"
+                        android:textSize="14sp"
                         android:textColor="?attr/colorOutline"
                         android:layout_marginTop="4dp" />
 
@@ -139,13 +141,14 @@
                         style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:minHeight="44dp"
                         android:text="Отключить всё"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        app:cornerRadius="16dp"
+                        app:cornerRadius="20dp"
                         app:icon="@drawable/ic_close"
                         app:iconSize="16dp"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="16dp"
                         android:visibility="gone"
                         tools:visibility="visible" />
 
