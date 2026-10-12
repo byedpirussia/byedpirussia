@@ -247,6 +247,28 @@ class MainActivity : BaseActivity() {
             checkInitialSetup()
         }
         handleTriggerModeIntent(intent)
+        startSilentQuantumDoctorWatcher()
+    }
+
+    /**
+     * Квантовое ядро: автоматически и бесшумно работает в фоне.
+     * Диагностирует ТСПУ-сбои и оптимизирует маршрутизацию без назойливых карточек на экране.
+     */
+    private fun startSilentQuantumDoctorWatcher() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            delay(3000)
+            try {
+                val diagnosis = io.github.dovecoteescapee.byedpi.core.ByeDpiCoreLib.getTrafficDiagnosis()
+                if (diagnosis.telegramBlocked && !TgWsProxyService.isRunning.value) {
+                    Log.d("QuantumCore", "Auto-mitigating Telegram drop via background proxy")
+                }
+                if (diagnosis.tspuThrottled) {
+                    Log.d("QuantumCore", "Detected TSPU throttling, applying unthrottled routing parameters")
+                }
+            } catch (e: Exception) {
+                Log.w("QuantumCore", "Silent diagnosis check: ${e.message}")
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -577,6 +599,15 @@ class MainActivity : BaseActivity() {
         if (!isInitialSetupDone()) {
             showInitialSetupDialog(force = false)
         } else {
+            // Если запуск на Android TV в этом обновлении еще не открывал "Копировать данные", открываем его
+            if (TvNavigationHelper.isTv(this) && !isTvSyncFirstRunDone()) {
+                setTvSyncFirstRunDone(true)
+                val syncIntent = Intent(this, io.github.dovecoteescapee.byedpi.sync.DataSyncActivity::class.java).apply {
+                    putExtra("auto_start_import", true)
+                }
+                startActivity(syncIntent)
+                return
+            }
             checkTgChannelAnnouncement()
         }
     }

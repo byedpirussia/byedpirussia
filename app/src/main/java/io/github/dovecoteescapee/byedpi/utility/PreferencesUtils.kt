@@ -47,9 +47,17 @@ fun <T : Preference> PreferenceFragmentCompat.findPreferenceNotNull(key: CharSeq
     findPreference(key) ?: throw IllegalStateException("Preference $key not found")
 
 const val KEY_INITIAL_SETUP_DONE = "initial_setup_completed"
+const val KEY_TV_SYNC_FIRST_RUN_DONE = "tv_sync_first_run_done_v151"
 const val KEY_STAR_NEVER_SHOW = "star_dialog_never_show"
 const val KEY_STAR_SHOW_COUNT = "star_dialog_show_count"
 const val KEY_STAR_LAST_SHOW_TIME = "star_dialog_last_show_time"
+
+fun Context.isTvSyncFirstRunDone(): Boolean =
+    getPreferences().getBoolean(KEY_TV_SYNC_FIRST_RUN_DONE, false)
+
+fun Context.setTvSyncFirstRunDone(done: Boolean) {
+    getPreferences().edit().putBoolean(KEY_TV_SYNC_FIRST_RUN_DONE, done).apply()
+}
 
 fun Context.isInitialSetupDone(): Boolean =
     getPreferences().getBoolean(KEY_INITIAL_SETUP_DONE, false)

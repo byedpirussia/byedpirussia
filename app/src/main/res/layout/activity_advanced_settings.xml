@@ -816,6 +816,20 @@
                             android:textAllCaps="false" />
                     </LinearLayout>
 
+                    <!-- Кнопка перехода в "Копировать данные" (Wi-Fi P2P Sync) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_open_data_sync"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:text="🔄 Копировать данные (Wi-Fi / ТВ)"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        android:layout_marginTop="8dp" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

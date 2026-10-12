@@ -252,6 +252,10 @@ class AdvancedSettingsActivity : BaseActivity() {
             }
             confirmAndRestoreBackup(clipText)
         }
+
+        binding.btnOpenDataSync.setOnClickListener {
+            startActivity(Intent(this, io.github.dovecoteescapee.byedpi.sync.DataSyncActivity::class.java))
+        }
     }
 
     private fun shareBackupJson() {

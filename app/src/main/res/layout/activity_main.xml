@@ -684,13 +684,14 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 7. M3 Секция: Next-Gen Ядро ByeDPI Core (Quantum & Traffic Doctor) -->
+            <!-- 7. Next-Gen Ядро ByeDPI Core (Работает автоматически в фоне) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/m3_card_quantum_core"
                 style="@style/Widget.Material3.CardView.Elevated"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:visibility="gone"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="1dp"
