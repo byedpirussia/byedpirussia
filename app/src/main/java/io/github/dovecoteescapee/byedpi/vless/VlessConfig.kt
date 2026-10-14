@@ -93,12 +93,50 @@ data class VlessConfig(
             val lower = trimmed.lowercase()
 
             return when {
+                lower.startsWith("masque://") || lower.startsWith("warp+masque://") -> parseMasque(trimmed, subscriptionUrl)
                 lower.startsWith("vless://") -> parseVless(trimmed, subscriptionUrl)
                 lower.startsWith("hy2://") || lower.startsWith("hysteria2://") -> parseHysteria2(trimmed, subscriptionUrl)
                 lower.startsWith("ss://") -> parseShadowsocks(trimmed, subscriptionUrl)
                 lower.startsWith("trojan://") -> parseTrojan(trimmed, subscriptionUrl)
                 lower.startsWith("vmess://") -> parseVmess(trimmed, subscriptionUrl)
                 else -> null
+            }
+        }
+
+        private fun parseMasque(trimmed: String, subscriptionUrl: String): VlessConfig? {
+            return try {
+                val cleanUri = if (trimmed.startsWith("warp+masque://", ignoreCase = true)) {
+                    "masque://" + trimmed.substring("warp+masque://".length)
+                } else trimmed
+                val uri = Uri.parse(cleanUri)
+                val userInfo = uri.userInfo ?: ""
+                val host = uri.host ?: "engage.cloudflareclient.com"
+                val port = if (uri.port != -1) uri.port else 443
+                val fragment = uri.fragment?.let { URLDecoder.decode(it, "UTF-8") } ?: "Cloudflare WARP MASQUE"
+
+                val peerPub = uri.getQueryParameter("pub") ?: uri.getQueryParameter("peer") ?: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
+                val sni = uri.getQueryParameter("sni") ?: host
+                val path = uri.getQueryParameter("path") ?: "/cdn-cgi/warp/masque"
+
+                VlessConfig(
+                    subscriptionUrl = subscriptionUrl,
+                    name = fragment.ifBlank { "Cloudflare WARP MASQUE" },
+                    address = host,
+                    port = port,
+                    uuid = userInfo,
+                    protocol = "masque",
+                    flow = "",
+                    encryption = "none",
+                    transport = "quic",
+                    security = "tls",
+                    sni = sni,
+                    pbk = peerPub,
+                    path = path,
+                    rawUri = trimmed
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing MASQUE", e)
+                null
             }
         }
 
@@ -532,6 +570,33 @@ data class VlessConfig(
             put("tag", tag)
 
             when (protocol.lowercase()) {
+                "masque", "warp_masque" -> {
+                    put("protocol", "wireguard")
+                    put("settings", JSONObject().apply {
+                        put("secretKey", if (uuid.isNotBlank()) uuid else "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc=")
+                        put("address", JSONArray().apply {
+                            put("172.16.0.2/32")
+                            put("2606:4700:110:8700:31d8:595c:36c3:8014/128")
+                        })
+                        put("peers", JSONArray().apply {
+                            put(JSONObject().apply {
+                                put("publicKey", if (pbk.isNotBlank()) pbk else "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=")
+                                put("endpoint", "$address:$port")
+                            })
+                        })
+                        put("mtu", 1280)
+                    })
+                    put("streamSettings", JSONObject().apply {
+                        put("sockopt", JSONObject().apply {
+                            put("mark", 255)
+                            put("tcpKeepAliveIdle", 30)
+                            if (proxyTag != null) {
+                                put("dialerProxy", proxyTag)
+                            }
+                        })
+                    })
+                }
+
                 "hysteria2" -> {
                     put("protocol", "hysteria2")
                     val serversArray = JSONArray().apply {

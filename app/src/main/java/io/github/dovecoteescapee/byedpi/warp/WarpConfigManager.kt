@@ -14,6 +14,8 @@ object WarpConfigManager {
     private const val TAG = "WarpConfigManager"
     private const val PREFS_NAME = "warp_config_prefs"
     private const val KEY_CONFIG = "saved_warp_config"
+    private const val KEY_WARP_MODE = "pref_warp_mode" // "masque" or "awg"
+    private const val KEY_MASQUE_ENDPOINT = "pref_masque_endpoint"
 
     // Оптимизированный рабочий конфиг с незаблокированным портом 500 и усиленным Jc=7
     const val DEFAULT_CONFIG = """[Interface]
@@ -39,8 +41,13 @@ PublicKey = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
 AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = 162.159.192.1:500"""
 
+    const val DEFAULT_MASQUE_ENDPOINT = "engage.cloudflareclient.com:443"
+
     private val _currentConfig = MutableStateFlow(DEFAULT_CONFIG)
     val currentConfig: StateFlow<String> = _currentConfig
+
+    private val _isMasqueMode = MutableStateFlow(true)
+    val isMasqueModeFlow: StateFlow<Boolean> = _isMasqueMode
 
     fun init(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -62,6 +69,51 @@ Endpoint = 162.159.192.1:500"""
                 _currentConfig.value = saved
             }
         }
+
+        // По умолчанию включаем режим MASQUE для обхода последних блокировок ТСПУ
+        val isMasque = prefs.getBoolean(KEY_WARP_MODE, true)
+        _isMasqueMode.value = isMasque
+    }
+
+    fun isMasqueMode(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_WARP_MODE, true)
+    }
+
+    fun setMasqueMode(context: Context, enabled: Boolean) {
+        _isMasqueMode.value = enabled
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit { putBoolean(KEY_WARP_MODE, enabled) }
+    }
+
+    fun getMasqueEndpoint(context: Context): String {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(KEY_MASQUE_ENDPOINT, DEFAULT_MASQUE_ENDPOINT) ?: DEFAULT_MASQUE_ENDPOINT
+    }
+
+    fun setMasqueEndpoint(context: Context, endpoint: String) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit { putString(KEY_MASQUE_ENDPOINT, endpoint.trim()) }
+    }
+
+    fun getMasqueConfig(context: Context): WarpMasqueClient.MasqueConfig {
+        val raw = _currentConfig.value
+        val privKey = Regex("""(?m)^\s*PrivateKey\s*=\s*(.+)$""").find(raw)?.groupValues?.get(1)?.trim()
+            ?: "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc="
+        val pubKey = Regex("""(?m)^\s*PublicKey\s*=\s*(.+)$""").find(raw)?.groupValues?.get(1)?.trim()
+            ?: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
+
+        val endpoint = getMasqueEndpoint(context)
+        val parts = endpoint.split(":")
+        val host = parts[0].ifBlank { "engage.cloudflareclient.com" }
+        val port = if (parts.size > 1) parts[1].toIntOrNull() ?: 443 else 443
+
+        return WarpMasqueClient.MasqueConfig(
+            privateKey = privKey,
+            peerPublicKey = pubKey,
+            endpointHost = host,
+            endpointPort = port
+        )
     }
 
     fun saveConfig(context: Context, newConfig: String) {

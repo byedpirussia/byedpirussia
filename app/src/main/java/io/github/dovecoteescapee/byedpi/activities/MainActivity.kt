@@ -935,6 +935,61 @@ class MainActivity : BaseActivity() {
             .show()
     }
 
+    private fun showWarpGenOptionsDialog() {
+        val items = arrayOf(
+            "⚡ Сгенерировать MASQUE WARP (HTTP/3 Анти-ТСПУ)",
+            "🛡️ Сгенерировать AmneziaWG 3.1 (Усиленный)",
+            "📦 Сгенерировать AmneziaWG 3.0"
+        )
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Генерация Cloudflare WARP")
+            .setItems(items) { _, which ->
+                lifecycleScope.launch {
+                    Toast.makeText(this@MainActivity, "Генерация конфигурации...", Toast.LENGTH_SHORT).show()
+                    when (which) {
+                        0 -> {
+                            val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateMasqueConfig()
+                            if (res.isSuccess) {
+                                val prof = res.getOrThrow()
+                                WarpConfigManager.setMasqueMode(this@MainActivity, true)
+                                WarpConfigManager.setMasqueEndpoint(this@MainActivity, prof.endpoint)
+                                Toast.makeText(this@MainActivity, "⚡ MASQUE WARP успешно создан и применен!", Toast.LENGTH_LONG).show()
+                                updateM3State()
+                                if (WarpVpnService.isRunning.value) {
+                                    WarpVpnService.stop(this@MainActivity)
+                                    delay(500)
+                                    WarpVpnService.start(this@MainActivity)
+                                }
+                            } else {
+                                Toast.makeText(this@MainActivity, "Ошибка генерации MASQUE: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                        1, 2 -> {
+                            val ver = if (which == 1) "3.1" else "3.0"
+                            val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateConfig()
+                            if (res.isSuccess) {
+                                val prof = res.getOrThrow()
+                                val awgConf = prof.toAmneziaWgConfig(ver)
+                                WarpConfigManager.saveConfig(this@MainActivity, awgConf)
+                                WarpConfigManager.setMasqueMode(this@MainActivity, false)
+                                Toast.makeText(this@MainActivity, "🛡️ AWG $ver успешно создан и применен!", Toast.LENGTH_LONG).show()
+                                updateM3State()
+                                if (WarpVpnService.isRunning.value) {
+                                    WarpVpnService.stop(this@MainActivity)
+                                    delay(500)
+                                    WarpVpnService.start(this@MainActivity)
+                                }
+                            } else {
+                                Toast.makeText(this@MainActivity, "Ошибка генерации AWG: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
     private fun setupM3Interface() {
         TgWsProxyService.initSecret(this)
         WarpConfigManager.init(this)
@@ -948,6 +1003,23 @@ class MainActivity : BaseActivity() {
 
         binding.m3SwitchWarp.setOnClickListener { toggleWarp() }
         binding.m3CardWarp.setOnClickListener { toggleWarp() }
+        binding.m3SwitchWarpMasque.isChecked = WarpConfigManager.isMasqueMode(this)
+        binding.m3SwitchWarpMasque.setOnCheckedChangeListener { _, isChecked ->
+            WarpConfigManager.setMasqueMode(this, isChecked)
+            val modeName = if (isChecked) "MASQUE (HTTP/3 Обход ТСПУ)" else "AmneziaWG (AWG)"
+            Toast.makeText(this, "Выбран протокол: $modeName", Toast.LENGTH_SHORT).show()
+            updateM3State()
+            if (WarpVpnService.isRunning.value) {
+                WarpVpnService.stop(this)
+                lifecycleScope.launch {
+                    delay(500)
+                    WarpVpnService.start(this@MainActivity)
+                }
+            }
+        }
+        binding.m3BtnWarpGen.setOnClickListener {
+            showWarpGenOptionsDialog()
+        }
         binding.m3SwitchWarpAutoreconnect.isChecked = isWarpAutoReconnectEnabled()
         binding.m3SwitchWarpAutoreconnect.setOnCheckedChangeListener { _, isChecked ->
             setWarpAutoReconnectEnabled(isChecked)
@@ -1247,23 +1319,28 @@ class MainActivity : BaseActivity() {
         binding.m3SwitchWarp.isChecked = isWarpRunning
         binding.m3CardWarp.strokeColor = if (isWarpRunning) colorPrimary else colorOutlineVariant
         binding.m3CardWarp.strokeWidth = if (isWarpRunning) dpToPx(1.5f) else dpToPx(1f)
+        val isMasque = WarpConfigManager.isMasqueMode(this)
+        val protoTag = if (isMasque) "MASQUE HTTP/3" else "AmneziaWG"
+        if (binding.m3SwitchWarpMasque.isChecked != isMasque) {
+            binding.m3SwitchWarpMasque.isChecked = isMasque
+        }
         if (isWarpRunning) {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)
             if (warpPing != null && warpPing >= 0) {
-                binding.m3SubWarp.text = "🟢 Подключен ($warpPing ms) • AWG 2.0"
+                binding.m3SubWarp.text = "🟢 Подключен ($warpPing ms) • $protoTag"
             } else if (warpStatus.contains("Проверка") || warpStatus.contains("Переподключение") || warpStatus.contains("Потеря")) {
-                binding.m3SubWarp.text = "🟡 $warpStatus • AWG 2.0"
+                binding.m3SubWarp.text = "🟡 $warpStatus • $protoTag"
             } else {
-                binding.m3SubWarp.text = "🟢 Подключен • AWG 2.0"
+                binding.m3SubWarp.text = "🟢 Подключен • $protoTag"
             }
         } else {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorSurfaceVariant)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorOutline)
             if (warpStatus.contains("Ожидание") || warpStatus.contains("Переподключение") || warpStatus.contains("Потеря") || warpStatus.contains("Таймаут")) {
-                binding.m3SubWarp.text = "🟡 $warpStatus • Cloudflare WARP"
+                binding.m3SubWarp.text = "🟡 $warpStatus • $protoTag"
             } else {
-                binding.m3SubWarp.text = "⚪ Отключено • Cloudflare WARP"
+                binding.m3SubWarp.text = "⚪ Отключено • $protoTag"
             }
         }
 

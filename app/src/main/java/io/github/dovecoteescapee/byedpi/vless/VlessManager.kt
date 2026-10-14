@@ -98,8 +98,26 @@ object VlessManager {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        if (list.isEmpty()) {
+            list.add(DEFAULT_MASQUE_CONFIG)
+            saveConfigs(context, list)
+        }
         return list
     }
+
+    val DEFAULT_MASQUE_CONFIG = VlessConfig(
+        id = "cloudflare_warp_masque_default",
+        name = "⚡ Cloudflare WARP MASQUE (HTTP/3 Anti-DPI)",
+        address = "engage.cloudflareclient.com",
+        port = 443,
+        uuid = "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc=",
+        protocol = "masque",
+        transport = "quic",
+        security = "tls",
+        sni = "engage.cloudflareclient.com",
+        pbk = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+        path = "/cdn-cgi/warp/masque"
+    )
 
     fun saveConfigs(context: Context, configs: List<VlessConfig>) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -195,6 +213,8 @@ object VlessManager {
     fun parseSubscriptionContent(content: String, subscriptionUrl: String = ""): List<VlessConfig> {
         var text = content.trim()
         val hasKnownScheme = text.contains("vless://", ignoreCase = true) ||
+                text.contains("masque://", ignoreCase = true) ||
+                text.contains("warp+masque://", ignoreCase = true) ||
                 text.contains("hy2://", ignoreCase = true) ||
                 text.contains("hysteria2://", ignoreCase = true) ||
                 text.contains("ss://", ignoreCase = true) ||
@@ -220,6 +240,8 @@ object VlessManager {
             val trimmed = line.trim()
             val lower = trimmed.lowercase()
             if (lower.startsWith("vless://") ||
+                lower.startsWith("masque://") ||
+                lower.startsWith("warp+masque://") ||
                 lower.startsWith("hy2://") ||
                 lower.startsWith("hysteria2://") ||
                 lower.startsWith("ss://") ||

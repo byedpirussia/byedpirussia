@@ -325,6 +325,42 @@
                         android:layout_marginBottom="10dp"
                         android:alpha="0.4" />
 
+                    <!-- Переключатель протокола MASQUE (HTTP/3) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="⚡ Протокол MASQUE (HTTP/3)"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurfaceVariant" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="100% обход блокировок ТСПУ через порт 443"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorOutline" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/m3_switch_warp_masque"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
                     <!-- Авто переподключение Warp -->
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -373,7 +409,19 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="42dp"
+                            android:layout_marginEnd="6dp"
                             android:text="⚡ Пинг"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="14dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/m3_btn_warp_gen"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="42dp"
+                            android:text="✨ MASQUE"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             app:cornerRadius="14dp" />
