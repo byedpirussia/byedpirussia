@@ -12,6 +12,7 @@ import libv2ray.Libv2ray
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
@@ -57,9 +58,21 @@ object WarpMasqueClient {
 
         Log.i(TAG, "Инициализация MASQUE-клиента для Cloudflare WARP (${config.endpointHost}:${config.endpointPort})...")
 
-        // 1. Инициализация Core Environment
+        // 1. Инициализация Core Environment и распаковка geoip/geosite при наличии
         try {
             val assetDir = File(vpnService.filesDir, "xray_assets").apply { mkdirs() }
+            for (assetName in listOf("geoip.dat", "geosite.dat")) {
+                val targetFile = File(assetDir, assetName)
+                if (!targetFile.exists() || targetFile.length() == 0L) {
+                    try {
+                        vpnService.assets.open(assetName).use { input ->
+                            targetFile.outputStream().use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
             Libv2ray.initCoreEnv(assetDir.absolutePath, "")
         } catch (e: Exception) {
             Log.w(TAG, "initCoreEnv notice: ${e.message}")
@@ -90,7 +103,7 @@ object WarpMasqueClient {
         controller.startLoop(coreConfigJson, 0)
 
         // Даем ядру время привязать сокет SOCKS5
-        delay(300)
+        delay(350)
 
         // 4. Запуск hev-socks5-tunnel (TProxy) для проксирования всего трафика TUN интерфейса в SOCKS5
         val tun2socksConfig = """
@@ -137,10 +150,19 @@ object WarpMasqueClient {
 
     fun isClientRunning(): Boolean = isRunning.get()
 
+    private fun resolveEndpointIp(host: String): String {
+        if (host.matches(Regex("""\d+\.\d+\.\d+\.\d+"""))) return host
+        return try {
+            InetAddress.getByName(host).hostAddress ?: "162.159.192.1"
+        } catch (_: Exception) {
+            "162.159.192.1"
+        }
+    }
+
     /**
      * Создает JSON конфигурацию для встроенного Core с:
      * - SOCKS5 Inbound на 127.0.0.1:localPort
-     * - MASQUE / WireGuard Outbound к Cloudflare edge (port 443 / TLS 1.3 / QUIC)
+     * - MASQUE / WireGuard Outbound к Cloudflare edge (port 443)
      * - Встроенным DNS резолвером и защитой от утечек
      */
     private fun generateCoreConfigJson(config: MasqueConfig, localPort: Int): String {
@@ -177,6 +199,9 @@ object WarpMasqueClient {
         // Outbounds
         val outbounds = JSONArray()
 
+        // Разрешаем доменное имя эндпоинта в IP заранее, чтобы избежать DNS-дэдлока
+        val resolvedIp = resolveEndpointIp(config.endpointHost)
+
         // Главный MASQUE / WireGuard Outbound к Cloudflare
         val masqueOutbound = JSONObject().apply {
             put("tag", "masque-out")
@@ -190,7 +215,7 @@ object WarpMasqueClient {
                 put("peers", JSONArray().apply {
                     put(JSONObject().apply {
                         put("publicKey", config.peerPublicKey)
-                        put("endpoint", "${config.endpointHost}:${config.endpointPort}")
+                        put("endpoint", "$resolvedIp:${config.endpointPort}")
                     })
                 })
                 put("mtu", 1280)
@@ -232,17 +257,27 @@ object WarpMasqueClient {
         }
         root.put("dns", dns)
 
-        // Routing
+        // Routing: Без geoip:private, используем явные подсети для надежности
         val routing = JSONObject().apply {
-            put("domainStrategy", "IPIfNonMatch")
+            put("domainStrategy", "AsIs")
             val rules = JSONArray()
 
-            // Прямой доступ к локальным адресам
+            // DNS rule
+            rules.put(JSONObject().apply {
+                put("type", "field")
+                put("outboundTag", "masque-out")
+                put("port", "53")
+            })
+
+            // Прямой доступ к локальным адресам (без geoip.dat)
             rules.put(JSONObject().apply {
                 put("type", "field")
                 put("outboundTag", "direct")
                 put("ip", JSONArray().apply {
-                    put("geoip:private")
+                    put("127.0.0.1/32")
+                    put("10.0.0.0/8")
+                    put("172.16.0.0/12")
+                    put("192.168.0.0/16")
                 })
             })
 
