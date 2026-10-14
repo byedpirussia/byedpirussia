@@ -170,7 +170,7 @@ object WarpMasqueClient {
 
         // Log
         root.put("log", JSONObject().apply {
-            put("loglevel", "warning")
+            put("loglevel", "debug")
         })
 
         // Inbounds: SOCKS5 на локальном порту

@@ -46,7 +46,7 @@ Endpoint = 162.159.192.1:500"""
     private val _currentConfig = MutableStateFlow(DEFAULT_CONFIG)
     val currentConfig: StateFlow<String> = _currentConfig
 
-    private val _isMasqueMode = MutableStateFlow(true)
+    private val _isMasqueMode = MutableStateFlow(false)
     val isMasqueModeFlow: StateFlow<Boolean> = _isMasqueMode
 
     fun init(context: Context) {
@@ -70,14 +70,14 @@ Endpoint = 162.159.192.1:500"""
             }
         }
 
-        // По умолчанию включаем режим MASQUE для обхода последних блокировок ТСПУ
-        val isMasque = prefs.getBoolean(KEY_WARP_MODE, true)
+        // По умолчанию стабильный AmneziaWG 3.1 (GoBackend) с обходом ТСПУ
+        val isMasque = prefs.getBoolean(KEY_WARP_MODE, false)
         _isMasqueMode.value = isMasque
     }
 
     fun isMasqueMode(context: Context): Boolean {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_WARP_MODE, true)
+            .getBoolean(KEY_WARP_MODE, false)
     }
 
     fun setMasqueMode(context: Context, enabled: Boolean) {
