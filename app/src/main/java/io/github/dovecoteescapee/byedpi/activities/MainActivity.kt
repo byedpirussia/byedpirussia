@@ -953,13 +953,39 @@ class MainActivity : BaseActivity() {
                                 val prof = res.getOrThrow()
                                 WarpConfigManager.setMasqueMode(this@MainActivity, true)
                                 WarpConfigManager.setMasqueEndpoint(this@MainActivity, prof.endpoint)
-                                Toast.makeText(this@MainActivity, "⚡ MASQUE WARP успешно создан и применен!", Toast.LENGTH_LONG).show()
-                                updateM3State()
-                                if (WarpVpnService.isRunning.value) {
-                                    WarpVpnService.stop(this@MainActivity)
-                                    delay(500)
-                                    WarpVpnService.start(this@MainActivity)
+
+                                val infoText = "Сервер: ${prof.endpoint}\nSNI: ${prof.sni}\nПротокол: MASQUE (${prof.network.uppercase()})\nIP клиента: ${prof.clientIpv4}\nФайл: ${prof.fileName}\n\nКонфиг успешно сгенерирован через warp-gen.cyb-portal.org и готов к использованию!"
+                                val tv = android.widget.TextView(this@MainActivity).apply {
+                                    text = infoText
+                                    setPadding(50, 30, 50, 20)
+                                    setTextIsSelectable(true)
                                 }
+
+                                com.google.android.material.dialog.MaterialAlertDialogBuilder(this@MainActivity)
+                                    .setTitle("⚡ MASQUE WARP готов")
+                                    .setView(tv)
+                                    .setPositiveButton("Применить") { _, _ ->
+                                        Toast.makeText(this@MainActivity, "⚡ MASQUE применен!", Toast.LENGTH_SHORT).show()
+                                        updateM3State()
+                                        if (WarpVpnService.isRunning.value) {
+                                            WarpVpnService.stop(this@MainActivity)
+                                            lifecycleScope.launch {
+                                                delay(500)
+                                                WarpVpnService.start(this@MainActivity)
+                                            }
+                                        }
+                                    }
+                                    .setNeutralButton("Копировать YAML") { _, _ ->
+                                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("MASQUE YAML", prof.rawYaml))
+                                        Toast.makeText(this@MainActivity, "Clash/Mihomo YAML скопирован в буфер", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .setNegativeButton("masque:// URI") { _, _ ->
+                                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("MASQUE URI", prof.toMasqueUri()))
+                                        Toast.makeText(this@MainActivity, "masque:// URI скопирован", Toast.LENGTH_SHORT).show()
+                                    }
+                                    .show()
                             } else {
                                 Toast.makeText(this@MainActivity, "Ошибка генерации MASQUE: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                             }

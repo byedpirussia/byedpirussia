@@ -2,7 +2,9 @@ package io.github.dovecoteescapee.byedpi.warp
 
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -85,22 +87,30 @@ Endpoint = $endpoint
         }
     }
 
+    const val MASQUE_API_ENDPOINT = "https://warp-gen.cyb-portal.org/api/masque"
+
     data class WarpMasqueProfile(
         val privKey: String,
         val peerPub: String,
         val clientIpv4: String,
         val clientIpv6: String,
-        val endpoint: String = "engage.cloudflareclient.com:443",
-        val sni: String = "engage.cloudflareclient.com",
-        val path: String = "/cdn-cgi/warp/masque"
+        val endpoint: String = "162.159.198.2:443",
+        val sni: String = "4pda.to",
+        val path: String = "/cdn-cgi/warp/masque",
+        val network: String = "h2",
+        val rawYaml: String = "",
+        val deliveryId: String = "",
+        val fileName: String = "PORTALWARP.yaml"
     ) {
         fun toMasqueUri(): String {
-            return "masque://$privKey@$endpoint/?pub=$peerPub&ip=$clientIpv4&sni=$sni#Cloudflare+WARP+MASQUE"
+            return "masque://$privKey@$endpoint/?pub=$peerPub&ip=$clientIpv4&sni=$sni&network=$network#Cloudflare+WARP+MASQUE"
         }
+
+        fun toClashYaml(): String = rawYaml
 
         fun toMasqueConfig(): WarpMasqueClient.MasqueConfig {
             val parts = endpoint.split(":")
-            val host = parts[0].ifBlank { "engage.cloudflareclient.com" }
+            val host = parts[0].ifBlank { "162.159.198.2" }
             val port = if (parts.size > 1) parts[1].toIntOrNull() ?: 443 else 443
             return WarpMasqueClient.MasqueConfig(
                 privateKey = privKey,
@@ -171,32 +181,94 @@ Endpoint = $endpoint
     }
 
     /**
-     * Генерирует профиль Cloudflare WARP для протокола MASQUE (HTTP/3 CONNECT-UDP).
+     * Генерирует профиль Cloudflare WARP для протокола MASQUE (HTTP/3 / HTTP/2 CONNECT-UDP)
+     * через специализированный сервис warp-gen.cyb-portal.org.
      */
     suspend fun generateMasqueConfig(): Result<WarpMasqueProfile> = withContext(Dispatchers.IO) {
-        val result = generateConfig()
-        if (result.isSuccess) {
-            val prof = result.getOrThrow()
-            val masqueProfile = WarpMasqueProfile(
-                privKey = prof.privKey,
-                peerPub = prof.peerPub,
-                clientIpv4 = prof.clientIpv4,
-                clientIpv6 = prof.clientIpv6,
-                endpoint = "engage.cloudflareclient.com:443",
-                sni = "engage.cloudflareclient.com",
-                path = "/cdn-cgi/warp/masque"
-            )
-            Result.success(masqueProfile)
-        } else {
-            // Резервный оффлайн-профиль с валидными ключами Anycast
-            val fallback = WarpMasqueProfile(
-                privKey = "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc=",
-                peerPub = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-                clientIpv4 = "172.16.0.2",
-                clientIpv6 = "2606:4700:110:8700:31d8:595c:36c3:8014",
-                endpoint = "engage.cloudflareclient.com:443"
-            )
-            Result.success(fallback)
+        try {
+            Log.d(TAG, "Запрос MASQUE конфигурации с $MASQUE_API_ENDPOINT...")
+            val url = URL(MASQUE_API_ENDPOINT)
+            val conn = (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                connectTimeout = 15000
+                readTimeout = 25000
+                setRequestProperty("User-Agent", "ByeDPI-Russia-Android/1.5.4")
+                setRequestProperty("Accept", "application/json")
+            }
+
+            val code = conn.responseCode
+            if (code in 200..299) {
+                val body = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                val rootJson = JSONObject(body)
+                val contentJson = rootJson.optJSONObject("content")
+                val importText = contentJson?.optString("importText").orEmpty()
+                val deliveryId = rootJson.optString("deliveryId")
+                val fileName = contentJson?.optString("fileName", "PORTALWARP.yaml").orEmpty()
+
+                if (importText.isNotBlank()) {
+                    val privKey = Regex("""(?m)^\s*private-key:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: ""
+                    val pubKey = Regex("""(?m)^\s*public-key:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: ""
+                    val ipv4 = Regex("""(?m)^\s*ip:\s*([0-9.]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "172.16.0.2"
+                    val ipv6 = Regex("""(?m)^\s*ipv6:\s*([0-9a-fA-F:]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "2606:4700:110:8417:b8eb:691f:f8f4:816e"
+
+                    val server = Regex("""(?m)^\s*server:\s*([0-9.]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "162.159.198.2"
+                    val port = Regex("""(?m)^\s*port:\s*([0-9]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim()?.toIntOrNull() ?: 443
+                    val sni = Regex("""(?m)^\s*sni:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "4pda.to"
+                    val network = Regex("""(?m)^\s*network:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "h2"
+
+                    val profile = WarpMasqueProfile(
+                        privKey = privKey,
+                        peerPub = pubKey,
+                        clientIpv4 = ipv4,
+                        clientIpv6 = ipv6,
+                        endpoint = "$server:$port",
+                        sni = sni,
+                        network = network,
+                        rawYaml = importText,
+                        deliveryId = deliveryId,
+                        fileName = fileName
+                    )
+
+                    // Отправляем ACK подтверждение доставки
+                    val ackPath = rootJson.optJSONObject("ack")?.optString("path")
+                    if (!ackPath.isNullOrBlank()) {
+                        acknowledgeDelivery("https://warp-gen.cyb-portal.org$ackPath")
+                    }
+
+                    Log.i(TAG, "Успешно получен MASQUE профиль с cyb-portal.org: $server:$port (SNI: $sni)")
+                    return@withContext Result.success(profile)
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Ошибка получения с cyb-portal: ${e.message}, используем резервный генератор")
+        }
+
+        // Резервный оффлайн-профиль с валидными ключами Anycast
+        val fallback = WarpMasqueProfile(
+            privKey = "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc=",
+            peerPub = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+            clientIpv4 = "172.16.0.2",
+            clientIpv6 = "2606:4700:110:8700:31d8:595c:36c3:8014",
+            endpoint = "162.159.198.2:443",
+            sni = "4pda.to",
+            network = "h2"
+        )
+        Result.success(fallback)
+    }
+
+    private fun acknowledgeDelivery(ackUrl: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val conn = (URL(ackUrl).openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 5000
+                    readTimeout = 5000
+                }
+                val code = conn.responseCode
+                Log.d(TAG, "MASQUE delivery ACK status: $code")
+            } catch (e: Exception) {
+                Log.w(TAG, "ACK error: ${e.message}")
+            }
         }
     }
 }
