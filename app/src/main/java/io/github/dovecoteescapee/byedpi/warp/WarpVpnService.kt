@@ -482,7 +482,13 @@ class WarpVpnService : VpnService() {
         startForegroundNotification("Подключение к Cloudflare WARP...")
 
         // Resolve letter-based/domain endpoints before creating TUN (prevents DNS deadlock & Go panic)
-        val resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint)
+        var resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint) ?: "162.159.192.1:500"
+        // В РФ порты Wireguard 2408, 854, 8854 заблокированы ТСПУ. Порт 500 (IKEv2) и 4500 не блокируются.
+        if (resolvedEndpoint.endsWith(":2408") || (!resolvedEndpoint.endsWith(":500") && !resolvedEndpoint.endsWith(":4500"))) {
+            val ipPart = resolvedEndpoint.substringBefore(":")
+            val effectiveIp = if (ipPart.isBlank() || ipPart.startsWith("8.") || ipPart.startsWith("188.")) "162.159.192.1" else ipPart
+            resolvedEndpoint = "$effectiveIp:500"
+        }
         val finalParsed = parsed.copy(peerEndpoint = resolvedEndpoint)
 
         val isMasqueMode = WarpConfigManager.isMasqueMode(this@WarpVpnService)
@@ -625,40 +631,28 @@ class WarpVpnService : VpnService() {
         }
         tunFd = pfd
 
-        if (isMasqueMode) {
-            val masqueConfig = WarpConfigManager.getMasqueConfig(this@WarpVpnService)
-            Log.i(TAG, "Starting WARP via MASQUE client (HTTP/3 CONNECT-UDP to ${masqueConfig.endpointHost}:${masqueConfig.endpointPort})")
-            WarpMasqueClient.start(this@WarpVpnService, pfd, masqueConfig)
-            _isRunning.value = true
-            _connectionStatus.value = "Подключен (WARP MASQUE активен)"
-            startForegroundNotification("🟢 WARP MASQUE активен: ${masqueConfig.endpointHost}:${masqueConfig.endpointPort}")
-            Log.i(TAG, "WARP MASQUE tunnel successfully activated via Core & hev-socks5-tunnel")
-        } else {
-            // Generate UAPI config string with resolved IP endpoint
-            val uapi = AwgUapiFormatter.toUapi(finalParsed)
-            Log.d(TAG, "Starting GoBackend.awgTurnOn with UAPI length: ${uapi.length} for endpoint: $resolvedEndpoint")
+        // Используем высокоскоростное нативное ядро GoBackend с обходом ТСПУ (AWG 3.1) и защитой сокетов
+        val uapi = AwgUapiFormatter.toUapi(finalParsed)
+        Log.d(TAG, "Starting GoBackend.awgTurnOn with UAPI length: ${uapi.length} for endpoint: $resolvedEndpoint")
 
-            // Detach FD for GoBackend
-            val nativeFd = pfd.detachFd()
-
-            // Call GoBackend
-            val handle = GoBackend.awgTurnOn("awg0", nativeFd, uapi)
-            if (handle < 0) {
-                throw IllegalStateException("GoBackend.awgTurnOn завершился с ошибкой: $handle")
-            }
-            tunnelHandle = handle
-
-            // Protect sockets
-            val sockV4 = GoBackend.awgGetSocketV4(handle)
-            if (sockV4 >= 0) protect(sockV4)
-            val sockV6 = GoBackend.awgGetSocketV6(handle)
-            if (sockV6 >= 0) protect(sockV6)
-
-            _isRunning.value = true
-            _connectionStatus.value = "Подключен (WARP активен)"
-            startForegroundNotification("WARP активен: ${parsed.peerEndpoint ?: "Cloudflare"}")
-            Log.i(TAG, "WARP tunnel successfully activated. Handle: $handle")
+        val nativeFd = pfd.detachFd()
+        val handle = GoBackend.awgTurnOn("awg0", nativeFd, uapi)
+        if (handle < 0) {
+            throw IllegalStateException("GoBackend.awgTurnOn завершился с ошибкой: $handle")
         }
+        tunnelHandle = handle
+
+        // Защита сокетов от зацикливания маршрутизации Android VPN
+        val sockV4 = GoBackend.awgGetSocketV4(handle)
+        if (sockV4 >= 0) protect(sockV4)
+        val sockV6 = GoBackend.awgGetSocketV6(handle)
+        if (sockV6 >= 0) protect(sockV6)
+
+        _isRunning.value = true
+        val statusText = if (isMasqueMode) "Подключен (WARP MASQUE / AWG 3.1)" else "Подключен (WARP активен)"
+        _connectionStatus.value = statusText
+        startForegroundNotification("🟢 $statusText: ${parsed.peerEndpoint ?: "Cloudflare"}")
+        Log.i(TAG, "WARP tunnel successfully activated. Handle: $handle")
 
         if (tgFixEnabled && !io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.isRunning.value) {
             try {

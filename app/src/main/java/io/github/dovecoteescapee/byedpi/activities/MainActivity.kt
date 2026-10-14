@@ -937,7 +937,6 @@ class MainActivity : BaseActivity() {
 
     private fun showWarpGenOptionsDialog() {
         val items = arrayOf(
-            "⚡ Сгенерировать MASQUE WARP (HTTP/3 Анти-ТСПУ)",
             "🛡️ Сгенерировать AmneziaWG 3.1 (Усиленный)",
             "📦 Сгенерировать AmneziaWG 3.0"
         )
@@ -946,69 +945,22 @@ class MainActivity : BaseActivity() {
             .setItems(items) { _, which ->
                 lifecycleScope.launch {
                     Toast.makeText(this@MainActivity, "Генерация конфигурации...", Toast.LENGTH_SHORT).show()
-                    when (which) {
-                        0 -> {
-                            val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateMasqueConfig()
-                            if (res.isSuccess) {
-                                val prof = res.getOrThrow()
-                                WarpConfigManager.setMasqueMode(this@MainActivity, true)
-                                WarpConfigManager.setMasqueEndpoint(this@MainActivity, prof.endpoint)
-
-                                val infoText = "Сервер: ${prof.endpoint}\nSNI: ${prof.sni}\nПротокол: MASQUE (${prof.network.uppercase()})\nIP клиента: ${prof.clientIpv4}\nФайл: ${prof.fileName}\n\nКонфиг успешно сгенерирован через warp-gen.cyb-portal.org и готов к использованию!"
-                                val tv = android.widget.TextView(this@MainActivity).apply {
-                                    text = infoText
-                                    setPadding(50, 30, 50, 20)
-                                    setTextIsSelectable(true)
-                                }
-
-                                com.google.android.material.dialog.MaterialAlertDialogBuilder(this@MainActivity)
-                                    .setTitle("⚡ MASQUE WARP готов")
-                                    .setView(tv)
-                                    .setPositiveButton("Применить") { _, _ ->
-                                        Toast.makeText(this@MainActivity, "⚡ MASQUE применен!", Toast.LENGTH_SHORT).show()
-                                        updateM3State()
-                                        if (WarpVpnService.isRunning.value) {
-                                            WarpVpnService.stop(this@MainActivity)
-                                            lifecycleScope.launch {
-                                                delay(500)
-                                                WarpVpnService.start(this@MainActivity)
-                                            }
-                                        }
-                                    }
-                                    .setNeutralButton("Копировать YAML") { _, _ ->
-                                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("MASQUE YAML", prof.rawYaml))
-                                        Toast.makeText(this@MainActivity, "Clash/Mihomo YAML скопирован в буфер", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .setNegativeButton("masque:// URI") { _, _ ->
-                                        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("MASQUE URI", prof.toMasqueUri()))
-                                        Toast.makeText(this@MainActivity, "masque:// URI скопирован", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .show()
-                            } else {
-                                Toast.makeText(this@MainActivity, "Ошибка генерации MASQUE: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
-                            }
+                    val ver = if (which == 0) "3.1" else "3.0"
+                    val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateConfig()
+                    if (res.isSuccess) {
+                        val prof = res.getOrThrow()
+                        val awgConf = prof.toAmneziaWgConfig(ver)
+                        WarpConfigManager.saveConfig(this@MainActivity, awgConf)
+                        WarpConfigManager.setMasqueMode(this@MainActivity, false)
+                        Toast.makeText(this@MainActivity, "🛡️ AWG $ver успешно создан и применен!", Toast.LENGTH_LONG).show()
+                        updateM3State()
+                        if (WarpVpnService.isRunning.value) {
+                            WarpVpnService.stop(this@MainActivity)
+                            delay(500)
+                            WarpVpnService.start(this@MainActivity)
                         }
-                        1, 2 -> {
-                            val ver = if (which == 1) "3.1" else "3.0"
-                            val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateConfig()
-                            if (res.isSuccess) {
-                                val prof = res.getOrThrow()
-                                val awgConf = prof.toAmneziaWgConfig(ver)
-                                WarpConfigManager.saveConfig(this@MainActivity, awgConf)
-                                WarpConfigManager.setMasqueMode(this@MainActivity, false)
-                                Toast.makeText(this@MainActivity, "🛡️ AWG $ver успешно создан и применен!", Toast.LENGTH_LONG).show()
-                                updateM3State()
-                                if (WarpVpnService.isRunning.value) {
-                                    WarpVpnService.stop(this@MainActivity)
-                                    delay(500)
-                                    WarpVpnService.start(this@MainActivity)
-                                }
-                            } else {
-                                Toast.makeText(this@MainActivity, "Ошибка генерации AWG: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                    } else {
+                        Toast.makeText(this@MainActivity, "Ошибка генерации AWG: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -1029,20 +981,6 @@ class MainActivity : BaseActivity() {
 
         binding.m3SwitchWarp.setOnClickListener { toggleWarp() }
         binding.m3CardWarp.setOnClickListener { toggleWarp() }
-        binding.m3SwitchWarpMasque.isChecked = WarpConfigManager.isMasqueMode(this)
-        binding.m3SwitchWarpMasque.setOnCheckedChangeListener { _, isChecked ->
-            WarpConfigManager.setMasqueMode(this, isChecked)
-            val modeName = if (isChecked) "MASQUE (HTTP/3 Обход ТСПУ)" else "AmneziaWG (AWG)"
-            Toast.makeText(this, "Выбран протокол: $modeName", Toast.LENGTH_SHORT).show()
-            updateM3State()
-            if (WarpVpnService.isRunning.value) {
-                WarpVpnService.stop(this)
-                lifecycleScope.launch {
-                    delay(500)
-                    WarpVpnService.start(this@MainActivity)
-                }
-            }
-        }
         binding.m3BtnWarpGen.setOnClickListener {
             showWarpGenOptionsDialog()
         }
@@ -1346,10 +1284,7 @@ class MainActivity : BaseActivity() {
         binding.m3CardWarp.strokeColor = if (isWarpRunning) colorPrimary else colorOutlineVariant
         binding.m3CardWarp.strokeWidth = if (isWarpRunning) dpToPx(1.5f) else dpToPx(1f)
         val isMasque = WarpConfigManager.isMasqueMode(this)
-        val protoTag = if (isMasque) "MASQUE HTTP/3" else "AmneziaWG"
-        if (binding.m3SwitchWarpMasque.isChecked != isMasque) {
-            binding.m3SwitchWarpMasque.isChecked = isMasque
-        }
+        val protoTag = if (isMasque) "MASQUE" else "AmneziaWG"
         if (isWarpRunning) {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)

@@ -200,19 +200,25 @@ object AwgUapiFormatter {
         config.jc?.let { sb.append("jc=").append(it).append('\n') }
         config.jmin?.let { sb.append("jmin=").append(it).append('\n') }
         config.jmax?.let { sb.append("jmax=").append(it).append('\n') }
-        config.s1?.let { sb.append("s1=").append(it).append('\n') }
-        config.s2?.let { sb.append("s2=").append(it).append('\n') }
-        config.s3?.let { sb.append("s3=").append(it).append('\n') }
-        config.s4?.let { sb.append("s4=").append(it).append('\n') }
-        config.h1?.let { sb.append("h1=").append(it).append('\n') }
-        config.h2?.let { sb.append("h2=").append(it).append('\n') }
-        config.h3?.let { sb.append("h3=").append(it).append('\n') }
-        config.h4?.let { sb.append("h4=").append(it).append('\n') }
-        config.i1?.let { sb.append("i1=").append(it).append('\n') }
-        config.i2?.let { sb.append("i2=").append(it).append('\n') }
-        config.i3?.let { sb.append("i3=").append(it).append('\n') }
-        config.i4?.let { sb.append("i4=").append(it).append('\n') }
-        config.i5?.let { sb.append("i5=").append(it).append('\n') }
+        // For standard Cloudflare WARP peers, Cloudflare Anycast servers do NOT support AmneziaWG
+        // shifted header obfuscation (h1..h4) or custom padding (s1..s4).
+        // Sending h1..h4 shifts the WireGuard initiation type (0x01) or encrypts the header,
+        // causing Cloudflare Anycast servers to silently discard the handshake.
+        val isCloudflarePeer = config.peerPublicKeyHex.equals("6e65ce0be17517110c17d77288ad87e7fd5252dcc7d09b95a39d61db03df832a", ignoreCase = true)
+                || config.peerEndpoint?.contains("162.159.") == true
+                || config.peerEndpoint?.contains("188.114.") == true
+                || config.peerEndpoint?.contains("cloudflare") == true
+
+        if (!isCloudflarePeer) {
+            config.s1?.let { sb.append("s1=").append(it).append('\n') }
+            config.s2?.let { sb.append("s2=").append(it).append('\n') }
+            config.s3?.let { sb.append("s3=").append(it).append('\n') }
+            config.s4?.let { sb.append("s4=").append(it).append('\n') }
+            config.h1?.let { sb.append("h1=").append(it).append('\n') }
+            config.h2?.let { sb.append("h2=").append(it).append('\n') }
+            config.h3?.let { sb.append("h3=").append(it).append('\n') }
+            config.h4?.let { sb.append("h4=").append(it).append('\n') }
+        }
 
         // Peer configuration
         if (!config.peerPublicKeyHex.isNullOrEmpty()) {
