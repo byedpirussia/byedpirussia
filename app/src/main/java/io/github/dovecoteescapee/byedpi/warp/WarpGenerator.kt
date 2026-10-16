@@ -55,11 +55,7 @@ object WarpGenerator {
         val endpoint: String
     ) {
         fun toAmneziaWgConfig(version: String = "3.1"): String {
-            val (h1, h2, h3, h4) = if (version == "3.1" || version == "3") {
-                listOf(Random.nextInt(5, 50), Random.nextInt(51, 100), Random.nextInt(101, 150), Random.nextInt(151, 200))
-            } else {
-                listOf(1, 2, 3, 4)
-            }
+            val (h1, h2, h3, h4) = listOf(1, 2, 3, 4)
             val jc = if (version == "3.1") 8 else 7
             return """[Interface]
 PrivateKey = $privKey
@@ -213,10 +209,10 @@ Endpoint = $endpoint
         // Резервный зарегистрированный профиль
         Result.success(
             WarpProfile(
-                privKey = "8HRm8YSHu+jcewZJA6+SN4o5mF+yRteV7NDQTfEiUiw=",
+                privKey = "KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8=",
                 peerPub = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
                 clientIpv4 = "172.16.0.2",
-                clientIpv6 = "2606:4700:110:8c59:3f3:2387:27dc:ac7c",
+                clientIpv6 = "2606:4700:110:8655:e6ef:f746:2058:dac0",
                 endpoint = "162.159.192.1:500"
             )
         )

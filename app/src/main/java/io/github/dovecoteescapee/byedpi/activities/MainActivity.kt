@@ -944,23 +944,28 @@ class MainActivity : BaseActivity() {
             .setTitle("Генерация Cloudflare WARP")
             .setItems(items) { _, which ->
                 lifecycleScope.launch {
-                    Toast.makeText(this@MainActivity, "Генерация конфигурации...", Toast.LENGTH_SHORT).show()
-                    val ver = if (which == 0) "3.1" else "3.0"
-                    val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateConfig()
-                    if (res.isSuccess) {
-                        val prof = res.getOrThrow()
-                        val awgConf = prof.toAmneziaWgConfig(ver)
-                        WarpConfigManager.saveConfig(this@MainActivity, awgConf)
-                        WarpConfigManager.setMasqueMode(this@MainActivity, false)
-                        Toast.makeText(this@MainActivity, "🛡️ AWG $ver успешно создан и применен!", Toast.LENGTH_LONG).show()
-                        updateM3State()
-                        if (WarpVpnService.isRunning.value) {
-                            WarpVpnService.stop(this@MainActivity)
-                            delay(500)
-                            WarpVpnService.start(this@MainActivity)
+                    try {
+                        Toast.makeText(this@MainActivity, "Генерация конфигурации...", Toast.LENGTH_SHORT).show()
+                        val ver = if (which == 0) "3.1" else "3.0"
+                        val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateConfig()
+                        if (isFinishing || isDestroyed) return@launch
+                        if (res.isSuccess) {
+                            val prof = res.getOrThrow()
+                            val awgConf = prof.toAmneziaWgConfig(ver)
+                            WarpConfigManager.saveConfig(this@MainActivity, awgConf)
+                            WarpConfigManager.setMasqueMode(this@MainActivity, false)
+                            Toast.makeText(this@MainActivity, "🛡️ AWG $ver успешно создан и применен!", Toast.LENGTH_LONG).show()
+                            updateM3State()
+                            if (WarpVpnService.isRunning.value) {
+                                WarpVpnService.stop(this@MainActivity)
+                                delay(500)
+                                WarpVpnService.start(this@MainActivity)
+                            }
+                        } else {
+                            Toast.makeText(this@MainActivity, "Ошибка генерации AWG: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                         }
-                    } else {
-                        Toast.makeText(this@MainActivity, "Ошибка генерации AWG: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error generating AWG config", e)
                     }
                 }
             }

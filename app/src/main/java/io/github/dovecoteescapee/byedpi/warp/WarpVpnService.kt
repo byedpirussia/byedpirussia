@@ -638,6 +638,9 @@ class WarpVpnService : VpnService() {
         val nativeFd = pfd.detachFd()
         val handle = GoBackend.awgTurnOn("awg0", nativeFd, uapi)
         if (handle < 0) {
+            try {
+                android.os.ParcelFileDescriptor.adoptFd(nativeFd).close()
+            } catch (_: Exception) {}
             throw IllegalStateException("GoBackend.awgTurnOn завершился с ошибкой: $handle")
         }
         tunnelHandle = handle

@@ -115,37 +115,42 @@ class ExperimentalSettingsActivity : BaseActivity() {
     private fun generateExperimentalMasque() {
         Toast.makeText(this, "Генерация экспериментального MASQUE профиля...", Toast.LENGTH_SHORT).show()
         lifecycleScope.launch {
-            val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateMasqueConfig()
-            if (res.isSuccess) {
-                val prof = res.getOrThrow()
-                io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.setMasqueMode(this@ExperimentalSettingsActivity, true)
-                binding.switchWarpMasque.isChecked = true
-                if (prof.workingAwgConfig.isNotBlank()) {
-                    io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.saveConfig(this@ExperimentalSettingsActivity, prof.workingAwgConfig)
-                }
-
-                val info = "Сервер: 162.159.192.1:500\nПротокол: MASQUE (HTTP/3)\nIP: ${prof.clientIpv4}\n\nЭкспериментальный профиль успешно создан."
-                val tv = android.widget.TextView(this@ExperimentalSettingsActivity).apply {
-                    text = info
-                    setPadding(50, 30, 50, 20)
-                    setTextIsSelectable(true)
-                }
-
-                MaterialAlertDialogBuilder(this@ExperimentalSettingsActivity)
-                    .setTitle("⚡ MASQUE готов")
-                    .setView(tv)
-                    .setPositiveButton("Применить") { _, _ ->
-                        Toast.makeText(this@ExperimentalSettingsActivity, "Профиль применен", Toast.LENGTH_SHORT).show()
+            try {
+                val res = io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateMasqueConfig()
+                if (isFinishing || isDestroyed) return@launch
+                if (res.isSuccess) {
+                    val prof = res.getOrThrow()
+                    io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.setMasqueMode(this@ExperimentalSettingsActivity, true)
+                    binding.switchWarpMasque.isChecked = true
+                    if (prof.workingAwgConfig.isNotBlank()) {
+                        io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.saveConfig(this@ExperimentalSettingsActivity, prof.workingAwgConfig)
                     }
-                    .setNeutralButton("Копировать") { _, _ ->
-                        val cm = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                        cm.setPrimaryClip(android.content.ClipData.newPlainText("Config", prof.rawYaml))
-                        Toast.makeText(this@ExperimentalSettingsActivity, "Скопировано в буфер", Toast.LENGTH_SHORT).show()
+
+                    val info = "Сервер: 162.159.192.1:500\nПротокол: MASQUE (HTTP/3)\nIP: ${prof.clientIpv4}\n\nЭкспериментальный профиль успешно создан."
+                    val tv = android.widget.TextView(this@ExperimentalSettingsActivity).apply {
+                        text = info
+                        setPadding(50, 30, 50, 20)
+                        setTextIsSelectable(true)
                     }
-                    .setNegativeButton("Закрыть", null)
-                    .show()
-            } else {
-                Toast.makeText(this@ExperimentalSettingsActivity, "Ошибка: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+
+                    MaterialAlertDialogBuilder(this@ExperimentalSettingsActivity)
+                        .setTitle("⚡ MASQUE готов")
+                        .setView(tv)
+                        .setPositiveButton("Применить") { _, _ ->
+                            Toast.makeText(this@ExperimentalSettingsActivity, "Профиль применен", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNeutralButton("Копировать") { _, _ ->
+                            val cm = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                            cm.setPrimaryClip(android.content.ClipData.newPlainText("Config", prof.rawYaml))
+                            Toast.makeText(this@ExperimentalSettingsActivity, "Скопировано в буфер", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Закрыть", null)
+                        .show()
+                } else {
+                    Toast.makeText(this@ExperimentalSettingsActivity, "Ошибка: ${res.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ExperimentalSettings", "Error generating MASQUE", e)
             }
         }
     }
