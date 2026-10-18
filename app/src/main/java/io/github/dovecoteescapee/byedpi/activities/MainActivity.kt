@@ -181,6 +181,7 @@ class MainActivity : BaseActivity() {
             val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             binding.appBarLayout.setPadding(0, statusBars.top, 0, 0)
             binding.scrollView.setPadding(0, 0, 0, navBars.bottom)
+            binding.camouflageOverlay.setPadding(0, statusBars.top, 0, navBars.bottom)
             insets
         }
 
@@ -563,26 +564,29 @@ class MainActivity : BaseActivity() {
     }
 
     private fun showUiModeSelectionDialog() {
-        val options: Array<CharSequence> = arrayOf(
-            getString(R.string.ui_mode_simple_title),
-            getString(R.string.ui_mode_advanced_title)
-        )
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.ui_mode_selection_title)
-            .setMessage(R.string.ui_mode_selection_desc)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_ui_mode_selection, null)
+        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
             .setCancelable(false)
-            .setItems(options) { dialog, which ->
-                setUiModeSelected(true)
-                if (which == 0) {
-                    setUiModePreference("auto")
-                } else {
-                    setUiModePreference("advanced")
-                }
-                dialog.dismiss()
-                updateUiModeViews()
-                checkStarDialog()
-            }
-            .show()
+            .create()
+
+        dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardModeSimple).setOnClickListener {
+            setUiModeSelected(true)
+            setUiModePreference("auto")
+            dialog.dismiss()
+            updateUiModeViews()
+            checkStarDialog()
+        }
+
+        dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardModeAdvanced).setOnClickListener {
+            setUiModeSelected(true)
+            setUiModePreference("advanced")
+            dialog.dismiss()
+            updateUiModeViews()
+            checkStarDialog()
+        }
+
+        dialog.show()
     }
 
     private fun showTgChannelAnnouncementDialog() {

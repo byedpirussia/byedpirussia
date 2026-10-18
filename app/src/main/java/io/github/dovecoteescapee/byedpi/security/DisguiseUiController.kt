@@ -51,6 +51,14 @@ class DisguiseUiController(private val activity: Activity) {
         overlayContainer.translationY = 0f
         overlayContainer.visibility = View.VISIBLE
 
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(overlayContainer) { v, insets ->
+            val statusBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.statusBars())
+            val navBars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars())
+            v.setPadding(0, statusBars.top, 0, navBars.bottom)
+            insets
+        }
+        androidx.core.view.ViewCompat.requestApplyInsets(overlayContainer)
+
         when (currentDisguise) {
             CamouflageManager.DisguiseMode.CALCULATOR -> {
                 setupCalculator(overlayContainer, onUnlocked)
