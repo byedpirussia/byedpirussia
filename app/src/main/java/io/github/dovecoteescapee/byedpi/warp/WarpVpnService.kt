@@ -19,6 +19,7 @@ import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.activities.MainActivity
 import io.github.dovecoteescapee.byedpi.utility.isWarpAutoReconnectEnabled
 import io.github.dovecoteescapee.byedpi.utility.isWarpDnsForceOverride
+import io.github.dovecoteescapee.byedpi.utility.isGamingModeEnabled
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -489,7 +490,16 @@ class WarpVpnService : VpnService() {
             val effectiveIp = if (ipPart.isBlank() || ipPart.startsWith("8.") || ipPart.startsWith("188.")) "162.159.192.1" else ipPart
             resolvedEndpoint = "$effectiveIp:500"
         }
-        val finalParsed = parsed.copy(peerEndpoint = resolvedEndpoint)
+        var effectiveKeepalive = parsed.peerPersistentKeepalive ?: 25
+        val isGameMode = isGamingModeEnabled()
+        if (isGameMode) {
+            effectiveKeepalive = 10 // Aggressive UDP keepalive prevents NAT drop during gaming
+        }
+
+        val finalParsed = parsed.copy(
+            peerEndpoint = resolvedEndpoint,
+            peerPersistentKeepalive = effectiveKeepalive
+        )
 
         val isMasqueMode = WarpConfigManager.isMasqueMode(this@WarpVpnService)
         val modeTitle = if (isMasqueMode) "Cloudflare WARP (MASQUE HTTP/3)" else "Cloudflare WARP (AmneziaWG)"

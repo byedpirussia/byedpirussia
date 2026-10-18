@@ -667,7 +667,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Интеграция с фокусными уведомлениями Xiaomi HyperOS / MIUI. Отображает интерактивную статус-бар капсулу («Динамический остров») и кнопки мгновенного переключения режимов (ByeDPI, WARP, VLESS, OpenFLUX) прямо в строке состояния и шторке уведомлений."
+                        android:text="Интеграция с фокусными уведомлениями Xiaomi HyperOS / MIUI. Отображает интерактивную статус-бар капсулу («Динамический остров») и кнопки мгновенного переключения режимов (ByeDPI, WARP, VLESS) прямо в строке состояния и шторке уведомлений."
                         android:textSize="13sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:lineSpacingExtra="3dp" />
@@ -743,7 +743,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Сохраните или восстановите всю конфигурацию (VLESS серверы, подписки, профиль WARP, OpenFLUX, правила Split Tunneling и настройки приложения) в один файл JSON."
+                        android:text="Сохраните или восстановите всю конфигурацию (VLESS серверы, подписки, профиль WARP, правила Split Tunneling и настройки приложения) в один файл JSON."
                         android:textSize="13sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:lineSpacingExtra="3dp"

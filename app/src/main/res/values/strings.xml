@@ -275,5 +275,26 @@
     <string name="disguise_pause">Пауза</string>
     <string name="disguise_reset">Сброс</string>
     <string name="disguise_unlocked_toast">Камуфляж разблокирован ✓</string>
+    
+    <!-- Игровой режим (Gaming Mode) -->
+    <string name="game_mode_title">🎮 Игровой режим</string>
+    <string name="game_mode_summary">Оптимизация конфига и UDP для игр с минимальным пингом и отсутствием потерь пакетов</string>
+    <string name="game_mode_active">Игровой режим активен (UDP Fast-Path)</string>
+    <string name="game_mode_dialog_title">Игровой режим</string>
+
+    <!-- Выбор режима интерфейса при первом запуске (UI Mode Selection) -->
+    <string name="ui_mode_auto_title">Выберите инструмент обхода</string>
+    <string name="ui_mode_selection_title">Выберите режим работы</string>
+    <string name="ui_mode_selection_desc">Что для вас важнее при использовании приложения?</string>
+    <string name="ui_mode_simple_title">⚡ Автоматика (Простой режим)</string>
+    <string name="ui_mode_simple_desc">Одна большая кнопка включения, быстрый выбор инструмента обхода и минимум лишних деталей.</string>
+    <string name="ui_mode_advanced_title">🛠️ Больше настроек (Полный режим)</string>
+    <string name="ui_mode_advanced_desc">Детальный контроль над всеми службами: ByeDPI, WARP, VLESS, Telegram-прокси и ручные переключатели.</string>
+    <string name="ui_mode_btn_advanced_settings">Расширенные настройки</string>
+    <string name="ui_mode_switch_to_advanced">Переключиться на полный интерфейс</string>
+    <string name="ui_mode_switch_to_simple">Переключиться на простой интерфейс</string>
+    <string name="tool_byedpi">ByeDPI (Десинхронизация)</string>
+    <string name="tool_warp">Cloudflare WARP (AWG)</string>
+    <string name="tool_vless">VLESS</string>
 </resources>
 

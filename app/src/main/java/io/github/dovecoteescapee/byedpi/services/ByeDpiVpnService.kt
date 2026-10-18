@@ -189,11 +189,15 @@ class ByeDpiVpnService : LifecycleVpnService() {
         val dns = sharedPreferences.getStringNotNull("dns_ip", "1.1.1.1")
         val ipv6 = sharedPreferences.getBoolean("ipv6_enable", false)
 
+        val isGameMode = isGamingModeEnabled()
+        val tun2socksMtu = if (isGameMode) 1420 else 8500
+        val taskStack = if (isGameMode) 131072 else 81920
+
         val tun2socksConfig = """
         | misc:
-        |   task-stack-size: 81920
+        |   task-stack-size: $taskStack
         | socks5:
-        |   mtu: 8500
+        |   mtu: $tun2socksMtu
         |   address: 127.0.0.1
         |   port: $port
         |   udp: udp
@@ -312,7 +316,9 @@ class ByeDpiVpnService : LifecycleVpnService() {
             builder.setMetered(false)
         }
 
-        if (io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isMtuClampEnabled(this)) {
+        if (isGamingModeEnabled()) {
+            builder.setMtu(1420)
+        } else if (io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isMtuClampEnabled(this)) {
             builder.setMtu(1280)
         } else {
             builder.setMtu(1500)

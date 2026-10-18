@@ -16,8 +16,12 @@
         <item name="classic">Классический стиль</item>
     </array>
     <array name="ui_modes_entries">
-        <item name="m3">m3</item>
-        <item name="classic">classic</item>
+        <item name="auto">Автоматика (Простой режим)</item>
+        <item name="advanced">Больше настроек (Полный режим)</item>
+    </array>
+    <array name="ui_modes_values">
+        <item name="auto">auto</item>
+        <item name="advanced">advanced</item>
     </array>
 
     <array name="accent_colors">

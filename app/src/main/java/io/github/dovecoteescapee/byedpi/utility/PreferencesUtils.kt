@@ -179,3 +179,44 @@ fun Context.setDynamicIslandEnabled(enabled: Boolean) {
     getPreferences().edit().putBoolean(KEY_DYNAMIC_ISLAND_ENABLED, enabled).apply()
 }
 
+// Игровой режим (Gaming Mode)
+const val KEY_GAMING_MODE_ENABLED = "gaming_mode_enabled"
+
+fun Context.isGamingModeEnabled(): Boolean =
+    getPreferences().getBoolean(KEY_GAMING_MODE_ENABLED, false)
+
+fun Context.setGamingModeEnabled(enabled: Boolean) {
+    getPreferences().edit().putBoolean(KEY_GAMING_MODE_ENABLED, enabled).apply()
+}
+
+// Режим интерфейса (Auto / Simple vs Advanced)
+const val KEY_UI_MODE_PREFERENCE = "ui_mode_preference" // "auto" or "advanced"
+const val KEY_UI_MODE_SELECTED = "ui_mode_selected_v155"
+
+fun Context.isUiModeSelected(): Boolean =
+    getPreferences().getBoolean(KEY_UI_MODE_SELECTED, false)
+
+fun Context.setUiModeSelected(selected: Boolean) {
+    getPreferences().edit().putBoolean(KEY_UI_MODE_SELECTED, selected).apply()
+}
+
+fun Context.getUiModePreference(): String =
+    getPreferences().getString(KEY_UI_MODE_PREFERENCE, "auto") ?: "auto"
+
+fun Context.setUiModePreference(mode: String) {
+    getPreferences().edit().putString(KEY_UI_MODE_PREFERENCE, mode).apply()
+}
+
+fun Context.isAutoUiMode(): Boolean =
+    getUiModePreference() == "auto"
+
+// Выбранный инструмент для автоматического режима: "byedpi", "warp", "vless"
+const val KEY_AUTO_SELECTED_TOOL = "auto_selected_tool"
+
+fun Context.getAutoSelectedTool(): String =
+    getPreferences().getString(KEY_AUTO_SELECTED_TOOL, "warp") ?: "warp"
+
+fun Context.setAutoSelectedTool(tool: String) {
+    getPreferences().edit().putString(KEY_AUTO_SELECTED_TOOL, tool).apply()
+}
+

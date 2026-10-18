@@ -40,9 +40,6 @@ import io.github.dovecoteescapee.byedpi.warp.WarpVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessManager
 import io.github.dovecoteescapee.byedpi.vless.VlessVpnService
 import io.github.dovecoteescapee.byedpi.vless.VlessListActivity
-import io.github.dovecoteescapee.byedpi.openflux.OpenFluxConfigActivity
-import io.github.dovecoteescapee.byedpi.openflux.OpenFluxManager
-import io.github.dovecoteescapee.byedpi.openflux.OpenFluxVpnService
 import io.github.dovecoteescapee.byedpi.tv.TvNavigationHelper
 import androidx.activity.addCallback
 import io.github.dovecoteescapee.byedpi.security.TamperGuard
@@ -104,14 +101,6 @@ class MainActivity : BaseActivity() {
             }
         }
 
-    private val openFluxVpnRegister =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == RESULT_OK) {
-                OpenFluxVpnService.start(this)
-            } else {
-                Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_SHORT).show()
-            }
-        }
 
     private val logsRegister =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -284,7 +273,6 @@ class MainActivity : BaseActivity() {
             "byedpi" -> toggleByeDpi()
             "warp" -> startWarpVpn()
             "vless" -> toggleVless()
-            "openflux" -> toggleOpenFlux()
         }
     }
 
@@ -293,8 +281,7 @@ class MainActivity : BaseActivity() {
         val isByeDpiVpn = byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN
         val isWarpVpn = WarpVpnService.isRunning.value
         val isVlessVpn = VlessVpnService.isRunning.value
-        val isOpenFluxVpn = OpenFluxVpnService.isRunning.value
-        return isByeDpiVpn || isWarpVpn || isVlessVpn || isOpenFluxVpn
+        return isByeDpiVpn || isWarpVpn || isVlessVpn
     }
 
     private fun startWarpVpn() {
@@ -308,9 +295,6 @@ class MainActivity : BaseActivity() {
         }
         if (VlessVpnService.isRunning.value) {
             VlessVpnService.stop(this)
-        }
-        if (OpenFluxVpnService.isRunning.value) {
-            OpenFluxVpnService.stop(this)
         }
         val intentPrepare = VpnService.prepare(this)
         if (intentPrepare != null) {
@@ -333,9 +317,6 @@ class MainActivity : BaseActivity() {
                 }
                 if (VlessVpnService.isRunning.value) {
                     VlessVpnService.stop(this)
-                }
-                if (OpenFluxVpnService.isRunning.value) {
-                    OpenFluxVpnService.stop(this)
                 }
                 when (getPreferences().mode()) {
                     Mode.VPN -> {
@@ -386,55 +367,12 @@ class MainActivity : BaseActivity() {
             if (WarpVpnService.isRunning.value) {
                 WarpVpnService.stop(this)
             }
-            if (OpenFluxVpnService.isRunning.value) {
-                OpenFluxVpnService.stop(this)
-            }
 
             val intentPrepare = VpnService.prepare(this)
             if (intentPrepare != null) {
                 vlessVpnRegister.launch(intentPrepare)
             } else {
                 VlessVpnService.start(this)
-            }
-        }
-    }
-
-    private fun toggleOpenFlux() {
-        if (OpenFluxVpnService.isRunning.value) {
-            OpenFluxVpnService.stop(this)
-        } else {
-            if (!TamperGuard.verifyExecutionPermitted(this)) {
-                Toast.makeText(this, R.string.tamper_guard_blocked, Toast.LENGTH_LONG).show()
-                return
-            }
-            val selectedConfig = OpenFluxManager.getSelectedConfig(this)
-            if (selectedConfig == null) {
-                Toast.makeText(this, "Сначала настройте профиль OpenFLUX", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, OpenFluxConfigActivity::class.java)
-                startActivity(intent)
-                return
-            }
-
-            val (byedpiStatus, byedpiMode) = appStatus
-            if (byedpiStatus == AppStatus.Running && byedpiMode == Mode.VPN) {
-                ServiceManager.stop(this)
-            }
-            if (WarpVpnService.isRunning.value) {
-                WarpVpnService.stop(this)
-            }
-            if (VlessVpnService.isRunning.value) {
-                VlessVpnService.stop(this)
-            }
-
-            if (selectedConfig.routingMode == "vpn") {
-                val intentPrepare = VpnService.prepare(this)
-                if (intentPrepare != null) {
-                    openFluxVpnRegister.launch(intentPrepare)
-                } else {
-                    OpenFluxVpnService.start(this)
-                }
-            } else {
-                OpenFluxVpnService.start(this)
             }
         }
     }
@@ -460,10 +398,6 @@ class MainActivity : BaseActivity() {
         }
         if (VlessVpnService.isRunning.value) {
             VlessVpnService.stop(this)
-            disconnectedAny = true
-        }
-        if (OpenFluxVpnService.isRunning.value) {
-            OpenFluxVpnService.stop(this)
             disconnectedAny = true
         }
         if (TgWsProxyService.isRunning.value) {
@@ -616,8 +550,39 @@ class MainActivity : BaseActivity() {
         if (!isTgChannelDialogShown()) {
             showTgChannelAnnouncementDialog()
         } else {
+            checkUiModeDialog()
+        }
+    }
+
+    private fun checkUiModeDialog() {
+        if (!isUiModeSelected()) {
+            showUiModeSelectionDialog()
+        } else {
             checkStarDialog()
         }
+    }
+
+    private fun showUiModeSelectionDialog() {
+        val options: Array<CharSequence> = arrayOf(
+            getString(R.string.ui_mode_simple_title),
+            getString(R.string.ui_mode_advanced_title)
+        )
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.ui_mode_selection_title)
+            .setMessage(R.string.ui_mode_selection_desc)
+            .setCancelable(false)
+            .setItems(options) { dialog, which ->
+                setUiModeSelected(true)
+                if (which == 0) {
+                    setUiModePreference("auto")
+                } else {
+                    setUiModePreference("advanced")
+                }
+                dialog.dismiss()
+                updateUiModeViews()
+                checkStarDialog()
+            }
+            .show()
     }
 
     private fun showTgChannelAnnouncementDialog() {
@@ -629,12 +594,12 @@ class MainActivity : BaseActivity() {
                 setTgChannelDialogShown(true)
                 dialog.dismiss()
                 openTelegramWithVpnCheck()
-                checkStarDialog()
+                checkUiModeDialog()
             }
             .setNegativeButton(R.string.setup_wizard_btn_skip) { dialog, _ ->
                 setTgChannelDialogShown(true)
                 dialog.dismiss()
-                checkStarDialog()
+                checkUiModeDialog()
             }
             .show()
     }
@@ -1033,11 +998,6 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(this, VlessListActivity::class.java))
         }
 
-        binding.m3SwitchOpenflux.setOnClickListener { toggleOpenFlux() }
-        binding.m3CardOpenflux.setOnClickListener { toggleOpenFlux() }
-        binding.m3BtnOpenfluxServers.setOnClickListener {
-            startActivity(Intent(this, OpenFluxConfigActivity::class.java))
-        }
 
         binding.m3SwitchTg.setOnClickListener { toggleTgProxy() }
         binding.m3CardTg.setOnClickListener { toggleTgProxy() }
@@ -1119,7 +1079,6 @@ class MainActivity : BaseActivity() {
         TvNavigationHelper.setupCardFocus(binding.m3CardByedpi) { toggleByeDpi() }
         TvNavigationHelper.setupCardFocus(binding.m3CardWarp) { toggleWarp() }
         TvNavigationHelper.setupCardFocus(binding.m3CardVless) { toggleVless() }
-        TvNavigationHelper.setupCardFocus(binding.m3CardOpenflux) { toggleOpenFlux() }
         TvNavigationHelper.setupCardFocus(binding.m3CardTg) { toggleTgProxy() }
         TvNavigationHelper.setupCardFocus(binding.m3CardAdvanced) {
             startActivity(Intent(this, AdvancedSettingsActivity::class.java))
@@ -1131,9 +1090,25 @@ class MainActivity : BaseActivity() {
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpOptimize)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpTgFix)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnVlessServers)
-        TvNavigationHelper.setupButtonFocus(binding.m3BtnOpenfluxServers)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnTgOpen)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnTgChannel)
+
+        // Автоматический режим: клики
+        binding.autoBtnMainToggle.setOnClickListener {
+            toggleAutoProtection()
+        }
+        binding.autoCardToolSelector.setOnClickListener {
+            showAutoToolSelectorDialog()
+        }
+        binding.autoBtnAdvancedSettings.setOnClickListener {
+            setUiModePreference("advanced")
+            updateUiModeViews()
+        }
+        binding.btnSwitchToAutoMode.setOnClickListener {
+            setUiModePreference("auto")
+            updateUiModeViews()
+        }
+        updateUiModeViews()
 
         lifecycleScope.launch {
             TgWsProxyService.isRunning.collectLatest { updateM3State() }
@@ -1153,15 +1128,6 @@ class MainActivity : BaseActivity() {
         }
         lifecycleScope.launch {
             VlessVpnService.isRunning.collectLatest { updateM3State() }
-        }
-        lifecycleScope.launch {
-            OpenFluxVpnService.isRunning.collectLatest { updateM3State() }
-        }
-        lifecycleScope.launch {
-            OpenFluxVpnService.connectionStatus.collectLatest { updateM3State() }
-        }
-        lifecycleScope.launch {
-            OpenFluxVpnService.trafficStats.collectLatest { updateM3State() }
         }
 
         updateM3State()
@@ -1205,8 +1171,7 @@ class MainActivity : BaseActivity() {
         val isWarpRunning = WarpVpnService.isRunning.value
         val isVlessRunning = VlessVpnService.isRunning.value
         val isTgRunning = TgWsProxyService.isRunning.value
-        val isOpenFluxRunning = OpenFluxVpnService.isRunning.value
-        val isAnyRunning = isByeDpiRunning || isWarpRunning || isVlessRunning || isTgRunning || isOpenFluxRunning
+        val isAnyRunning = isByeDpiRunning || isWarpRunning || isVlessRunning || isTgRunning
 
         val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
         val colorPrimaryContainer = getThemeColor(com.google.android.material.R.attr.colorPrimaryContainer)
@@ -1240,7 +1205,6 @@ class MainActivity : BaseActivity() {
             if (isByeDpiRunning) activeList.add("ByeDPI")
             if (isWarpRunning) activeList.add("WARP")
             if (isVlessRunning) activeList.add("VLESS")
-            if (isOpenFluxRunning) activeList.add("OpenFLUX")
             if (isTgRunning) activeList.add("TG Proxy")
             binding.m3StatusSubtitle.text = "Активно: " + activeList.joinToString(", ")
             binding.m3BtnDisconnectAll.visibility = View.VISIBLE
@@ -1328,24 +1292,7 @@ class MainActivity : BaseActivity() {
             }
         }
 
-        // 5. OpenFLUX Switch & Subtitle
-        val selectedOpenFlux = OpenFluxManager.getSelectedConfig(this)
-        val openFluxStats = OpenFluxVpnService.trafficStats.value
-        binding.m3SwitchOpenflux.isChecked = isOpenFluxRunning
-        binding.m3CardOpenflux.strokeColor = if (isOpenFluxRunning) colorPrimary else colorOutlineVariant
-        binding.m3CardOpenflux.strokeWidth = if (isOpenFluxRunning) dpToPx(1.5f) else dpToPx(1f)
-        if (isOpenFluxRunning) {
-            binding.m3IconBoxOpenflux.setCardBackgroundColor(colorPrimaryContainer)
-            val name = selectedOpenFlux?.name ?: "OpenFLUX"
-            val detail = if (openFluxStats.isNotBlank()) " • $openFluxStats" else ""
-            binding.m3SubOpenflux.text = "🟢 Подключен • $name$detail"
-        } else {
-            binding.m3IconBoxOpenflux.setCardBackgroundColor(colorSurfaceVariant)
-            val name = selectedOpenFlux?.name ?: "OpenFLUX"
-            binding.m3SubOpenflux.text = "⚪ Отключено • $name"
-        }
-
-        // 6. TG Proxy Switch & Subtitle
+        // 5. TG Proxy Switch & Subtitle
         binding.m3SwitchTg.isChecked = isTgRunning
         binding.m3CardTg.strokeColor = if (isTgRunning) colorPrimary else colorOutlineVariant
         binding.m3CardTg.strokeWidth = if (isTgRunning) dpToPx(1.5f) else dpToPx(1f)
@@ -1358,6 +1305,91 @@ class MainActivity : BaseActivity() {
             binding.m3IconBoxTg.setCardBackgroundColor(colorSurfaceVariant)
             binding.m3SubTg.text = "⚪ Отключено • 127.0.0.1:1443"
         }
+
+        // 6. Автоматический режим: обновление главной кнопки и текста инструмента
+        updateAutoModeState(isAnyRunning)
+    }
+
+    private fun updateUiModeViews() {
+        if (!::binding.isInitialized) return
+        val isAuto = isAutoUiMode()
+        if (isAuto) {
+            binding.containerAutoMode.visibility = View.VISIBLE
+            binding.containerAdvancedServices.visibility = View.GONE
+        } else {
+            binding.containerAutoMode.visibility = View.GONE
+            binding.containerAdvancedServices.visibility = View.VISIBLE
+        }
+        updateM3State()
+    }
+
+    private fun updateAutoModeState(isAnyRunning: Boolean) {
+        val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
+        val colorOnPrimary = getThemeColor(com.google.android.material.R.attr.colorOnPrimary)
+        val colorError = getThemeColor(com.google.android.material.R.attr.colorError)
+        val colorOnError = getThemeColor(com.google.android.material.R.attr.colorOnError)
+
+        if (isAnyRunning) {
+            binding.autoBtnMainToggle.setCardBackgroundColor(colorError)
+            binding.autoToggleIcon.setImageResource(R.drawable.ic_shield_off_24)
+            binding.autoToggleIcon.imageTintList = ColorStateList.valueOf(colorOnError)
+            binding.autoToggleText.text = "Отключить защиту"
+            binding.autoToggleText.setTextColor(colorOnError)
+        } else {
+            binding.autoBtnMainToggle.setCardBackgroundColor(colorPrimary)
+            binding.autoToggleIcon.setImageResource(R.drawable.ic_shield_check_24)
+            binding.autoToggleIcon.imageTintList = ColorStateList.valueOf(colorOnPrimary)
+            binding.autoToggleText.text = "Включить защиту"
+            binding.autoToggleText.setTextColor(colorOnPrimary)
+        }
+
+        val toolKey = getAutoSelectedTool()
+        binding.autoToolSelectedName.text = when (toolKey) {
+            "byedpi" -> getString(R.string.tool_byedpi)
+            "warp" -> getString(R.string.tool_warp)
+            "vless" -> getString(R.string.tool_vless)
+            else -> getString(R.string.tool_warp)
+        }
+    }
+
+    private fun toggleAutoProtection() {
+        val (status, _) = appStatus
+        val isAnyRunning = status == AppStatus.Running ||
+                WarpVpnService.isRunning.value ||
+                VlessVpnService.isRunning.value ||
+                TgWsProxyService.isRunning.value
+
+        if (isAnyRunning) {
+            disconnectAllServices()
+        } else {
+            when (getAutoSelectedTool()) {
+                "byedpi" -> toggleByeDpi()
+                "warp" -> toggleWarp()
+                "vless" -> toggleVless()
+                else -> toggleWarp()
+            }
+        }
+    }
+
+    private fun showAutoToolSelectorDialog() {
+        val tools: Array<CharSequence> = arrayOf(
+            getString(R.string.tool_byedpi),
+            getString(R.string.tool_warp),
+            getString(R.string.tool_vless)
+        )
+        val keys = arrayOf("byedpi", "warp", "vless")
+        val currentKey = getAutoSelectedTool()
+        val checkedItem = keys.indexOf(currentKey).let { if (it >= 0) it else 1 }
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.ui_mode_auto_title)
+            .setSingleChoiceItems(tools, checkedItem) { dialog, which ->
+                setAutoSelectedTool(keys[which])
+                dialog.dismiss()
+                updateM3State()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun dpToPx(dp: Float): Int = (dp * resources.displayMetrics.density).toInt()

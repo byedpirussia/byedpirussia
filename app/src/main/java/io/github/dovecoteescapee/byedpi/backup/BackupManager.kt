@@ -3,8 +3,6 @@ package io.github.dovecoteescapee.byedpi.backup
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import io.github.dovecoteescapee.byedpi.openflux.OpenFluxConfig
-import io.github.dovecoteescapee.byedpi.openflux.OpenFluxManager
 import io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager
 import io.github.dovecoteescapee.byedpi.utility.*
 import io.github.dovecoteescapee.byedpi.vless.VlessConfig
@@ -20,7 +18,6 @@ data class RestoreSummary(
     val vlessCount: Int,
     val subscriptionsCount: Int,
     val warpRestored: Boolean,
-    val openFluxCount: Int,
     val splitTunnelAppsCount: Int,
     val preferencesCount: Int
 )
@@ -94,21 +91,7 @@ object BackupManager {
             }
             put("warp", warpObj)
 
-            // 4. OpenFLUX профили
-            val openFluxObj = JSONObject().apply {
-                val configs = OpenFluxManager.getConfigs(context)
-                val configsArr = JSONArray()
-                configs.forEach { configsArr.put(it.toJson()) }
-                put("configs", configsArr)
-
-                OpenFluxManager.getSelectedId(context)?.let {
-                    put("selected_id", it)
-                }
-                put("routing_mode", OpenFluxManager.getRoutingMode(context))
-            }
-            put("openflux", openFluxObj)
-
-            // 5. Раздельное туннелирование (Split Tunneling)
+            // 4. Раздельное туннелирование (Split Tunneling)
             val splitTunnelObj = JSONObject().apply {
                 put("mode", SplitTunnelManager.getMode(context))
                 put("exclude_russian", SplitTunnelManager.isExcludeRussianAppsEnabled(context))
@@ -139,7 +122,6 @@ object BackupManager {
             var vlessCount = 0
             var subsCount = 0
             var warpRestored = false
-            var openFluxCount = 0
             var splitPkgsCount = 0
 
             // 1. Восстановление preferences
@@ -211,33 +193,7 @@ object BackupManager {
                 }
             }
 
-            // 4. Восстановление OpenFLUX
-            root.optJSONObject("openflux")?.let { ofObj ->
-                ofObj.optJSONArray("configs")?.let { ofArr ->
-                    val existing = OpenFluxManager.getConfigs(context).toMutableList()
-                    val existingIds = existing.map { it.id }.toSet()
-                    for (i in 0 until ofArr.length()) {
-                        val cfgJson = ofArr.optJSONObject(i) ?: continue
-                        val cfg = OpenFluxConfig.fromJson(cfgJson)
-                        if (!existingIds.contains(cfg.id)) {
-                            existing.add(cfg)
-                            openFluxCount++
-                        }
-                    }
-                    OpenFluxManager.saveConfigs(context, existing)
-                }
-
-                val selectedId = ofObj.optString("selected_id", "")
-                if (selectedId.isNotBlank()) {
-                    OpenFluxManager.setSelectedId(context, selectedId)
-                }
-                val routingMode = ofObj.optString("routing_mode", "")
-                if (routingMode.isNotBlank()) {
-                    OpenFluxManager.setRoutingMode(context, routingMode)
-                }
-            }
-
-            // 5. Восстановление Split Tunneling
+            // 4. Восстановление Split Tunneling
             root.optJSONObject("split_tunneling")?.let { stObj ->
                 if (stObj.has("mode")) {
                     SplitTunnelManager.setMode(context, stObj.getInt("mode"))
@@ -255,7 +211,7 @@ object BackupManager {
                 }
             }
 
-            // 6. Восстановление Экспериментальных настроек
+            // 5. Восстановление Экспериментальных настроек
             root.optJSONObject("experimental")?.let { expObj ->
                 if (expObj.has("battery_saver")) io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.setBatterySaverEnabled(context, expObj.getBoolean("battery_saver"))
                 if (expObj.has("block_quic")) io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.setBlockQuicEnabled(context, expObj.getBoolean("block_quic"))
@@ -269,7 +225,6 @@ object BackupManager {
                     vlessCount = vlessCount,
                     subscriptionsCount = subsCount,
                     warpRestored = warpRestored,
-                    openFluxCount = openFluxCount,
                     splitTunnelAppsCount = splitPkgsCount,
                     preferencesCount = prefCount
                 )

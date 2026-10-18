@@ -271,7 +271,7 @@ class AdvancedSettingsActivity : BaseActivity() {
     private fun confirmAndRestoreBackup(jsonStr: String) {
         MaterialAlertDialogBuilder(this)
             .setTitle("Восстановление настроек")
-            .setMessage("Восстановить конфигурацию из резервной копии? Ваши текущие серверы VLESS, профиль WARP, OpenFLUX и правила туннелирования будут обновлены.")
+            .setMessage("Восстановить конфигурацию из резервной копии? Ваши текущие серверы VLESS, профиль WARP и правила туннелирования будут обновлены.")
             .setPositiveButton("Восстановить") { _, _ ->
                 val result = BackupManager.restoreBackupJson(this, jsonStr)
                 result.onSuccess { summary ->
@@ -286,7 +286,6 @@ class AdvancedSettingsActivity : BaseActivity() {
                             "• Серверов VLESS: ${summary.vlessCount}\n" +
                             "• Подписок: ${summary.subscriptionsCount}\n" +
                             "• Конфигурация WARP: ${if (summary.warpRestored) "Обновлена" else "Без изменений"}\n" +
-                            "• Профилей OpenFLUX: ${summary.openFluxCount}\n" +
                             "• Приложений в Split Tunnel: ${summary.splitTunnelAppsCount}\n" +
                             "• Параметров приложения: ${summary.preferencesCount}"
                         )

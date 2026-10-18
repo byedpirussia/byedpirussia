@@ -180,7 +180,6 @@ class DataSyncActivity : BaseActivity() {
                         "• VLESS серверов: ${summary.vlessCount}\n" +
                         "• Подписок: ${summary.subscriptionsCount}\n" +
                         "• WARP профиль: ${if (summary.warpRestored) "ДА" else "НЕТ"}\n" +
-                        "• OpenFLUX профилей: ${summary.openFluxCount}\n" +
                         "• Приложений Split Tunnel: ${summary.splitTunnelAppsCount}")
                 .setPositiveButton("Отлично", null)
                 .show()

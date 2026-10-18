@@ -33,7 +33,6 @@ object NotificationIslandHelper {
             ServiceSwitchController.MODE_BYEDPI -> "ByeDPI"
             ServiceSwitchController.MODE_WARP -> "WARP"
             ServiceSwitchController.MODE_VLESS -> "VLESS"
-            ServiceSwitchController.MODE_OPENFLUX -> "OpenFLUX"
             else -> "VPN"
         }
 
@@ -98,11 +97,6 @@ object NotificationIslandHelper {
                     ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_VLESS)
                 )
                 builder.addAction(
-                    R.drawable.ic_bolt_24,
-                    "🌊 OpenFLUX",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_OPENFLUX)
-                )
-                builder.addAction(
                     R.drawable.ic_power_24,
                     "⏹️ Стоп",
                     ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_STOP)
@@ -120,11 +114,6 @@ object NotificationIslandHelper {
                     ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_VLESS)
                 )
                 builder.addAction(
-                    R.drawable.ic_bolt_24,
-                    "🌊 OpenFLUX",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_OPENFLUX)
-                )
-                builder.addAction(
                     R.drawable.ic_power_24,
                     "⏹️ Стоп",
                     ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_STOP)
@@ -140,33 +129,6 @@ object NotificationIslandHelper {
                     R.drawable.ic_bolt_24,
                     "⚡ WARP",
                     ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_WARP)
-                )
-                builder.addAction(
-                    R.drawable.ic_bolt_24,
-                    "🌊 OpenFLUX",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_OPENFLUX)
-                )
-                builder.addAction(
-                    R.drawable.ic_power_24,
-                    "⏹️ Стоп",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_STOP)
-                )
-            }
-            ServiceSwitchController.MODE_OPENFLUX -> {
-                builder.addAction(
-                    R.drawable.ic_shield_check_24,
-                    "🛡️ ByeDPI",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_BYEDPI)
-                )
-                builder.addAction(
-                    R.drawable.ic_bolt_24,
-                    "⚡ WARP",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_WARP)
-                )
-                builder.addAction(
-                    R.drawable.ic_shield_check_24,
-                    "🌐 VLESS",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_VLESS)
                 )
                 builder.addAction(
                     R.drawable.ic_power_24,

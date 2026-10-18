@@ -7,8 +7,6 @@ import android.widget.Toast
 import io.github.dovecoteescapee.byedpi.activities.MainActivity
 import io.github.dovecoteescapee.byedpi.data.AppStatus
 import io.github.dovecoteescapee.byedpi.data.Mode
-import io.github.dovecoteescapee.byedpi.openflux.OpenFluxManager
-import io.github.dovecoteescapee.byedpi.openflux.OpenFluxVpnService
 import io.github.dovecoteescapee.byedpi.services.ServiceManager
 import io.github.dovecoteescapee.byedpi.services.appStatus
 import io.github.dovecoteescapee.byedpi.utility.getPreferences
@@ -21,7 +19,6 @@ object ServiceSwitchController {
     const val MODE_BYEDPI = "byedpi"
     const val MODE_WARP = "warp"
     const val MODE_VLESS = "vless"
-    const val MODE_OPENFLUX = "openflux"
     const val MODE_STOP = "stop"
 
     fun getActiveMode(): String {
@@ -29,7 +26,6 @@ object ServiceSwitchController {
         return when {
             WarpVpnService.isRunning.value -> MODE_WARP
             VlessVpnService.isRunning.value -> MODE_VLESS
-            OpenFluxVpnService.isRunning.value -> MODE_OPENFLUX
             byedpiStatus == AppStatus.Running -> MODE_BYEDPI
             else -> MODE_STOP
         }
@@ -41,10 +37,6 @@ object ServiceSwitchController {
             MODE_VLESS -> {
                 val cfg = VlessManager.getSelectedConfig(context)
                 cfg?.name ?: "VLESS"
-            }
-            MODE_OPENFLUX -> {
-                val cfg = OpenFluxManager.getSelectedConfig(context)
-                cfg?.name ?: "OpenFLUX"
             }
             MODE_BYEDPI -> "ByeDPI"
             else -> "Отключено"
@@ -117,30 +109,6 @@ object ServiceSwitchController {
                     }
                 }
             }
-
-            MODE_OPENFLUX -> {
-                stopOthers(appContext, except = MODE_OPENFLUX)
-                if (!OpenFluxVpnService.isRunning.value) {
-                    val cfg = OpenFluxManager.getSelectedConfig(appContext)
-                    if (cfg == null) {
-                        Toast.makeText(appContext, "Сначала настройте OpenFLUX", Toast.LENGTH_SHORT).show()
-                        openMainWithAction(appContext, "openflux")
-                        return
-                    }
-                    if (cfg.routingMode == "vpn") {
-                        val prepare = VpnService.prepare(appContext)
-                        if (prepare != null) {
-                            openMainWithAction(appContext, "openflux")
-                        } else {
-                            OpenFluxVpnService.start(appContext)
-                            Toast.makeText(appContext, "Подключение OpenFLUX: ${cfg.name}...", Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
-                        OpenFluxVpnService.start(appContext)
-                        Toast.makeText(appContext, "Запуск OpenFLUX SOCKS5: ${cfg.name}...", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
         }
     }
 
@@ -155,9 +123,6 @@ object ServiceSwitchController {
         if (except != MODE_VLESS && VlessVpnService.isRunning.value) {
             VlessVpnService.stop(context)
         }
-        if (except != MODE_OPENFLUX && OpenFluxVpnService.isRunning.value) {
-            OpenFluxVpnService.stop(context)
-        }
     }
 
     fun stopAll(context: Context) {
@@ -170,9 +135,6 @@ object ServiceSwitchController {
         }
         if (VlessVpnService.isRunning.value) {
             VlessVpnService.stop(context)
-        }
-        if (OpenFluxVpnService.isRunning.value) {
-            OpenFluxVpnService.stop(context)
         }
     }
 

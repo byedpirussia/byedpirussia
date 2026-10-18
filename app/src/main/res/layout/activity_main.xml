@@ -155,17 +155,168 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 2. Заголовок секции служб -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- СЕКЦИЯ 1: АВТОМАТИЧЕСКИЙ РЕЖИМ (Одна большая кнопка + выбор инструмента + Расширенные настройки) -->
+            <LinearLayout
+                android:id="@+id/container_auto_mode"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/m3_services_title"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorPrimary"
-                android:letterSpacing="0.04"
-                android:layout_marginStart="4dp"
-                android:layout_marginBottom="10dp" />
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <!-- Большая главная кнопка включения/выключения защиты -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/auto_btn_main_toggle"
+                    style="@style/Widget.Material3.CardView.Filled"
+                    android:layout_width="match_parent"
+                    android:layout_height="84dp"
+                    android:layout_marginBottom="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="28dp"
+                    app:cardBackgroundColor="?attr/colorPrimary"
+                    app:cardElevation="3dp"
+                    app:rippleColor="?attr/colorOnPrimary">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:paddingHorizontal="24dp">
+
+                        <ImageView
+                            android:id="@+id/auto_toggle_icon"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_shield_check_24"
+                            app:tint="?attr/colorOnPrimary"
+                            tools:ignore="ContentDescription" />
+
+                        <TextView
+                            android:id="@+id/auto_toggle_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Включить защиту"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:layout_marginStart="16dp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Карточка выбора инструмента обхода -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/auto_card_tool_selector"
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="14dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutlineVariant">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="18dp"
+                        android:paddingVertical="14dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_tune_24"
+                            app:tint="?attr/colorPrimary"
+                            tools:ignore="ContentDescription" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Инструмент обхода"
+                                android:textSize="12sp"
+                                android:textColor="?attr/colorOutline" />
+
+                            <TextView
+                                android:id="@+id/auto_tool_selected_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Cloudflare WARP (AWG)"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Сменить"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Кнопка "Расширенные настройки" (переход к полному интерфейсу) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/auto_btn_advanced_settings"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="@string/ui_mode_btn_advanced_settings"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="20dp"
+                    app:icon="@drawable/baseline_settings_24"
+                    app:iconGravity="textStart"
+                    app:iconSize="20dp"
+                    android:layout_marginBottom="24dp" />
+
+            </LinearLayout>
+
+            <!-- СЕКЦИЯ 2: РАСШИРЕННЫЙ РЕЖИМ (Полный список служб и детальных настроек) -->
+            <LinearLayout
+                android:id="@+id/container_advanced_services"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <!-- Кнопка возврата к простому режиму (Автоматика) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_switch_to_auto_mode"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡ Включить режим «Автоматика»"
+                    android:textSize="13sp"
+                    android:textColor="?attr/colorPrimary"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- 2. Заголовок секции служб -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/m3_services_title"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorPrimary"
+                    android:letterSpacing="0.04"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginBottom="10dp" />
 
             <!-- 3. M3 Служба 1: ByeDPI (DPI Desync) -->
             <com.google.android.material.card.MaterialCardView
@@ -517,94 +668,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 5b. M3 Служба: OpenFLUX (Обход Б/С) -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/m3_card_openflux"
-                style="@style/Widget.Material3.CardView.Elevated"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutlineVariant">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingHorizontal="18dp"
-                    android:paddingVertical="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:id="@+id/m3_icon_box_openflux"
-                            style="@style/Widget.Material3.CardView.Filled"
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            app:cardCornerRadius="14dp"
-                            app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                            app:cardElevation="0dp"
-                            android:layout_marginEnd="14dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="🌊"
-                                android:textSize="18sp" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="OpenFLUX (Б/С)"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
-
-                            <TextView
-                                android:id="@+id/m3_sub_openflux"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Туннель через белые списки"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOutline"
-                                android:layout_marginTop="1dp" />
-                        </LinearLayout>
-
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/m3_switch_openflux"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp" />
-                    </LinearLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/m3_btn_openflux_servers"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:minHeight="44dp"
-                        android:text="Профили и транспорты OpenFLUX"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        app:cornerRadius="14dp"
-                        android:layout_marginTop="10dp" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
             <!-- 6. M3 Служба 4: Telegram Proxy -->
             <com.google.android.material.card.MaterialCardView
@@ -980,6 +1043,9 @@
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+            <!-- Конец container_advanced_services -->
 
         </LinearLayout>
         <!-- Конец контейнера Material Design 3 -->
