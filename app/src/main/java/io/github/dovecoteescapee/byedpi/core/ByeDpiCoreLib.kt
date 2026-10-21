@@ -49,11 +49,12 @@ object ByeDpiCoreLib {
      */
     fun routeDomain(domain: String): QuantumRouteResult {
         if (!isLoaded) {
+            val isExcluded = io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.isExcludedRussianDomain(domain)
             return QuantumRouteResult(
                 target = domain,
-                engine = if (domain.endsWith(".ru") || domain.endsWith(".рф")) "direct" else "byedpi",
+                engine = if (isExcluded) "direct" else "byedpi",
                 latencyMs = 20,
-                reason = "Fallback evaluator (Rust core not loaded)"
+                reason = if (isExcluded) "Excluded Russian Portal" else "Fallback evaluator (Rust core not loaded)"
             )
         }
 

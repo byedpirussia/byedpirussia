@@ -238,6 +238,16 @@ object StrategyCatalog {
 
     fun getDefaultStrategy(): Strategy = strategies[0]
 
-    fun getStrategyById(id: String): Strategy =
-        strategies.find { it.id == id } ?: getDefaultStrategy()
+    fun getStrategyById(id: String, customArgs: String? = null, customName: String? = null): Strategy {
+        if (id == "custom") {
+            return Strategy(
+                id = "custom",
+                name = customName ?: "Пользовательская стратегия",
+                description = "Собственные аргументы запуска ByeDPI",
+                args = customArgs ?: "-s1 -d2+s",
+                recommendedFor = "Индивидуальная настройка"
+            )
+        }
+        return strategies.find { it.id == id } ?: getDefaultStrategy()
+    }
 }

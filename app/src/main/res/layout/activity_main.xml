@@ -256,6 +256,16 @@
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:id="@+id/auto_tool_ping"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Пинг: --"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorPrimary"
+                                android:visibility="gone" />
                         </LinearLayout>
 
                         <TextView

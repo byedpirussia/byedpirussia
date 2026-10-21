@@ -36,10 +36,12 @@ class ByeDpiVpnService : LifecycleVpnService() {
         private const val NOTIFICATION_CHANNEL_ID: String = "ByeDPIVpn"
 
         private var status: ServiceStatus = ServiceStatus.Disconnected
+        private var isPaused: Boolean = false
     }
 
     override fun onCreate() {
         super.onCreate()
+        isPaused = false
         registerNotificationChannel(
             this,
             NOTIFICATION_CHANNEL_ID,
@@ -57,14 +59,26 @@ class ByeDpiVpnService : LifecycleVpnService() {
         }
         return when (action) {
             START_ACTION -> {
+                isPaused = false
                 startForeground()
                 lifecycleScope.launch { start() }
                 START_STICKY
             }
 
             STOP_ACTION -> {
+                isPaused = false
                 lifecycleScope.launch { stop() }
                 START_NOT_STICKY
+            }
+
+            PAUSE_ACTION -> {
+                pauseVpn()
+                START_STICKY
+            }
+
+            RESUME_ACTION -> {
+                resumeVpn()
+                START_STICKY
             }
 
             else -> {
@@ -72,6 +86,41 @@ class ByeDpiVpnService : LifecycleVpnService() {
                 START_NOT_STICKY
             }
         }
+    }
+
+    private fun pauseVpn() {
+        if (status != ServiceStatus.Connected || isPaused) return
+        isPaused = true
+        lifecycleScope.launch {
+            mutex.withLock {
+                try {
+                    stopTun2Socks()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error pausing tun2socks", e)
+                }
+            }
+            updateNotification()
+        }
+    }
+
+    private fun resumeVpn() {
+        if (status != ServiceStatus.Connected || !isPaused) return
+        isPaused = false
+        lifecycleScope.launch {
+            mutex.withLock {
+                try {
+                    startTun2Socks()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error resuming tun2socks", e)
+                }
+            }
+            updateNotification()
+        }
+    }
+
+    private fun updateNotification() {
+        val manager = getSystemService(android.app.NotificationManager::class.java)
+        manager?.notify(FOREGROUND_SERVICE_ID, createNotification())
     }
 
     override fun onRevoke() {
@@ -286,6 +335,7 @@ class ByeDpiVpnService : LifecycleVpnService() {
             R.string.notification_title,
             R.string.vpn_notification_content,
             ByeDpiVpnService::class.java,
+            isPaused = isPaused,
         )
 
     private fun createBuilder(dns: String, ipv6: Boolean): Builder {

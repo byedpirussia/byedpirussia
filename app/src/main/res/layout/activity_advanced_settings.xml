@@ -194,12 +194,30 @@
                         android:layout_height="wrap_content"
                         android:minHeight="48dp"
                         android:paddingVertical="10dp"
+                        android:layout_marginBottom="10dp"
                         android:text="@string/btn_select_strategy"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textAllCaps="false"
                         app:cornerRadius="14dp"
                         app:icon="@drawable/ic_tune_24"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp" />
+
+                    <!-- Кнопка ввода своей стратегии (Outlined) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_custom_strategy"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:paddingVertical="10dp"
+                        android:text="@string/btn_custom_strategy"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_edit_24"
                         app:iconGravity="textStart"
                         app:iconPadding="8dp" />
 

@@ -1354,6 +1354,18 @@ class MainActivity : BaseActivity() {
             "vless" -> getString(R.string.tool_vless)
             else -> getString(R.string.tool_warp)
         }
+
+        if (toolKey == "warp" && WarpVpnService.isRunning.value) {
+            val ping = WarpVpnService.warpPingMs.value ?: -1L
+            if (ping > 0) {
+                binding.autoToolPing.text = "Пинг: ${ping}ms"
+                binding.autoToolPing.visibility = View.VISIBLE
+            } else {
+                binding.autoToolPing.visibility = View.GONE
+            }
+        } else {
+            binding.autoToolPing.visibility = View.GONE
+        }
     }
 
     private fun toggleAutoProtection() {

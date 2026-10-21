@@ -38,6 +38,8 @@ class VlessVpnService : VpnService() {
 
         const val ACTION_START = "io.github.dovecoteescapee.byedpi.vless.START"
         const val ACTION_STOP = "io.github.dovecoteescapee.byedpi.vless.STOP"
+        const val ACTION_PAUSE = "io.github.dovecoteescapee.byedpi.vless.PAUSE"
+        const val ACTION_RESUME = "io.github.dovecoteescapee.byedpi.vless.RESUME"
 
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning
@@ -64,8 +66,11 @@ class VlessVpnService : VpnService() {
         }
     }
 
+    private var isPaused: Boolean = false
+
     override fun onCreate() {
         super.onCreate()
+        isPaused = false
         createNotificationChannel()
 
         // Init Xray core environment (assets directory for geoip/geosite)
@@ -86,16 +91,56 @@ class VlessVpnService : VpnService() {
         }
         when (intent?.action) {
             ACTION_START -> {
+                isPaused = false
                 startForegroundNotification("Подключение...")
                 startVless()
                 return START_STICKY
             }
             ACTION_STOP -> {
+                isPaused = false
                 stopVless()
                 return START_NOT_STICKY
             }
+            ACTION_PAUSE -> {
+                pauseVless()
+                return START_STICKY
+            }
+            ACTION_RESUME -> {
+                resumeVless()
+                return START_STICKY
+            }
         }
         return START_NOT_STICKY
+    }
+
+    private fun pauseVless() {
+        if (!_isRunning.value || isPaused) return
+        isPaused = true
+        _connectionStatus.value = "Приостановлен"
+        try {
+            TProxyService.TProxyStopService()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping TProxyService for pause", e)
+        }
+        updateNotification("⏸️ VLESS (Приостановлен)")
+    }
+
+    private fun resumeVless() {
+        if (!_isRunning.value || !isPaused) return
+        isPaused = false
+        val pfd = tunFd
+        if (pfd != null) {
+            try {
+                val configFile = File(cacheDir, "vless_tun2socks.tmp")
+                TProxyService.TProxyStartService(configFile.absolutePath, pfd.fd)
+                _connectionStatus.value = "Подключен"
+                val activeConfig = VlessManager.getSelectedConfig(this)
+                val name = activeConfig?.name ?: "VLESS"
+                updateNotification("🟢 VLESS подключен: $name")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error resuming TProxyService", e)
+            }
+        }
     }
 
     private fun startVless() {
@@ -172,13 +217,6 @@ class VlessVpnService : VpnService() {
 
                 // Split tunneling
                 SplitTunnelManager.applySplitTunnel(builder, this@VlessVpnService)
-
-                // Exclude this app so Xray traffic out to the remote server is direct
-                try {
-                    builder.addDisallowedApplication(packageName)
-                } catch (e: Exception) {
-                    Log.w(TAG, "Cannot exclude own package", e)
-                }
 
                 try {
                     builder.allowBypass()
@@ -315,16 +353,50 @@ class VlessVpnService : VpnService() {
 
         val stopIntent = PendingIntent.getService(
             this,
-            0,
+            301,
             Intent(this, VlessVpnService::class.java).apply { action = ACTION_STOP },
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        val pauseAction = if (isPaused) {
+            val resumeIntent = PendingIntent.getService(
+                this,
+                302,
+                Intent(this, VlessVpnService::class.java).apply { action = ACTION_RESUME },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            NotificationCompat.Action.Builder(
+                R.drawable.ic_play_arrow_24,
+                getString(R.string.action_resume),
+                resumeIntent
+            ).build()
+        } else {
+            val pauseIntent = PendingIntent.getService(
+                this,
+                302,
+                Intent(this, VlessVpnService::class.java).apply { action = ACTION_PAUSE },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            NotificationCompat.Action.Builder(
+                R.drawable.ic_pause_24,
+                getString(R.string.action_pause),
+                pauseIntent
+            ).build()
+        }
+
+        val stopAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_stop_24,
+            getString(R.string.action_stop),
+            stopIntent
+        ).build()
 
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("VLESS / Reality")
             .setContentText(content)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
+            .addAction(pauseAction)
+            .addAction(stopAction)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)

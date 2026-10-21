@@ -55,7 +55,9 @@ object SplitTunnelManager {
         "com.beeline.",
         "com.tele2.",
         "com.rostelecom.",
-        "com.domru."
+        "com.domru.",
+        "com.tbank.",
+        "com.t-bank."
     )
 
     private fun getPrefs(context: Context): SharedPreferences {
@@ -89,6 +91,52 @@ object SplitTunnelManager {
     fun isRussianApp(packageName: String): Boolean {
         val lower = packageName.lowercase()
         return RUSSIAN_APP_PREFIXES.any { lower.startsWith(it) }
+    }
+
+    // Популярные российские сервисы, банки, государственные порталы и маркетплейсы
+    // (Не все .ru сайты, а именно ключевые российские порталы и сервисы)
+    val EXCLUDED_RUSSIAN_DOMAINS = listOf(
+        "gosuslugi.ru",
+        "sberbank.ru",
+        "sber.ru",
+        "tinkoff.ru",
+        "tbank.ru",
+        "vtb.ru",
+        "alfabank.ru",
+        "raiffeisen.ru",
+        "gazprombank.ru",
+        "rshb.ru",
+        "open.ru",
+        "psbank.ru",
+        "sovcombank.ru",
+        "ozon.ru",
+        "wildberries.ru",
+        "avito.ru",
+        "yandex.ru",
+        "ya.ru",
+        "mail.ru",
+        "vk.com",
+        "dzen.ru",
+        "kinopoisk.ru",
+        "rutube.ru",
+        "mos.ru",
+        "nalog.gov.ru",
+        "pfr.gov.ru",
+        "cbr.ru",
+        "hh.ru",
+        "pochta.ru",
+        "megafon.ru",
+        "mts.ru",
+        "beeline.ru",
+        "t2.ru",
+        "tele2.ru",
+        "rt.ru",
+        "domru.ru"
+    )
+
+    fun isExcludedRussianDomain(domain: String): Boolean {
+        val lower = domain.lowercase().trim()
+        return EXCLUDED_RUSSIAN_DOMAINS.any { lower == it || lower.endsWith(".$it") }
     }
 
     /**
@@ -146,6 +194,7 @@ object SplitTunnelManager {
         when (mode) {
             MODE_WHITELIST -> {
                 if (selectedPackages.isNotEmpty()) {
+                    var addedAny = false
                     for (pkg in selectedPackages) {
                         if (pkg != ownPackage) {
                             // Если включено авто-исключение росс. приложений, не добавляем их в whitelist
@@ -154,8 +203,15 @@ object SplitTunnelManager {
                             }
                             try {
                                 builder.addAllowedApplication(pkg)
-                            } catch (_: Exception) {}
+                                addedAny = true
+                            } catch (e: Exception) {
+                                Log.w(TAG, "Failed to addAllowedApplication: $pkg", e)
+                            }
                         }
+                    }
+                    // Если ни одно приложение не смогло добавиться в whitelist, не оставляем VPN пустым
+                    if (!addedAny) {
+                        Log.w(TAG, "Whitelist was empty after filtering. Disallowing own package only.")
                     }
                 }
             }
@@ -170,7 +226,9 @@ object SplitTunnelManager {
                     if (pkg != ownPackage) {
                         try {
                             builder.addDisallowedApplication(pkg)
-                        } catch (_: Exception) {}
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to addDisallowedApplication: $pkg", e)
+                        }
                     }
                 }
             }
@@ -181,7 +239,9 @@ object SplitTunnelManager {
                         if (pkg != ownPackage) {
                             try {
                                 builder.addDisallowedApplication(pkg)
-                            } catch (_: Exception) {}
+                            } catch (e: Exception) {
+                                Log.w(TAG, "Failed to addDisallowedApplication: $pkg", e)
+                            }
                         }
                     }
                 }

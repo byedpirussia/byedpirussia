@@ -48,6 +48,8 @@ class WarpVpnService : VpnService() {
 
         const val ACTION_START = "io.github.dovecoteescapee.byedpi.warp.START"
         const val ACTION_STOP = "io.github.dovecoteescapee.byedpi.warp.STOP"
+        const val ACTION_PAUSE = "io.github.dovecoteescapee.byedpi.warp.PAUSE"
+        const val ACTION_RESUME = "io.github.dovecoteescapee.byedpi.warp.RESUME"
 
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning
@@ -111,28 +113,15 @@ class WarpVpnService : VpnService() {
         suspend fun pingTunnel(timeoutMs: Int = 3000): Long = withContext(Dispatchers.IO) {
             val start = System.currentTimeMillis()
 
-            // 1. Direct TCP handshake to port 443 (DoH servers)
-            val fastTargets = listOf(
-                InetSocketAddress("1.1.1.1", 443),
-                InetSocketAddress("1.0.0.1", 443),
-                InetSocketAddress("8.8.8.8", 443)
+            // Настоящая проверка сквозного интернет-доступа через реальные защищенные запросы
+            val realUrls = listOf(
+                "https://www.cloudflare.com/cdn-cgi/trace",
+                "https://cp.cloudflare.com/generate_204",
+                "https://connectivitycheck.gstatic.com/generate_204",
+                "https://1.1.1.1/cdn-cgi/trace"
             )
-            for (target in fastTargets) {
-                try {
-                    Socket().use { socket ->
-                        socket.connect(target, timeoutMs)
-                        val duration = System.currentTimeMillis() - start
-                        if (duration >= 0) return@withContext duration
-                    }
-                } catch (_: Exception) {}
-            }
 
-            // 2. HTTP generate_204 check
-            val httpUrls = listOf(
-                "http://cp.cloudflare.com/generate_204",
-                "http://connectivitycheck.gstatic.com/generate_204"
-            )
-            for (urlStr in httpUrls) {
+            for (urlStr in realUrls) {
                 try {
                     val urlStart = System.currentTimeMillis()
                     val url = java.net.URL(urlStr)
@@ -142,12 +131,18 @@ class WarpVpnService : VpnService() {
                         instanceFollowRedirects = false
                         requestMethod = "GET"
                         useCaches = false
+                        setRequestProperty("User-Agent", "Mozilla/5.0")
                     }
                     val code = conn.responseCode
-                    conn.disconnect()
                     if (code in 200..399) {
-                        return@withContext (System.currentTimeMillis() - urlStart)
+                        try {
+                            conn.inputStream.use { it.read() }
+                        } catch (_: Exception) {}
+                        conn.disconnect()
+                        val duration = System.currentTimeMillis() - urlStart
+                        return@withContext duration
                     }
+                    conn.disconnect()
                 } catch (_: Exception) {}
             }
 
@@ -162,8 +157,11 @@ class WarpVpnService : VpnService() {
         }
     }
 
+    private var isPaused: Boolean = false
+
     override fun onCreate() {
         super.onCreate()
+        isPaused = false
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         createNotificationChannel()
     }
@@ -176,6 +174,7 @@ class WarpVpnService : VpnService() {
         }
         when (intent?.action) {
             ACTION_START -> {
+                isPaused = false
                 isUserExplicitStop = false
                 startForegroundNotification("Подключение к Cloudflare WARP...")
                 startTunnel()
@@ -183,10 +182,19 @@ class WarpVpnService : VpnService() {
                 return START_STICKY
             }
             ACTION_STOP -> {
+                isPaused = false
                 isUserExplicitStop = true
                 unregisterNetworkCallback()
                 stopTunnel()
                 return START_NOT_STICKY
+            }
+            ACTION_PAUSE -> {
+                pauseTunnel()
+                return START_STICKY
+            }
+            ACTION_RESUME -> {
+                resumeTunnel()
+                return START_STICKY
             }
             else -> {
                 Log.w(TAG, "Unknown action: ${intent?.action}")
@@ -610,13 +618,6 @@ class WarpVpnService : VpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             builder.setMetered(false)
         }
-        try {
-            builder.allowBypass()
-        } catch (_: Exception) {}
-
-        try {
-            builder.addDisallowedApplication(packageName)
-        } catch (_: Exception) {}
 
         io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this@WarpVpnService)
 
@@ -722,6 +723,35 @@ class WarpVpnService : VpnService() {
         }
     }
 
+    private fun pauseTunnel() {
+        if (!_isRunning.value || isPaused) return
+        isPaused = true
+        _connectionStatus.value = "Приостановлен"
+        serviceScope.launch {
+            try {
+                if (tunnelHandle != -1) {
+                    GoBackend.awgTurnOff(tunnelHandle)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error pausing WARP", e)
+            }
+            startForegroundNotification("WARP (Приостановлен)")
+        }
+    }
+
+    private fun resumeTunnel() {
+        if (!_isRunning.value || !isPaused) return
+        isPaused = false
+        _connectionStatus.value = "Возобновление..."
+        serviceScope.launch {
+            try {
+                startTunnel()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error resuming WARP", e)
+            }
+        }
+    }
+
     private fun startForegroundNotification(text: String) {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -731,11 +761,61 @@ class WarpVpnService : VpnService() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
+        val stopIntent = Intent(this, WarpVpnService::class.java).apply {
+            action = ACTION_STOP
+        }
+        val stopPendingIntent = PendingIntent.getService(
+            this,
+            201,
+            stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val pauseAction = if (isPaused) {
+            val resumeIntent = Intent(this, WarpVpnService::class.java).apply {
+                action = ACTION_RESUME
+            }
+            val resumePendingIntent = PendingIntent.getService(
+                this,
+                202,
+                resumeIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            NotificationCompat.Action.Builder(
+                R.drawable.ic_play_arrow_24,
+                getString(R.string.action_resume),
+                resumePendingIntent
+            ).build()
+        } else {
+            val pauseIntent = Intent(this, WarpVpnService::class.java).apply {
+                action = ACTION_PAUSE
+            }
+            val pausePendingIntent = PendingIntent.getService(
+                this,
+                202,
+                pauseIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            NotificationCompat.Action.Builder(
+                R.drawable.ic_pause_24,
+                getString(R.string.action_pause),
+                pausePendingIntent
+            ).build()
+        }
+
+        val stopAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_stop_24,
+            getString(R.string.action_stop),
+            stopPendingIntent
+        ).build()
+
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Cloudflare WARP (AmneziaWG)")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
+            .addAction(pauseAction)
+            .addAction(stopAction)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)

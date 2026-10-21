@@ -296,5 +296,18 @@
     <string name="tool_byedpi">ByeDPI (Десинхронизация)</string>
     <string name="tool_warp">Cloudflare WARP (AWG)</string>
     <string name="tool_vless">VLESS</string>
+
+    <!-- Notification Actions -->
+    <string name="action_stop">Стоп</string>
+    <string name="action_pause">Пауза</string>
+    <string name="action_resume">Возобновить</string>
+    <string name="notification_paused">Приостановлено</string>
+
+    <!-- Custom Strategy -->
+    <string name="btn_custom_strategy">Вставить свою стратегию</string>
+    <string name="dialog_custom_strategy_title">Своя стратегия ByeDPI</string>
+    <string name="dialog_custom_strategy_hint">Введите аргументы (например, -s1 -d2+s -r1+s)</string>
+    <string name="dialog_custom_strategy_name_hint">Название (например, Мой конфиг)</string>
+    <string name="dialog_custom_strategy_apply">Применить</string>
 </resources>
 

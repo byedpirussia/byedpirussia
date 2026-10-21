@@ -511,6 +511,18 @@ data class VlessConfig(
                 })
             }
 
+            // Excluded Russian sites direct routing (Банки, Госуслуги, маркетплейсы)
+            val excludeRussianDomains = JSONArray().apply {
+                io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.EXCLUDED_RUSSIAN_DOMAINS.forEach {
+                    put("domain:$it")
+                }
+            }
+            rules.put(JSONObject().apply {
+                put("type", "field")
+                put("outboundTag", "direct")
+                put("domain", excludeRussianDomains)
+            })
+
             // Default route to proxy
             rules.put(JSONObject().apply {
                 put("type", "field")

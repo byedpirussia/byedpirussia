@@ -121,6 +121,10 @@ class AdvancedSettingsActivity : BaseActivity() {
             showStrategySelectionDialog()
         }
 
+        binding.btnCustomStrategy.setOnClickListener {
+            showCustomStrategyDialog()
+        }
+
         binding.btnAutoTune.setOnClickListener {
             runAutoTune()
         }
@@ -321,13 +325,78 @@ class AdvancedSettingsActivity : BaseActivity() {
     private fun updateStrategyView() {
         val sp = getPreferences()
         val currentId = sp.getString("selected_strategy_id", null) ?: StrategyCatalog.strategies[0].id
-        val currentStrategy = StrategyCatalog.getStrategyById(currentId)
+        val customArgs = sp.getString("byedpi_cmd_args", null)
+        val customName = sp.getString("custom_strategy_name", null)
+        val currentStrategy = StrategyCatalog.getStrategyById(currentId, customArgs, customName)
 
         binding.strategyTitle.text = currentStrategy.name
         binding.strategyTarget.text = "🎯 Для: ${currentStrategy.recommendedFor}"
         binding.strategyDescription.text = currentStrategy.description
         binding.strategyArgs.text = currentStrategy.args
         binding.btnSelectStrategy.text = "Выбрать из ${StrategyCatalog.strategies.size} стратегий вручную"
+    }
+
+    private fun showCustomStrategyDialog() {
+        val sp = getPreferences()
+        val currentArgs = sp.getString("byedpi_cmd_args", "-s1 -d2+s") ?: "-s1 -d2+s"
+        val currentName = sp.getString("custom_strategy_name", "Моя стратегия") ?: "Моя стратегия"
+
+        val layout = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            val padding = (20 * resources.displayMetrics.density).toInt()
+            setPadding(padding, padding / 2, padding, padding / 2)
+        }
+
+        val nameInput = com.google.android.material.textfield.TextInputEditText(this).apply {
+            hint = getString(R.string.dialog_custom_strategy_name_hint)
+            setText(currentName)
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = (12 * resources.displayMetrics.density).toInt()
+            }
+        }
+
+        val argsInput = com.google.android.material.textfield.TextInputEditText(this).apply {
+            hint = getString(R.string.dialog_custom_strategy_hint)
+            setText(currentArgs)
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        layout.addView(nameInput)
+        layout.addView(argsInput)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_custom_strategy_title)
+            .setView(layout)
+            .setPositiveButton(R.string.dialog_custom_strategy_apply) { _, _ ->
+                val newArgs = argsInput.text?.toString()?.trim() ?: ""
+                val newName = nameInput.text?.toString()?.trim().let { if (!it.isNullOrBlank()) it else "Моя стратегия" }
+                if (newArgs.isNotBlank()) {
+                    sp.edit()
+                        .putBoolean("byedpi_enable_cmd_settings", true)
+                        .putString("byedpi_cmd_args", newArgs)
+                        .putString("selected_strategy_id", "custom")
+                        .putString("custom_strategy_name", newName)
+                        .apply()
+                    val customStrategy = Strategy(
+                        id = "custom",
+                        name = newName,
+                        description = "Пользовательская стратегия",
+                        args = newArgs,
+                        recommendedFor = "Свои параметры"
+                    )
+                    applyAndSwitchStrategy(customStrategy)
+                } else {
+                    Toast.makeText(this, "Аргументы не могут быть пустыми", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun applyAndSwitchStrategy(strategy: Strategy) {

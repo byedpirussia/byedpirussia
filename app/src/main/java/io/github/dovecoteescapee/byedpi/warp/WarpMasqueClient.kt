@@ -281,6 +281,18 @@ object WarpMasqueClient {
                 })
             })
 
+            // Исключенные российские сайты (Банки, Госуслуги, операторы) напрямую
+            val excludeRussianDomains = JSONArray().apply {
+                io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.EXCLUDED_RUSSIAN_DOMAINS.forEach {
+                    put("domain:$it")
+                }
+            }
+            rules.put(JSONObject().apply {
+                put("type", "field")
+                put("outboundTag", "direct")
+                put("domain", excludeRussianDomains)
+            })
+
             // Весь остальной трафик идет через MASQUE
             rules.put(JSONObject().apply {
                 put("type", "field")
