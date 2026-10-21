@@ -61,18 +61,7 @@ PersistentKeepalive = 25"""
             _currentConfig.value = DEFAULT_CONFIG
             prefs.edit { putString(KEY_CONFIG, DEFAULT_CONFIG) }
         } else {
-            // Авто-миграция с заблокированных и замедленных РКН эндпоинтов (2408, 854, 8854, 188.114.x)
-            if (saved.contains(":2408") || saved.contains("188.114.98.8") || saved.contains(":854") || saved.contains(":8854") || saved.contains("engage.cloudflareclient.com:500")) {
-                val upgraded = WarpEndpointOptimizer.optimizeConfigString(
-                    saved,
-                    WarpEndpointOptimizer.BEST_DEFAULT_ENDPOINT
-                )
-                _currentConfig.value = upgraded
-                prefs.edit { putString(KEY_CONFIG, upgraded) }
-                Log.i(TAG, "Автоматически обновлен сервер WARP на надежный IP Anycast")
-            } else {
-                _currentConfig.value = saved
-            }
+            _currentConfig.value = saved
         }
 
         // По умолчанию стабильный AmneziaWG 3.1 (GoBackend) с обходом ТСПУ

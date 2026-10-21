@@ -52,9 +52,13 @@ object WarpGenerator {
         val peerPub: String,
         val clientIpv4: String,
         val clientIpv6: String,
-        val endpoint: String
+        val endpoint: String,
+        val rawAwgConfig: String = ""
     ) {
         fun toAmneziaWgConfig(version: String = "3.1"): String {
+            if (rawAwgConfig.isNotBlank()) {
+                return rawAwgConfig.trim()
+            }
             val (h1, h2, h3, h4) = listOf(1, 2, 3, 4)
             val jc = if (version == "3.1") 8 else 7
             return """[Interface]
@@ -131,14 +135,14 @@ Endpoint = $endpoint
     }
 
     suspend fun generateConfig(): Result<WarpProfile> = withContext(Dispatchers.IO) {
-        // 1. Попытка получить свежий зарегистрированный конфиг Cloudflare
+        // 1. Приоритетный API генерации WARP (https://warp-gen.cyb-portal.org/api/warp)
         try {
             val url = URL(WARP_API_ENDPOINT)
             val conn = (url.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
                 connectTimeout = 8000
                 readTimeout = 10000
-                setRequestProperty("User-Agent", "WARP-Generator/2.0")
+                setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile)")
             }
             if (conn.responseCode in 200..299) {
                 val body = conn.inputStream.bufferedReader().use(BufferedReader::readText)
@@ -149,24 +153,27 @@ Endpoint = $endpoint
                     val privKey = Regex("""(?m)^\s*PrivateKey\s*=\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim().orEmpty()
                     val peerPub = Regex("""(?m)^\s*PublicKey\s*=\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
                     val addrMatch = Regex("""(?m)^\s*Address\s*=\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim().orEmpty()
+                    val epMatch = Regex("""(?m)^\s*Endpoint\s*=\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "162.159.192.1:500"
                     val addrs = addrMatch.split(",").map { it.trim() }
                     val ipv4 = addrs.firstOrNull { !it.contains(":") } ?: "172.16.0.2"
                     val ipv6 = addrs.firstOrNull { it.contains(":") } ?: "2606:4700:110:8700:31d8:595c:36c3:8014"
 
                     if (privKey.isNotBlank()) {
+                        Log.i(TAG, "Successfully generated fresh WARP config via primary warp-gen API")
                         val profile = WarpProfile(
                             privKey = privKey,
                             peerPub = peerPub,
                             clientIpv4 = ipv4,
                             clientIpv6 = ipv6,
-                            endpoint = "162.159.192.1:500"
+                            endpoint = epMatch,
+                            rawAwgConfig = importText
                         )
                         return@withContext Result.success(profile)
                     }
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Primary WARP generation notice: ${e.message}")
+            Log.w(TAG, "Primary warp-gen API notice: ${e.message}")
         }
 
         for (endpointUrl in ENDPOINTS) {
