@@ -108,20 +108,33 @@ class WarpVpnService : VpnService() {
         }
 
         /**
-         * Pings through the active VPN tunnel. Uses HTTPS port 443 and HTTP 204 connectivity endpoints.
+         * Pings through the active VPN tunnel. Uses lightweight TCP/HTTP checks.
          */
-        suspend fun pingTunnel(timeoutMs: Int = 3000): Long = withContext(Dispatchers.IO) {
+        suspend fun pingTunnel(timeoutMs: Int = 2000): Long = withContext(Dispatchers.IO) {
             val start = System.currentTimeMillis()
 
-            // Настоящая проверка сквозного интернет-доступа через реальные защищенные запросы
-            val realUrls = listOf(
-                "https://www.cloudflare.com/cdn-cgi/trace",
-                "https://cp.cloudflare.com/generate_204",
-                "https://connectivitycheck.gstatic.com/generate_204",
-                "https://1.1.1.1/cdn-cgi/trace"
+            // 1. Direct TCP handshake to port 443 / 80 (fastest, no blocking DNS or SNI overhead)
+            val fastTargets = listOf(
+                InetSocketAddress("1.1.1.1", 443),
+                InetSocketAddress("1.0.0.1", 443),
+                InetSocketAddress("8.8.8.8", 443)
             )
+            for (target in fastTargets) {
+                try {
+                    Socket().use { socket ->
+                        socket.connect(target, timeoutMs)
+                        val duration = System.currentTimeMillis() - start
+                        if (duration in 1..timeoutMs) return@withContext duration
+                    }
+                } catch (_: Exception) {}
+            }
 
-            for (urlStr in realUrls) {
+            // 2. HTTP generate_204 check as fallback
+            val httpUrls = listOf(
+                "http://cp.cloudflare.com/generate_204",
+                "http://connectivitycheck.gstatic.com/generate_204"
+            )
+            for (urlStr in httpUrls) {
                 try {
                     val urlStart = System.currentTimeMillis()
                     val url = java.net.URL(urlStr)
@@ -131,18 +144,12 @@ class WarpVpnService : VpnService() {
                         instanceFollowRedirects = false
                         requestMethod = "GET"
                         useCaches = false
-                        setRequestProperty("User-Agent", "Mozilla/5.0")
                     }
                     val code = conn.responseCode
-                    if (code in 200..399) {
-                        try {
-                            conn.inputStream.use { it.read() }
-                        } catch (_: Exception) {}
-                        conn.disconnect()
-                        val duration = System.currentTimeMillis() - urlStart
-                        return@withContext duration
-                    }
                     conn.disconnect()
+                    if (code in 200..399) {
+                        return@withContext (System.currentTimeMillis() - urlStart)
+                    }
                 } catch (_: Exception) {}
             }
 
