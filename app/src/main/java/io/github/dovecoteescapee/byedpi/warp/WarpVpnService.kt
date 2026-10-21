@@ -417,24 +417,68 @@ class WarpVpnService : VpnService() {
 
                 // Initial background ping check after start
                 delay(2000)
-                val initialPing = pingTunnel(3500)
+                var initialPing = pingTunnel(2500)
                 if (initialPing >= 0) {
                     _warpPingMs.value = initialPing
                     startForegroundNotification("WARP активен (${initialPing}ms)")
+                } else {
+                    // Если за 6 секунд пакеты не пошли (типичная блокировка порта ТСПУ), пробуем авто-ротацию на живой порт
+                    delay(4000)
+                    initialPing = pingTunnel(2500)
+                    if (initialPing < 0 && _isRunning.value && !isUserExplicitStop) {
+                        val currentEp = WarpConfigManager.extractEndpoint(WarpConfigManager.currentConfig.value)
+                        val nextEp = WarpEndpointOptimizer.getNextCandidateEndpoint(currentEp)
+                        Log.w(TAG, "WARP handshake did not establish with $currentEp. Auto-switching to $nextEp")
+                        WarpConfigManager.saveConfig(this@WarpVpnService, WarpEndpointOptimizer.optimizeConfigString(WarpConfigManager.currentConfig.value, nextEp))
+                        // Перезапуск с новым портом
+                        reconnectJob?.cancel()
+                        reconnectJob = serviceScope.launch {
+                            try {
+                                stopTunnelInternal()
+                                delay(300)
+                                startTunnelInternal()
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Auto-port switch reconnect error", e)
+                            }
+                        }
+                        return@launch
+                    }
                 }
 
+                var consecutiveFailures = 0
                 while (_isRunning.value && !isUserExplicitStop) {
                     delay(12000) // Regular check interval (12 seconds)
 
                     if (!_isRunning.value || isUserExplicitStop) break
 
-                    val ping = pingTunnel(3500)
+                    val ping = pingTunnel(2500)
                     if (ping >= 0) {
+                        consecutiveFailures = 0
                         _warpPingMs.value = ping
                         _connectionStatus.value = "Подключен (WARP активен)"
                         startForegroundNotification("WARP активен (${ping}ms)")
                     } else {
+                        consecutiveFailures++
                         _warpPingMs.value = -1L
+                        // Если 2 проверки подряд (24 секунды) нет ответа, авто-переключаем порт на живой
+                        if (consecutiveFailures >= 2 && _isRunning.value && !isUserExplicitStop) {
+                            val currentEp = WarpConfigManager.extractEndpoint(WarpConfigManager.currentConfig.value)
+                            val nextEp = WarpEndpointOptimizer.getNextCandidateEndpoint(currentEp)
+                            Log.w(TAG, "Connection lost on $currentEp. Auto-rotating WARP endpoint to $nextEp")
+                            WarpConfigManager.saveConfig(this@WarpVpnService, WarpEndpointOptimizer.optimizeConfigString(WarpConfigManager.currentConfig.value, nextEp))
+                            consecutiveFailures = 0
+                            reconnectJob?.cancel()
+                            reconnectJob = serviceScope.launch {
+                                try {
+                                    stopTunnelInternal()
+                                    delay(300)
+                                    startTunnelInternal()
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Auto-port switch reconnect error", e)
+                                }
+                            }
+                            break
+                        }
                     }
                 }
             } catch (_: CancellationException) {
@@ -498,12 +542,12 @@ class WarpVpnService : VpnService() {
         startForegroundNotification("Подключение к Cloudflare WARP...")
 
         // Resolve letter-based/domain endpoints before creating TUN (prevents DNS deadlock & Go panic)
-        var resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint) ?: "162.159.192.1:500"
-        // В РФ порты Wireguard 2408, 854, 8854 заблокированы ТСПУ. Порт 500 (IKEv2) и 4500 не блокируются.
+        var resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint) ?: WarpEndpointOptimizer.BEST_DEFAULT_ENDPOINT
+        // В РФ порты Wireguard 2408, 854, 8854 заблокированы ТСПУ.
         if (resolvedEndpoint.endsWith(":2408") || (!resolvedEndpoint.endsWith(":500") && !resolvedEndpoint.endsWith(":4500"))) {
             val ipPart = resolvedEndpoint.substringBefore(":")
             val effectiveIp = if (ipPart.isBlank() || ipPart.startsWith("8.") || ipPart.startsWith("188.")) "162.159.192.1" else ipPart
-            resolvedEndpoint = "$effectiveIp:500"
+            resolvedEndpoint = "$effectiveIp:4500"
         }
         var effectiveKeepalive = parsed.peerPersistentKeepalive ?: 25
         val isGameMode = isGamingModeEnabled()
@@ -688,6 +732,23 @@ class WarpVpnService : VpnService() {
         startWatchdog()
     }
 
+    private suspend fun stopTunnelInternal() {
+        watchdogJob?.cancel()
+        watchdogJob = null
+        try {
+            WarpMasqueClient.stop()
+            if (tunnelHandle >= 0) {
+                Log.i(TAG, "Turning off GoBackend handle: $tunnelHandle")
+                GoBackend.awgTurnOff(tunnelHandle)
+                tunnelHandle = -1
+            }
+            tunFd?.close()
+            tunFd = null
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping tunnel internal", e)
+        }
+    }
+
     private fun stopTunnel() {
         watchdogJob?.cancel()
         watchdogJob = null
@@ -696,14 +757,7 @@ class WarpVpnService : VpnService() {
 
         serviceScope.launch {
             try {
-                WarpMasqueClient.stop()
-                if (tunnelHandle >= 0) {
-                    Log.i(TAG, "Turning off GoBackend handle: $tunnelHandle")
-                    GoBackend.awgTurnOff(tunnelHandle)
-                    tunnelHandle = -1
-                }
-                tunFd?.close()
-                tunFd = null
+                stopTunnelInternal()
             } catch (e: Exception) {
                 Log.e(TAG, "Error stopping tunnel", e)
             } finally {

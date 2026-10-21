@@ -17,7 +17,7 @@ object WarpConfigManager {
     private const val KEY_WARP_MODE = "pref_warp_mode" // "masque" or "awg"
     private const val KEY_MASQUE_ENDPOINT = "pref_masque_endpoint"
 
-    // Оптимизированный рабочий конфиг с зарегистрированными ключами Cloudflare, AWG 3.1 обфускацией и незаблокированным портом 500
+    // Оптимизированный рабочий конфиг с зарегистрированными ключами Cloudflare, AWG 3.1 обфускацией и портом 4500
     const val DEFAULT_CONFIG = """[Interface]
 PrivateKey = KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8=
 Address = 172.16.0.2, 2606:4700:110:8655:e6ef:f746:2058:dac0
@@ -43,10 +43,10 @@ I5 = <r 9>
 [Peer]
 PublicKey = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
 AllowedIPs = 0.0.0.0/0, ::/0
-Endpoint = 162.159.192.1:500
+Endpoint = 162.159.192.1:4500
 PersistentKeepalive = 25"""
 
-    const val DEFAULT_MASQUE_ENDPOINT = "162.159.192.1:500"
+    const val DEFAULT_MASQUE_ENDPOINT = "162.159.192.1:4500"
 
     private val _currentConfig = MutableStateFlow(DEFAULT_CONFIG)
     val currentConfig: StateFlow<String> = _currentConfig

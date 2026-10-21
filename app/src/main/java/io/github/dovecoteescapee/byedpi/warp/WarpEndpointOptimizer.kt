@@ -22,24 +22,46 @@ object WarpEndpointOptimizer {
      * and do not experience throttling or 1000ms latency spikes.
      */
     val CANDIDATE_ENDPOINTS = listOf(
-        "162.159.192.1:500",
         "162.159.192.1:4500",
-        "162.159.193.1:500",
+        "162.159.192.1:500",
         "162.159.193.1:4500",
+        "162.159.193.1:500",
+        "162.159.195.1:4500",
         "162.159.195.1:500",
+        "188.114.97.1:4500",
         "188.114.97.1:500",
+        "188.114.99.1:4500",
         "188.114.99.1:500",
+        "188.114.96.1:4500",
         "188.114.96.1:500",
+        "162.159.204.1:4500",
+        "162.159.204.1:500",
+        "162.159.192.2:4500",
+        "162.159.192.2:500",
+        "162.159.193.2:4500",
+        "162.159.193.2:500",
         "162.159.192.1:2408",
         "162.159.193.1:2408",
         "188.114.97.1:8854",
-        "188.114.99.1:8854",
-        "162.159.204.1:500",
-        "162.159.192.2:500",
-        "162.159.193.2:500"
+        "188.114.99.1:8854"
     )
 
-    const val BEST_DEFAULT_ENDPOINT = "162.159.192.1:500"
+    const val BEST_DEFAULT_ENDPOINT = "162.159.192.1:4500"
+
+    /**
+     * Возвращает следующий альтернативный порт/эндпоинт при неудачном хендшейке
+     */
+    fun getNextCandidateEndpoint(currentEndpoint: String): String {
+        val clean = currentEndpoint.trim()
+        val index = CANDIDATE_ENDPOINTS.indexOfFirst { it.equals(clean, ignoreCase = true) }
+        return if (index >= 0 && index + 1 < CANDIDATE_ENDPOINTS.size) {
+            CANDIDATE_ENDPOINTS[index + 1]
+        } else {
+            // Если порт был 500 - пробуем 4500 того же IP, иначе 500
+            val host = clean.substringBefore(":")
+            if (clean.endsWith(":500")) "$host:4500" else "$host:500"
+        }
+    }
 
     /**
      * Probes an endpoint to measure latency.
