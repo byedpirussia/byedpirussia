@@ -619,6 +619,9 @@ class WarpVpnService : VpnService() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             builder.setMetered(false)
         }
+        try {
+            builder.allowBypass()
+        } catch (_: Exception) {}
 
         io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this@WarpVpnService)
 

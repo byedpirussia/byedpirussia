@@ -56,11 +56,14 @@ object WarpGenerator {
         val rawAwgConfig: String = ""
     ) {
         fun toAmneziaWgConfig(version: String = "3.1"): String {
+            // Если в rawAwgConfig есть готовый I1 и H1-H4, но endpoint engage.cloudflareclient.com,
+            // заменяем домен на проверенный рабочий IP
             if (rawAwgConfig.isNotBlank()) {
-                return rawAwgConfig.trim()
+                val cleanAwg = rawAwgConfig.trim()
+                return cleanAwg.replace("engage.cloudflareclient.com:500", "162.159.192.1:500")
             }
             val (h1, h2, h3, h4) = listOf(1, 2, 3, 4)
-            val jc = if (version == "3.1") 8 else 7
+            val jc = if (version == "3.1") 7 else 7
             return """[Interface]
 PrivateKey = $privKey
 Address = $clientIpv4, $clientIpv6
@@ -71,8 +74,8 @@ S2 = 0
 S3 = 0
 S4 = 0
 Jc = $jc
-Jmin = 40
-Jmax = 70
+Jmin = 47
+Jmax = 213
 H1 = $h1
 H2 = $h2
 H3 = $h3

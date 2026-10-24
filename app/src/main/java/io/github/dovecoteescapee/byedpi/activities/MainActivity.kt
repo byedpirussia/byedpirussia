@@ -1097,6 +1097,22 @@ class MainActivity : BaseActivity() {
         TvNavigationHelper.setupButtonFocus(binding.m3BtnTgOpen)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnTgChannel)
 
+        // Режимы интерфейса (Material 3 Toggle Switcher)
+        binding.m3ModeToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.btn_mode_auto -> {
+                        setUiModePreference("auto")
+                        updateUiModeViews()
+                    }
+                    R.id.btn_mode_advanced -> {
+                        setUiModePreference("advanced")
+                        updateUiModeViews()
+                    }
+                }
+            }
+        }
+
         // Автоматический режим: клики
         binding.autoBtnMainToggle.setOnClickListener {
             toggleAutoProtection()
@@ -1320,9 +1336,15 @@ class MainActivity : BaseActivity() {
         if (isAuto) {
             binding.containerAutoMode.visibility = View.VISIBLE
             binding.containerAdvancedServices.visibility = View.GONE
+            if (binding.m3ModeToggleGroup.checkedButtonId != R.id.btn_mode_auto) {
+                binding.m3ModeToggleGroup.check(R.id.btn_mode_auto)
+            }
         } else {
             binding.containerAutoMode.visibility = View.GONE
             binding.containerAdvancedServices.visibility = View.VISIBLE
+            if (binding.m3ModeToggleGroup.checkedButtonId != R.id.btn_mode_advanced) {
+                binding.m3ModeToggleGroup.check(R.id.btn_mode_advanced)
+            }
         }
         updateM3State()
     }

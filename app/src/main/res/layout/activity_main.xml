@@ -155,7 +155,44 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- СЕКЦИЯ 1: АВТОМАТИЧЕСКИЙ РЕЖИМ (Одна большая кнопка + выбор инструмента + Расширенные настройки) -->
+            <!-- Material 3 Segmented Mode Switcher (Автоматика / Больше настроек) -->
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/m3_mode_toggle_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_mode_auto"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:text="⚡ Автоматика"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:icon="@drawable/ic_bolt_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_mode_advanced"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:text="🛠️ Больше настроек"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:icon="@drawable/ic_tune_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <!-- СЕКЦИЯ 1: АВТОМАТИЧЕСКИЙ РЕЖИМ -->
             <LinearLayout
                 android:id="@+id/container_auto_mode"
                 android:layout_width="match_parent"
@@ -168,7 +205,7 @@
                     android:id="@+id/auto_btn_main_toggle"
                     style="@style/Widget.Material3.CardView.Filled"
                     android:layout_width="match_parent"
-                    android:layout_height="84dp"
+                    android:layout_height="88dp"
                     android:layout_marginBottom="16dp"
                     android:clickable="true"
                     android:focusable="true"
@@ -186,8 +223,8 @@
 
                         <ImageView
                             android:id="@+id/auto_toggle_icon"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
                             android:src="@drawable/ic_shield_check_24"
                             app:tint="?attr/colorOnPrimary"
                             tools:ignore="ContentDescription" />
@@ -211,7 +248,7 @@
                     style="@style/Widget.Material3.CardView.Elevated"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"
+                    android:layout_marginBottom="16dp"
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="24dp"
@@ -225,21 +262,31 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
                         android:paddingHorizontal="18dp"
-                        android:paddingVertical="14dp">
+                        android:paddingVertical="16dp">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_tune_24"
-                            app:tint="?attr/colorPrimary"
-                            tools:ignore="ContentDescription" />
+                        <com.google.android.material.card.MaterialCardView
+                            style="@style/Widget.Material3.CardView.Filled"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            app:cardCornerRadius="14dp"
+                            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                            app:cardElevation="0dp"
+                            android:layout_marginEnd="14dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_tune_24"
+                                app:tint="?attr/colorPrimary"
+                                tools:ignore="ContentDescription" />
+                        </com.google.android.material.card.MaterialCardView>
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="14dp">
+                            android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -279,20 +326,12 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Кнопка "Расширенные настройки" (переход к полному интерфейсу) -->
+                <!-- Невидимая кнопка для совместимости со старыми вызовами -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/auto_btn_advanced_settings"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="@string/ui_mode_btn_advanced_settings"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    app:cornerRadius="20dp"
-                    app:icon="@drawable/baseline_settings_24"
-                    app:iconGravity="textStart"
-                    app:iconSize="20dp"
-                    android:layout_marginBottom="24dp" />
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
@@ -304,17 +343,12 @@
                 android:orientation="vertical"
                 android:visibility="visible">
 
-                <!-- Кнопка возврата к простому режиму (Автоматика) -->
+                <!-- Невидимая кнопка для совместимости -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_switch_to_auto_mode"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⚡ Включить режим «Автоматика»"
-                    android:textSize="13sp"
-                    android:textColor="?attr/colorPrimary"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="8dp" />
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
 
                 <!-- 2. Заголовок секции служб -->
                 <TextView
