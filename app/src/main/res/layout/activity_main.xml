@@ -192,39 +192,45 @@
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
-            <!-- СЕКЦИЯ 1: АВТОМАТИЧЕСКИЙ РЕЖИМ -->
+            <!-- СЕКЦИЯ 1: АВТОМАТИЧЕСКИЙ РЕЖИМ (Фокус на одной кнопке и простоте) -->
             <LinearLayout
                 android:id="@+id/container_auto_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="12dp"
+                android:paddingBottom="8dp"
                 android:visibility="visible">
 
-                <!-- Большая главная кнопка включения/выключения защиты -->
+                <!-- Большая интерактивная круглая M3 кнопка включения/выключения -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/auto_btn_main_toggle"
                     style="@style/Widget.Material3.CardView.Filled"
-                    android:layout_width="match_parent"
-                    android:layout_height="88dp"
-                    android:layout_marginBottom="16dp"
+                    android:layout_width="164dp"
+                    android:layout_height="164dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="24dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardCornerRadius="28dp"
+                    app:cardCornerRadius="82dp"
                     app:cardBackgroundColor="?attr/colorPrimary"
-                    app:cardElevation="3dp"
+                    app:cardElevation="6dp"
+                    app:strokeWidth="3dp"
+                    app:strokeColor="?attr/colorPrimaryContainer"
                     app:rippleColor="?attr/colorOnPrimary">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
+                        android:orientation="vertical"
                         android:gravity="center"
-                        android:paddingHorizontal="24dp">
+                        android:padding="16dp">
 
                         <ImageView
                             android:id="@+id/auto_toggle_icon"
-                            android:layout_width="36dp"
-                            android:layout_height="36dp"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
                             android:src="@drawable/ic_shield_check_24"
                             app:tint="?attr/colorOnPrimary"
                             tools:ignore="ContentDescription" />
@@ -233,16 +239,17 @@
                             android:id="@+id/auto_toggle_text"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Включить защиту"
-                            android:textSize="20sp"
+                            android:text="Включить"
+                            android:textSize="17sp"
                             android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium"
                             android:textColor="?attr/colorOnPrimary"
-                            android:layout_marginStart="16dp" />
+                            android:layout_marginTop="10dp" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Карточка выбора инструмента обхода -->
+                <!-- Карточка активного инструмента обхода (M3 Elevated) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/auto_card_tool_selector"
                     style="@style/Widget.Material3.CardView.Elevated"
@@ -252,7 +259,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardCornerRadius="24dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="2dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="?attr/colorOutlineVariant">
 
@@ -261,24 +268,24 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:paddingHorizontal="18dp"
-                        android:paddingVertical="16dp">
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="18dp">
 
                         <com.google.android.material.card.MaterialCardView
                             style="@style/Widget.Material3.CardView.Filled"
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
-                            app:cardCornerRadius="14dp"
-                            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardBackgroundColor="?attr/colorPrimaryContainer"
                             app:cardElevation="0dp"
-                            android:layout_marginEnd="14dp">
+                            android:layout_marginEnd="16dp">
 
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
                                 android:layout_gravity="center"
                                 android:src="@drawable/ic_tune_24"
-                                app:tint="?attr/colorPrimary"
+                                app:tint="?attr/colorOnPrimaryContainer"
                                 tools:ignore="ContentDescription" />
                         </com.google.android.material.card.MaterialCardView>
 
@@ -291,8 +298,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Инструмент обхода"
+                                android:text="Выбранный инструмент"
                                 android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.03"
                                 android:textColor="?attr/colorOutline" />
 
                             <TextView
@@ -300,9 +309,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Cloudflare WARP (AWG)"
-                                android:textSize="16sp"
+                                android:textSize="17sp"
                                 android:textStyle="bold"
-                                android:textColor="?attr/colorOnSurface" />
+                                android:textColor="?attr/colorOnSurface"
+                                android:layout_marginTop="2dp" />
 
                             <TextView
                                 android:id="@+id/auto_tool_ping"
@@ -312,16 +322,22 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorPrimary"
+                                android:layout_marginTop="3dp"
                                 android:visibility="gone" />
                         </LinearLayout>
 
-                        <TextView
+                        <com.google.android.material.button.MaterialButton
+                            style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:minHeight="40dp"
                             android:text="Сменить"
                             android:textSize="13sp"
                             android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary" />
+                            android:clickable="false"
+                            android:focusable="false"
+                            app:cornerRadius="14dp"
+                            android:paddingHorizontal="14dp" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
