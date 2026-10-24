@@ -48,8 +48,6 @@ class WarpVpnService : VpnService() {
 
         const val ACTION_START = "io.github.dovecoteescapee.byedpi.warp.START"
         const val ACTION_STOP = "io.github.dovecoteescapee.byedpi.warp.STOP"
-        const val ACTION_PAUSE = "io.github.dovecoteescapee.byedpi.warp.PAUSE"
-        const val ACTION_RESUME = "io.github.dovecoteescapee.byedpi.warp.RESUME"
 
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning
@@ -108,12 +106,12 @@ class WarpVpnService : VpnService() {
         }
 
         /**
-         * Pings through the active VPN tunnel. Uses lightweight TCP/HTTP checks.
+         * Pings through the active VPN tunnel. Uses HTTPS port 443 and HTTP 204 connectivity endpoints.
          */
-        suspend fun pingTunnel(timeoutMs: Int = 2000): Long = withContext(Dispatchers.IO) {
+        suspend fun pingTunnel(timeoutMs: Int = 3000): Long = withContext(Dispatchers.IO) {
             val start = System.currentTimeMillis()
 
-            // 1. Direct TCP handshake to port 443 / 80 (fastest, no blocking DNS or SNI overhead)
+            // 1. Direct TCP handshake to port 443 (DoH servers)
             val fastTargets = listOf(
                 InetSocketAddress("1.1.1.1", 443),
                 InetSocketAddress("1.0.0.1", 443),
@@ -124,12 +122,12 @@ class WarpVpnService : VpnService() {
                     Socket().use { socket ->
                         socket.connect(target, timeoutMs)
                         val duration = System.currentTimeMillis() - start
-                        if (duration in 1..timeoutMs) return@withContext duration
+                        if (duration >= 0) return@withContext duration
                     }
                 } catch (_: Exception) {}
             }
 
-            // 2. HTTP generate_204 check as fallback
+            // 2. HTTP generate_204 check
             val httpUrls = listOf(
                 "http://cp.cloudflare.com/generate_204",
                 "http://connectivitycheck.gstatic.com/generate_204"
@@ -164,11 +162,8 @@ class WarpVpnService : VpnService() {
         }
     }
 
-    private var isPaused: Boolean = false
-
     override fun onCreate() {
         super.onCreate()
-        isPaused = false
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         createNotificationChannel()
     }
@@ -181,7 +176,6 @@ class WarpVpnService : VpnService() {
         }
         when (intent?.action) {
             ACTION_START -> {
-                isPaused = false
                 isUserExplicitStop = false
                 startForegroundNotification("Подключение к Cloudflare WARP...")
                 startTunnel()
@@ -189,19 +183,10 @@ class WarpVpnService : VpnService() {
                 return START_STICKY
             }
             ACTION_STOP -> {
-                isPaused = false
                 isUserExplicitStop = true
                 unregisterNetworkCallback()
                 stopTunnel()
                 return START_NOT_STICKY
-            }
-            ACTION_PAUSE -> {
-                pauseTunnel()
-                return START_STICKY
-            }
-            ACTION_RESUME -> {
-                resumeTunnel()
-                return START_STICKY
             }
             else -> {
                 Log.w(TAG, "Unknown action: ${intent?.action}")
@@ -417,7 +402,7 @@ class WarpVpnService : VpnService() {
 
                 // Initial background ping check after start
                 delay(2000)
-                val initialPing = pingTunnel(2500)
+                val initialPing = pingTunnel(3500)
                 if (initialPing >= 0) {
                     _warpPingMs.value = initialPing
                     startForegroundNotification("WARP активен (${initialPing}ms)")
@@ -428,7 +413,7 @@ class WarpVpnService : VpnService() {
 
                     if (!_isRunning.value || isUserExplicitStop) break
 
-                    val ping = pingTunnel(2500)
+                    val ping = pingTunnel(3500)
                     if (ping >= 0) {
                         _warpPingMs.value = ping
                         _connectionStatus.value = "Подключен (WARP активен)"
@@ -498,7 +483,13 @@ class WarpVpnService : VpnService() {
         startForegroundNotification("Подключение к Cloudflare WARP...")
 
         // Resolve letter-based/domain endpoints before creating TUN (prevents DNS deadlock & Go panic)
-        val resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint) ?: parsed.peerEndpoint
+        var resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint) ?: "162.159.192.1:500"
+        // В РФ порты Wireguard 2408, 854, 8854 заблокированы ТСПУ. Порт 500 (IKEv2) и 4500 не блокируются.
+        if (resolvedEndpoint.endsWith(":2408") || (!resolvedEndpoint.endsWith(":500") && !resolvedEndpoint.endsWith(":4500"))) {
+            val ipPart = resolvedEndpoint.substringBefore(":")
+            val effectiveIp = if (ipPart.isBlank() || ipPart.startsWith("8.") || ipPart.startsWith("188.")) "162.159.192.1" else ipPart
+            resolvedEndpoint = "$effectiveIp:500"
+        }
         var effectiveKeepalive = parsed.peerPersistentKeepalive ?: 25
         val isGameMode = isGamingModeEnabled()
         if (isGameMode) {
@@ -623,6 +614,10 @@ class WarpVpnService : VpnService() {
             builder.allowBypass()
         } catch (_: Exception) {}
 
+        try {
+            builder.addDisallowedApplication(packageName)
+        } catch (_: Exception) {}
+
         io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.applySplitTunnel(builder, this@WarpVpnService)
 
         // Establish TUN
@@ -685,23 +680,6 @@ class WarpVpnService : VpnService() {
         startWatchdog()
     }
 
-    private suspend fun stopTunnelInternal() {
-        watchdogJob?.cancel()
-        watchdogJob = null
-        try {
-            WarpMasqueClient.stop()
-            if (tunnelHandle >= 0) {
-                Log.i(TAG, "Turning off GoBackend handle: $tunnelHandle")
-                GoBackend.awgTurnOff(tunnelHandle)
-                tunnelHandle = -1
-            }
-            tunFd?.close()
-            tunFd = null
-        } catch (e: Exception) {
-            Log.e(TAG, "Error stopping tunnel internal", e)
-        }
-    }
-
     private fun stopTunnel() {
         watchdogJob?.cancel()
         watchdogJob = null
@@ -710,7 +688,14 @@ class WarpVpnService : VpnService() {
 
         serviceScope.launch {
             try {
-                stopTunnelInternal()
+                WarpMasqueClient.stop()
+                if (tunnelHandle >= 0) {
+                    Log.i(TAG, "Turning off GoBackend handle: $tunnelHandle")
+                    GoBackend.awgTurnOff(tunnelHandle)
+                    tunnelHandle = -1
+                }
+                tunFd?.close()
+                tunFd = null
             } catch (e: Exception) {
                 Log.e(TAG, "Error stopping tunnel", e)
             } finally {
@@ -737,35 +722,6 @@ class WarpVpnService : VpnService() {
         }
     }
 
-    private fun pauseTunnel() {
-        if (!_isRunning.value || isPaused) return
-        isPaused = true
-        _connectionStatus.value = "Приостановлен"
-        serviceScope.launch {
-            try {
-                if (tunnelHandle != -1) {
-                    GoBackend.awgTurnOff(tunnelHandle)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error pausing WARP", e)
-            }
-            startForegroundNotification("WARP (Приостановлен)")
-        }
-    }
-
-    private fun resumeTunnel() {
-        if (!_isRunning.value || !isPaused) return
-        isPaused = false
-        _connectionStatus.value = "Возобновление..."
-        serviceScope.launch {
-            try {
-                startTunnel()
-            } catch (e: Exception) {
-                Log.e(TAG, "Error resuming WARP", e)
-            }
-        }
-    }
-
     private fun startForegroundNotification(text: String) {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
@@ -775,61 +731,11 @@ class WarpVpnService : VpnService() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        val stopIntent = Intent(this, WarpVpnService::class.java).apply {
-            action = ACTION_STOP
-        }
-        val stopPendingIntent = PendingIntent.getService(
-            this,
-            201,
-            stopIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        val pauseAction = if (isPaused) {
-            val resumeIntent = Intent(this, WarpVpnService::class.java).apply {
-                action = ACTION_RESUME
-            }
-            val resumePendingIntent = PendingIntent.getService(
-                this,
-                202,
-                resumeIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            NotificationCompat.Action.Builder(
-                R.drawable.ic_play_arrow_24,
-                getString(R.string.action_resume),
-                resumePendingIntent
-            ).build()
-        } else {
-            val pauseIntent = Intent(this, WarpVpnService::class.java).apply {
-                action = ACTION_PAUSE
-            }
-            val pausePendingIntent = PendingIntent.getService(
-                this,
-                202,
-                pauseIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            NotificationCompat.Action.Builder(
-                R.drawable.ic_pause_24,
-                getString(R.string.action_pause),
-                pausePendingIntent
-            ).build()
-        }
-
-        val stopAction = NotificationCompat.Action.Builder(
-            R.drawable.ic_stop_24,
-            getString(R.string.action_stop),
-            stopPendingIntent
-        ).build()
-
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Cloudflare WARP (AmneziaWG)")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
-            .addAction(pauseAction)
-            .addAction(stopAction)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)

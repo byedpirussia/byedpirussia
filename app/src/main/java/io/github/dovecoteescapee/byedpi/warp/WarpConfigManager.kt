@@ -17,7 +17,7 @@ object WarpConfigManager {
     private const val KEY_WARP_MODE = "pref_warp_mode" // "masque" or "awg"
     private const val KEY_MASQUE_ENDPOINT = "pref_masque_endpoint"
 
-    // Оптимизированный рабочий конфиг с зарегистрированными ключами Cloudflare, AWG 3.1 обфускацией и портом 500
+    // Оптимизированный рабочий конфиг с зарегистрированными ключами Cloudflare, AWG 3.1 обфускацией и незаблокированным портом 500
     const val DEFAULT_CONFIG = """[Interface]
 PrivateKey = KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8=
 Address = 172.16.0.2, 2606:4700:110:8655:e6ef:f746:2058:dac0
@@ -61,7 +61,18 @@ PersistentKeepalive = 25"""
             _currentConfig.value = DEFAULT_CONFIG
             prefs.edit { putString(KEY_CONFIG, DEFAULT_CONFIG) }
         } else {
-            _currentConfig.value = saved
+            // Авто-миграция с заблокированных и замедленных РКН эндпоинтов (2408, 854, 8854, 188.114.x)
+            if (saved.contains(":2408") || saved.contains("188.114.98.8") || saved.contains(":854") || saved.contains(":8854") || saved.contains("engage.cloudflareclient.com:500")) {
+                val upgraded = WarpEndpointOptimizer.optimizeConfigString(
+                    saved,
+                    WarpEndpointOptimizer.BEST_DEFAULT_ENDPOINT
+                )
+                _currentConfig.value = upgraded
+                prefs.edit { putString(KEY_CONFIG, upgraded) }
+                Log.i(TAG, "Автоматически обновлен сервер WARP на надежный IP Anycast")
+            } else {
+                _currentConfig.value = saved
+            }
         }
 
         // По умолчанию стабильный AmneziaWG 3.1 (GoBackend) с обходом ТСПУ

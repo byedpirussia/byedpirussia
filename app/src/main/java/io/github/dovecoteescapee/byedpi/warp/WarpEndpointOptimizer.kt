@@ -42,21 +42,6 @@ object WarpEndpointOptimizer {
     const val BEST_DEFAULT_ENDPOINT = "162.159.192.1:500"
 
     /**
-     * Возвращает следующий альтернативный порт/эндпоинт при неудачном хендшейке
-     */
-    fun getNextCandidateEndpoint(currentEndpoint: String): String {
-        val clean = currentEndpoint.trim()
-        val index = CANDIDATE_ENDPOINTS.indexOfFirst { it.equals(clean, ignoreCase = true) }
-        return if (index >= 0 && index + 1 < CANDIDATE_ENDPOINTS.size) {
-            CANDIDATE_ENDPOINTS[index + 1]
-        } else {
-            // Если порт был 500 - пробуем 4500 того же IP, иначе 500
-            val host = clean.substringBefore(":")
-            if (clean.endsWith(":500")) "$host:4500" else "$host:500"
-        }
-    }
-
-    /**
      * Probes an endpoint to measure latency.
      * Measures TCP/socket handshake latency to the Cloudflare node.
      */
