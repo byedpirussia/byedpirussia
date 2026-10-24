@@ -194,31 +194,31 @@
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
-            <!-- СЕКЦИЯ 1: АВТОМАТИЧЕСКИЙ РЕЖИМ (Фокус на одной кнопке и простоте) -->
+            <!-- СЕКЦИЯ 1: АВТОМАТИЧЕСКИЙ РЕЖИМ (Pixel / Android 15 Quick Settings Style) -->
             <LinearLayout
                 android:id="@+id/container_auto_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:paddingTop="12dp"
-                android:paddingBottom="8dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
                 android:visibility="visible">
 
-                <!-- Большая интерактивная круглая M3 кнопка включения/выключения -->
+                <!-- Огромный овальный интерактивный циферблат-тайл в стиле Android 15 Quick Settings -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/auto_btn_main_toggle"
                     style="@style/Widget.Material3.CardView.Filled"
-                    android:layout_width="164dp"
-                    android:layout_height="164dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="24dp"
+                    android:layout_width="210dp"
+                    android:layout_height="210dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="28dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardCornerRadius="82dp"
+                    app:cardCornerRadius="105dp"
                     app:cardBackgroundColor="?attr/colorPrimary"
-                    app:cardElevation="6dp"
-                    app:strokeWidth="3dp"
+                    app:cardElevation="8dp"
+                    app:strokeWidth="4dp"
                     app:strokeColor="?attr/colorPrimaryContainer"
                     app:rippleColor="?attr/colorOnPrimary">
 
@@ -227,12 +227,12 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:padding="16dp">
+                        android:padding="20dp">
 
                         <ImageView
                             android:id="@+id/auto_toggle_icon"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
                             android:src="@drawable/ic_shield_check_24"
                             app:tint="?attr/colorOnPrimary"
                             tools:ignore="ContentDescription" />
@@ -242,14 +242,109 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Включить"
-                            android:textSize="17sp"
+                            android:textSize="20sp"
                             android:textStyle="bold"
                             android:fontFamily="sans-serif-medium"
+                            android:letterSpacing="-0.01"
                             android:textColor="?attr/colorOnPrimary"
-                            android:layout_marginTop="10dp" />
+                            android:layout_marginTop="12dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Нажмите для подключения"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnPrimary"
+                            android:alpha="0.8"
+                            android:layout_marginTop="2dp" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
+
+                <!-- Горизонтальная инфо-панель телеметрии (Пинг / Статус / Трафик) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Filled"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="22dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                        app:cardElevation="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="14dp"
+                            android:paddingHorizontal="8dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="⚡ ЗАДЕРЖКА"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05"
+                                android:textColor="?attr/colorOutline" />
+
+                            <TextView
+                                android:id="@+id/auto_tool_ping"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-- ms"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorPrimary"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        style="@style/Widget.Material3.CardView.Filled"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        app:cardCornerRadius="22dp"
+                        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                        app:cardElevation="1dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:paddingVertical="14dp"
+                            android:paddingHorizontal="8dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🛡️ СЕТЬ"
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05"
+                                android:textColor="?attr/colorOutline" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Защищена"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
 
                 <!-- Карточка активного инструмента обхода (M3 Elevated) -->
                 <com.google.android.material.card.MaterialCardView
@@ -260,7 +355,7 @@
                     android:layout_marginBottom="16dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardCornerRadius="24dp"
+                    app:cardCornerRadius="26dp"
                     app:cardElevation="2dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="?attr/colorOutlineVariant">
@@ -275,16 +370,16 @@
 
                         <com.google.android.material.card.MaterialCardView
                             style="@style/Widget.Material3.CardView.Filled"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            app:cardCornerRadius="16dp"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
+                            app:cardCornerRadius="18dp"
                             app:cardBackgroundColor="?attr/colorPrimaryContainer"
                             app:cardElevation="0dp"
                             android:layout_marginEnd="16dp">
 
                             <ImageView
-                                android:layout_width="26dp"
-                                android:layout_height="26dp"
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
                                 android:layout_gravity="center"
                                 android:src="@drawable/ic_tune_24"
                                 app:tint="?attr/colorOnPrimaryContainer"
@@ -300,10 +395,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Выбранный инструмент"
-                                android:textSize="12sp"
+                                android:text="АКТИВНЫЙ ПРОТОКОЛ"
+                                android:textSize="11sp"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.03"
+                                android:letterSpacing="0.04"
                                 android:textColor="?attr/colorOutline" />
 
                             <TextView
@@ -315,31 +410,20 @@
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface"
                                 android:layout_marginTop="2dp" />
-
-                            <TextView
-                                android:id="@+id/auto_tool_ping"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Пинг: --"
-                                android:textSize="12sp"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorPrimary"
-                                android:layout_marginTop="3dp"
-                                android:visibility="gone" />
                         </LinearLayout>
 
                         <com.google.android.material.button.MaterialButton
                             style="@style/Widget.Material3.Button.TonalButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="40dp"
+                            android:minHeight="42dp"
                             android:text="Сменить"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             android:clickable="false"
                             android:focusable="false"
-                            app:cornerRadius="14dp"
-                            android:paddingHorizontal="14dp" />
+                            app:cornerRadius="16dp"
+                            android:paddingHorizontal="16dp" />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
