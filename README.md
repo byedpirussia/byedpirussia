@@ -16,14 +16,15 @@
 
 ## 📥 Скачать приложение (Download)
 
-### 📱 Android:
-[![Скачать APK](https://img.shields.io/badge/Скачать_APK-v1.5.6-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+### 📱 Android (Версия v1.6.0):
+[![Скачать Xray](https://img.shields.io/badge/Скачать_APK-v1.6.0_(Xray)-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Скачать SingBox](https://img.shields.io/badge/Скачать_APK-v1.6.0_(SingBox)-34a853?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
 [![Telegram Channel](https://img.shields.io/badge/Telegram_Канал-t.me%2FByedpirussia-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Byedpirussia)
-[![VirusTotal Clean](https://img.shields.io/badge/VirusTotal-0%2F66%20Безопасно-brightgreen?style=for-the-badge&logo=virustotal&logoColor=white)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)
 
-- **[APK v1.5.6 для Android (Releases)](https://github.com/byedpirussia/byedpirussia/releases/latest)** — прямая ссылка на актуальный APK-файл.
+- **[📦 ByeDPI-Russia-Android-v1.6.0-Xray.apk](https://github.com/byedpirussia/byedpirussia/releases/latest)** (73 МБ) — классическая стабильная версия на высокопроизводительном ядре **Xray-core** (VLESS Reality, Vision, uTLS, WS/gRPC).
+- **[⚡ ByeDPI-Russia-Android-v1.6.0-SingBox.apk](https://github.com/byedpirussia/byedpirussia/releases/latest)** (192 МБ) — версия на современном ядре **Sing-box 1.14.4** с нативной поддержкой TUN и энергоэффективной маршрутизацией.
+- 💡 *Примечание*: Обе версии имеют одинаковую цифровую подпись и `applicationId` — можно устанавливать поверх друг друга без потери настроек и добавленных серверов!
 - **[Официальный Telegram-канал t.me/Byedpirussia](https://t.me/Byedpirussia)** — свежие релизы и новости проекта.
-- **[Отчёт VirusTotal Android (0/66)](https://www.virustotal.com/gui/file/6b18e3131414a992951a6ba21f3a9a24c28ccc529b64a35193bc6f8260885215/detection)** — проверка APK-файла (0 детектов, 100% чисто).
 
 ### 💻 Windows (ПК):
 [![Скачать Windows](https://img.shields.io/badge/Скачать_Windows-v1.3.4-blue?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/download/v1.3.4/ByeDPI-Russia-Windows-v1.3.4.zip)
