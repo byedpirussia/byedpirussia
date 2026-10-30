@@ -57,6 +57,20 @@ android {
             version = "3.22.1"
         }
     }
+    flavorDimensions += "core"
+    productFlavors {
+        create("xray") {
+            dimension = "core"
+            applicationIdSuffix = ""
+            versionNameSuffix = "-Xray"
+        }
+        create("singbox") {
+            dimension = "core"
+            applicationIdSuffix = ""
+            versionNameSuffix = "-SingBox"
+        }
+    }
+
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -64,6 +78,10 @@ android {
     sourceSets {
         getByName("main") {
             jniLibs.srcDirs("src/main/jniLibs")
+        }
+        getByName("singbox") {
+            jniLibs.srcDirs("src/singbox/jniLibs")
+            assets.srcDirs("src/singbox/assets")
         }
     }
     packaging {

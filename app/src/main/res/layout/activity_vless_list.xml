@@ -84,6 +84,34 @@
                 app:cornerRadius="14dp" />
         </LinearLayout>
 
+        <!-- Прогресс батчевого пинга серверов -->
+        <LinearLayout
+            android:id="@+id/ping_progress_bar_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="6dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/ping_progress_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:indeterminate="false"
+                app:trackCornerRadius="4dp" />
+
+            <TextView
+                android:id="@+id/tv_ping_batch_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="11sp"
+                android:textColor="?attr/colorPrimary"
+                tools:text="Проверка пакета 1: серверы 1–10 из 35..." />
+        </LinearLayout>
+
         <!-- Горизонтальная прокручиваемая панель вкладок подписок -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_layout"

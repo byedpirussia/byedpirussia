@@ -511,43 +511,66 @@ class VlessListActivity : BaseActivity() {
 
         binding.btnTestPing.isEnabled = false
         binding.btnTestPing.text = "Тестирование..."
+        binding.pingProgressBarContainer.visibility = View.VISIBLE
+        binding.pingProgressIndicator.max = configsToTest.size
+        binding.pingProgressIndicator.progress = 0
 
-        // Помечаем все серверы как тестируемые
+        // Помечаем все серверы как ожидающие проверки (-2L)
         configsToTest.forEach { adapter?.setPing(it.id, -2L) }
 
         lifecycleScope.launch(Dispatchers.IO) {
             val testUrl = "https://www.gstatic.com/generate_204"
+            val batchSize = 10
+            val chunks = configsToTest.chunked(batchSize)
+            var testedCount = 0
 
-            kotlinx.coroutines.coroutineScope {
-                configsToTest.map { config ->
-                    launch {
-                        val ping = try {
-                            val xrayJson = config.toXrayConfigJson(localSocksPort = 0)
-                            val delay = libv2ray.Libv2ray.measureOutboundDelay(xrayJson, testUrl)
-                            if (delay > 0) delay else -1L
-                        } catch (e: Exception) {
-                            // Fallback to direct TCP ping if Xray outbounds test fails locally
-                            try {
-                                val startTime = System.currentTimeMillis()
-                                val socket = java.net.Socket()
-                                socket.connect(java.net.InetSocketAddress(config.address, config.port), 3000)
-                                socket.close()
-                                System.currentTimeMillis() - startTime
-                            } catch (_: Exception) {
-                                -1L
+            for ((batchIndex, chunk) in chunks.withIndex()) {
+                val fromIndex = batchIndex * batchSize + 1
+                val toIndex = fromIndex + chunk.size - 1
+
+                withContext(Dispatchers.Main) {
+                    binding.tvPingBatchStatus.text = "Проверка пакета ${batchIndex + 1}/${chunks.size} (серверы $fromIndex–$toIndex из ${configsToTest.size})..."
+                }
+
+                // Тестируем параллельно ровно 10 серверов в пачке, чтобы не перегружать сокеты и сеть
+                kotlinx.coroutines.coroutineScope {
+                    chunk.map { config ->
+                        launch {
+                            val ping = try {
+                                val delay = io.github.dovecoteescapee.byedpi.vless.core.VlessCoreImpl.measureDelay(config, testUrl)
+                                if (delay > 0) delay else -1L
+                            } catch (e: Exception) {
+                                // Fallback to direct TCP ping if outbounds test fails locally
+                                try {
+                                    val startTime = System.currentTimeMillis()
+                                    val socket = java.net.Socket()
+                                    socket.connect(java.net.InetSocketAddress(config.address, config.port), 3000)
+                                    socket.close()
+                                    System.currentTimeMillis() - startTime
+                                } catch (_: Exception) {
+                                    -1L
+                                }
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                adapter?.setPing(config.id, ping)
+                                testedCount++
+                                binding.pingProgressIndicator.progress = testedCount
                             }
                         }
-
-                        withContext(Dispatchers.Main) {
-                            adapter?.setPing(config.id, ping)
-                        }
                     }
+                }
+
+                // Небольшая пауза между батчами по 10 серверов, чтобы не вызвать flood/rate-limit
+                if (batchIndex < chunks.size - 1) {
+                    kotlinx.coroutines.delay(150)
                 }
             }
 
             withContext(Dispatchers.Main) {
-                // Сортировка конфигураций по пингу (от меньшего к большему)
-                // Серверы с положительным пингом впереди, затем недоступные (-1L)
+                binding.pingProgressBarContainer.visibility = View.GONE
+
+                // Сортировка конфигураций по пингу (от наименьшего к наибольшему)
                 val sorted = configsToTest.sortedWith(
                     compareBy<VlessConfig> { cfg ->
                         val p = adapter?.getPing(cfg.id) ?: Long.MAX_VALUE
@@ -560,7 +583,7 @@ class VlessListActivity : BaseActivity() {
 
                 binding.btnTestPing.isEnabled = true
                 binding.btnTestPing.text = "⚡ Тест пинга"
-                Toast.makeText(this@VlessListActivity, "Тест завершен, серверы отсортированы по пингу", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@VlessListActivity, "Тест завершен пакетами по 10! Серверы отсортированы", Toast.LENGTH_SHORT).show()
             }
         }
     }

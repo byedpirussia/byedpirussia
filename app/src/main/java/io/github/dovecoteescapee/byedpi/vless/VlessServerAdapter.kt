@@ -27,20 +27,22 @@ class VlessServerAdapter(
         val item = items[position]
         if (item.isChain) {
             val chainLabel = if (item.chainMode == "warp_over_proxy") "WARP -> Прокси" else "Прокси -> WARP"
-            holder.binding.tvServerName.text = "🔗 " + item.name.ifBlank { "Цепочка: $chainLabel" }
+            holder.binding.tvProtoBadge.text = "🔗"
+            holder.binding.tvServerName.text = item.name.ifBlank { "Цепочка: $chainLabel" }
             holder.binding.tvServerDetails.text = "Цепочка серверов ($chainLabel) • Выход: ${item.address}:${item.port}"
         } else {
             val protoTag = when (item.protocol.lowercase()) {
-                "hysteria2" -> "Hysteria2"
-                "shadowsocks" -> "Shadowsocks"
-                "vmess" -> "VMess"
-                "trojan" -> "Trojan"
-                else -> "VLESS"
+                "hysteria2" -> "HY2"
+                "shadowsocks" -> "SS"
+                "vmess" -> "VM"
+                "trojan" -> "TR"
+                else -> "VL"
             }
+            holder.binding.tvProtoBadge.text = protoTag
             val securityInfo = if (item.security.isNotBlank() && item.security != "none") " | ${item.security}" else ""
             val transportInfo = if (item.transport.isNotBlank()) " | ${item.transport}" else ""
             holder.binding.tvServerName.text = item.name.ifBlank { "${item.address}:${item.port}" }
-            holder.binding.tvServerDetails.text = "$protoTag • ${item.address}:${item.port}$securityInfo$transportInfo"
+            holder.binding.tvServerDetails.text = "${item.protocol.uppercase()} • ${item.address}:${item.port}$securityInfo$transportInfo"
         }
         holder.binding.rbSelected.isChecked = (item.id == selectedId)
 

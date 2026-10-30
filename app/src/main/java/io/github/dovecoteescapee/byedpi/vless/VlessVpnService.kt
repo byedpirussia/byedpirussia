@@ -19,15 +19,12 @@ import io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import libv2ray.CoreCallbackHandler
-import libv2ray.CoreController
-import libv2ray.Libv2ray
+import io.github.dovecoteescapee.byedpi.vless.core.VlessCoreImpl
 import java.io.File
 
 class VlessVpnService : VpnService() {
 
     private var tunFd: ParcelFileDescriptor? = null
-    private var coreController: CoreController? = null
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     companion object {
@@ -73,13 +70,11 @@ class VlessVpnService : VpnService() {
         isPaused = false
         createNotificationChannel()
 
-        // Init Xray core environment (assets directory for geoip/geosite)
+        // Init core environment (Xray or Sing-box according to flavor)
         try {
-            val assetDir = File(applicationContext.filesDir, "xray_assets")
-            if (!assetDir.exists()) assetDir.mkdirs()
-            Libv2ray.initCoreEnv(assetDir.absolutePath, "")
+            VlessCoreImpl.init(applicationContext)
         } catch (e: Exception) {
-            Log.e(TAG, "InitCoreEnv error", e)
+            Log.e(TAG, "Core init error", e)
         }
     }
 
@@ -158,33 +153,11 @@ class VlessVpnService : VpnService() {
                 _connectionStatus.value = "Подключение к ${activeConfig.name}..."
                 startForegroundNotification("Подключение к ${activeConfig.name}...")
 
-                // 1. Initialize and Start Xray Core in SOCKS5 Mode on 127.0.0.1:SOCKS_PORT
-                val callback = object : CoreCallbackHandler {
-                    override fun onEmitStatus(status: Long, msg: String?): Long {
-                        Log.d(TAG, "Xray status: $status, msg: $msg")
-                        return 0
-                    }
-
-                    override fun startup(): Long {
-                        Log.d(TAG, "Xray core started")
-                        return 0
-                    }
-
-                    override fun shutdown(): Long {
-                        Log.d(TAG, "Xray core stopped")
-                        return 0
-                    }
-                }
-
-                val controller = Libv2ray.newCoreController(callback)
-                coreController = controller
-
+                // 1. Initialize and Start Core in SOCKS5 Mode on 127.0.0.1:SOCKS_PORT
                 val isBlockQuic = io.github.dovecoteescapee.byedpi.experimental.ExperimentalConfigManager.isBlockQuicEnabled(this@VlessVpnService)
-                val configJson = activeConfig.toXrayConfigJson(localSocksPort = SOCKS_PORT, blockQuic = isBlockQuic)
-                Log.d(TAG, "Starting Xray Core with config:\n$configJson")
-                controller.startLoop(configJson, 0)
+                VlessCoreImpl.start(activeConfig, SOCKS_PORT, isBlockQuic)
 
-                // Give Xray a moment to bind SOCKS port
+                // Give core a moment to bind SOCKS port
                 delay(300)
 
                 // 2. Setup TUN interface via Android VpnService
@@ -308,11 +281,10 @@ class VlessVpnService : VpnService() {
         tunFd = null
 
         try {
-            coreController?.stopLoop()
+            VlessCoreImpl.stop()
         } catch (e: Exception) {
-            Log.e(TAG, "Error stopping Xray core", e)
+            Log.e(TAG, "Error stopping core", e)
         }
-        coreController = null
     }
 
     override fun onDestroy() {

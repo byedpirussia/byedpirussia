@@ -11,7 +11,7 @@
     android:clickable="true"
     android:focusable="true"
     app:cardCornerRadius="22dp"
-    app:cardElevation="2dp"
+    app:cardElevation="1dp"
     app:strokeColor="?attr/colorOutlineVariant"
     app:strokeWidth="1dp">
 
@@ -23,25 +23,36 @@
         android:paddingHorizontal="16dp"
         android:paddingVertical="14dp">
 
-        <com.google.android.material.radiobutton.MaterialRadioButton
-            android:id="@+id/rb_selected"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:focusable="false" />
+        <!-- Иконка протокола / статуса в круглом фоне -->
+        <FrameLayout
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_pill_status"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_proto_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorPrimary"
+                tools:text="VL" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="12dp"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tv_server_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="?attr/colorOnSurface"
                 android:maxLines="1"
@@ -82,11 +93,19 @@
             </LinearLayout>
         </LinearLayout>
 
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_selected"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:clickable="false"
+            android:focusable="false" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_delete"
             style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:contentDescription="Удалить"
             app:icon="@drawable/ic_close"
             app:iconTint="?attr/colorOutline" />
