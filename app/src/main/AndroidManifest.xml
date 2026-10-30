@@ -223,6 +223,18 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".services.StopAllTileService"
+            android:icon="@drawable/ic_power_24"
+            android:label="@string/tile_stop_all"
+            android:exported="true"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action
+                    android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
+
         <!-- Переключение режимов из HyperOS Focus Notification / статус-бара -->
         <receiver
             android:name=".island.ModeSwitchReceiver"

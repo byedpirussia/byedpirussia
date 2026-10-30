@@ -23,6 +23,11 @@ data class StrategyResult(
     val details: Map<String, Long?>
 )
 
+enum class BenchmarkMode(val title: String, val description: String) {
+    SIMPLE("Быстрый (Простой)", "Проверка основных сервисов: YouTube и Discord"),
+    EXTENDED("Расширенный (Глубокий)", "Полная проверка: YouTube Web, YouTube CDN, Discord Voice/Gateway, Telegram Web, Instagram CDN")
+}
+
 class StrategyBenchmark(private val context: Context) {
     companion object {
         private const val TAG = "StrategyBenchmark"
@@ -30,21 +35,39 @@ class StrategyBenchmark(private val context: Context) {
         private const val CONNECT_TIMEOUT_MS = 2500
         private const val HANDSHAKE_TIMEOUT_MS = 3000
 
-        val TEST_TARGETS = listOf(
+        val TEST_TARGETS_SIMPLE = listOf(
             "www.youtube.com" to "YouTube",
             "discord.com" to "Discord"
         )
 
+        val TEST_TARGETS_EXTENDED = listOf(
+            "www.youtube.com" to "YouTube",
+            "rr1---sn-a5mekn6k.googlevideo.com" to "YouTube CDN",
+            "discord.com" to "Discord",
+            "gateway.discord.gg" to "Discord Voice",
+            "web.telegram.org" to "Telegram Web",
+            "static.cdninstagram.com" to "Instagram CDN"
+        )
+
+        // Для обратной совместимости
+        val TEST_TARGETS = TEST_TARGETS_SIMPLE
+
         private val FALLBACK_IPS = mapOf(
             "www.youtube.com" to "142.251.152.4",
-            "discord.com" to "162.159.137.232"
+            "rr1---sn-a5mekn6k.googlevideo.com" to "173.194.15.54",
+            "discord.com" to "162.159.137.232",
+            "gateway.discord.gg" to "162.159.135.232",
+            "web.telegram.org" to "149.154.167.99",
+            "static.cdninstagram.com" to "157.240.241.63"
         )
     }
 
     suspend fun runBenchmark(
+        mode: BenchmarkMode = BenchmarkMode.SIMPLE,
         onProgress: (current: Int, total: Int, strategy: Strategy, status: String) -> Unit,
         onStrategyTested: (result: StrategyResult) -> Unit = {}
     ): StrategyResult? = withContext(Dispatchers.IO) {
+        val targets = if (mode == BenchmarkMode.EXTENDED) TEST_TARGETS_EXTENDED else TEST_TARGETS_SIMPLE
         val strategies = StrategyCatalog.strategies
         val results = mutableListOf<StrategyResult>()
 
@@ -81,7 +104,7 @@ class StrategyBenchmark(private val context: Context) {
                 var totalLatency = 0L
                 var successes = 0
 
-                for ((targetIdx, target) in TEST_TARGETS.withIndex()) {
+                for ((targetIdx, target) in targets.withIndex()) {
                     if (!coroutineContext.isActive) break
 
                     val (host, label) = target
@@ -90,7 +113,7 @@ class StrategyBenchmark(private val context: Context) {
                             index + 1,
                             strategies.size,
                             strategy,
-                            "${strategy.name}: $label (${targetIdx + 1}/${TEST_TARGETS.size})"
+                            "${strategy.name}: $label (${targetIdx + 1}/${targets.size})"
                         )
                     }
 

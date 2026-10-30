@@ -83,65 +83,46 @@ object NotificationIslandHelper {
         builder.setSilent(true)
         builder.setOngoing(true)
 
-        // 2. Добавляем Action-кнопки переключения режимов прямо в уведомление / остров
-        when (currentMode) {
-            ServiceSwitchController.MODE_BYEDPI -> {
-                builder.addAction(
-                    R.drawable.ic_bolt_24,
-                    "⚡ WARP",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_WARP)
-                )
-                builder.addAction(
-                    R.drawable.ic_shield_check_24,
-                    "🌐 VLESS",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_VLESS)
-                )
-                builder.addAction(
-                    R.drawable.ic_power_24,
-                    "⏹️ Стоп",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_STOP)
-                )
-            }
-            ServiceSwitchController.MODE_WARP -> {
-                builder.addAction(
-                    R.drawable.ic_shield_check_24,
-                    "🛡️ ByeDPI",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_BYEDPI)
-                )
-                builder.addAction(
-                    R.drawable.ic_bolt_24,
-                    "🌐 VLESS",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_VLESS)
-                )
-                builder.addAction(
-                    R.drawable.ic_power_24,
-                    "⏹️ Стоп",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_STOP)
-                )
-            }
-            ServiceSwitchController.MODE_VLESS -> {
-                builder.addAction(
-                    R.drawable.ic_shield_check_24,
-                    "🛡️ ByeDPI",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_BYEDPI)
-                )
-                builder.addAction(
-                    R.drawable.ic_bolt_24,
-                    "⚡ WARP",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_WARP)
-                )
-                builder.addAction(
-                    R.drawable.ic_power_24,
-                    "⏹️ Стоп",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_STOP)
-                )
-            }
-            else -> {
-                builder.addAction(
-                    R.drawable.ic_power_24,
-                    "⏹️ Стоп",
-                    ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_STOP)
-                )
+        // 2. Добавляем Action-кнопки переключения режимов прямо в уведомление / остров (HyperOS)
+        // Для стандартных уведомлений Android кнопки паузы/стопа добавляются вызывающей службой напрямую
+        if (extras.containsKey("miui.focus.param")) {
+            when (currentMode) {
+                ServiceSwitchController.MODE_BYEDPI -> {
+                    builder.addAction(
+                        R.drawable.ic_bolt_24,
+                        "⚡ WARP",
+                        ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_WARP)
+                    )
+                    builder.addAction(
+                        R.drawable.ic_shield_check_24,
+                        "🌐 VLESS",
+                        ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_VLESS)
+                    )
+                }
+                ServiceSwitchController.MODE_WARP -> {
+                    builder.addAction(
+                        R.drawable.ic_shield_check_24,
+                        "🛡️ ByeDPI",
+                        ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_BYEDPI)
+                    )
+                    builder.addAction(
+                        R.drawable.ic_bolt_24,
+                        "🌐 VLESS",
+                        ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_VLESS)
+                    )
+                }
+                ServiceSwitchController.MODE_VLESS -> {
+                    builder.addAction(
+                        R.drawable.ic_shield_check_24,
+                        "🛡️ ByeDPI",
+                        ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_BYEDPI)
+                    )
+                    builder.addAction(
+                        R.drawable.ic_bolt_24,
+                        "⚡ WARP",
+                        ModeSwitchReceiver.createPendingIntent(context, ServiceSwitchController.MODE_WARP)
+                    )
+                }
             }
         }
     }

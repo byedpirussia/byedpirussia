@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:paddingHorizontal="16dp"
-            android:paddingVertical="4dp"
+            android:paddingVertical="8dp"
             android:gravity="center">
 
             <com.google.android.material.button.MaterialButton
@@ -37,43 +37,51 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:minHeight="42dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="4dp"
                 android:text="+ Ключ"
                 android:textSize="12sp"
-                app:cornerRadius="12dp" />
+                android:textStyle="bold"
+                app:cornerRadius="14dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_sub"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:minHeight="42dp"
+                android:layout_weight="1.1"
                 android:layout_marginHorizontal="4dp"
                 android:text="+ Подписка"
                 android:textSize="12sp"
-                app:cornerRadius="12dp" />
+                android:textStyle="bold"
+                app:cornerRadius="14dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_chain"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:minHeight="42dp"
                 android:layout_weight="1.1"
                 android:layout_marginEnd="4dp"
                 android:text="🔗 Цепочка"
                 android:textSize="12sp"
-                app:cornerRadius="12dp" />
+                android:textStyle="bold"
+                app:cornerRadius="14dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_test_ping"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1.2"
+                android:minHeight="42dp"
+                android:layout_weight="1.1"
                 android:text="⚡ Пинг"
                 android:textSize="12sp"
-                app:cornerRadius="12dp" />
+                android:textStyle="bold"
+                app:cornerRadius="14dp" />
         </LinearLayout>
 
         <!-- Горизонтальная прокручиваемая панель вкладок подписок -->

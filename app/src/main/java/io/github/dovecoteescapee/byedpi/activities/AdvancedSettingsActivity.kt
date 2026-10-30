@@ -21,6 +21,7 @@ import io.github.dovecoteescapee.byedpi.services.ServiceManager
 import io.github.dovecoteescapee.byedpi.services.appStatus
 import io.github.dovecoteescapee.byedpi.strategy.Strategy
 import io.github.dovecoteescapee.byedpi.strategy.StrategyBenchmark
+import io.github.dovecoteescapee.byedpi.strategy.BenchmarkMode
 import io.github.dovecoteescapee.byedpi.strategy.StrategyCatalog
 import io.github.dovecoteescapee.byedpi.strategy.TestedStrategiesAdapter
 import io.github.dovecoteescapee.byedpi.utility.getPreferences
@@ -126,7 +127,7 @@ class AdvancedSettingsActivity : BaseActivity() {
         }
 
         binding.btnAutoTune.setOnClickListener {
-            runAutoTune()
+            showBenchmarkModeDialog()
         }
 
         binding.btnStopAutotune.setOnClickListener {
@@ -459,7 +460,23 @@ class AdvancedSettingsActivity : BaseActivity() {
         }
     }
 
-    private fun runAutoTune() {
+    private fun showBenchmarkModeDialog() {
+        val modes = arrayOf(
+            "⚡ Быстрый (Простой)\nПроверка YouTube и Discord (~15 сек)",
+            "🔍 Расширенный (Глубокий)\nПроверка YouTube, YouTube CDN, Discord Voice, Telegram, Instagram CDN"
+        )
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Режим автоподбора стратегии")
+            .setItems(modes) { dialog, which ->
+                val selectedMode = if (which == 1) BenchmarkMode.EXTENDED else BenchmarkMode.SIMPLE
+                dialog.dismiss()
+                runAutoTune(selectedMode)
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun runAutoTune(mode: BenchmarkMode = BenchmarkMode.SIMPLE) {
         val (initialStatus, _) = appStatus
         val wasRunning = (initialStatus == AppStatus.Running)
 
@@ -471,7 +488,8 @@ class AdvancedSettingsActivity : BaseActivity() {
 
             binding.autotuneCard.visibility = View.VISIBLE
             binding.autotuneProgress.progress = 2
-            binding.autotuneStatus.text = "Запуск тестирования..."
+            val modeLabel = if (mode == BenchmarkMode.EXTENDED) "Расширенный тест..." else "Быстрый тест..."
+            binding.autotuneStatus.text = "Запуск тестирования ($modeLabel)"
             binding.btnAutoTune.isEnabled = false
             binding.btnSelectStrategy.isEnabled = false
 
@@ -490,6 +508,7 @@ class AdvancedSettingsActivity : BaseActivity() {
 
             val benchmark = StrategyBenchmark(this@AdvancedSettingsActivity)
             val result = benchmark.runBenchmark(
+                mode = mode,
                 onProgress = { current, total, strategy, statusText ->
                     val progressPercent = ((current.toFloat() / total.toFloat()) * 100).toInt()
                     binding.autotuneProgress.progress = progressPercent

@@ -48,9 +48,14 @@ class WarpVpnService : VpnService() {
 
         const val ACTION_START = "io.github.dovecoteescapee.byedpi.warp.START"
         const val ACTION_STOP = "io.github.dovecoteescapee.byedpi.warp.STOP"
+        const val ACTION_PAUSE = "io.github.dovecoteescapee.byedpi.warp.PAUSE"
+        const val ACTION_RESUME = "io.github.dovecoteescapee.byedpi.warp.RESUME"
 
         private val _isRunning = MutableStateFlow(false)
         val isRunning: StateFlow<Boolean> = _isRunning
+
+        private val _isPaused = MutableStateFlow(false)
+        val isPaused: StateFlow<Boolean> = _isPaused
 
         private val _connectionStatus = MutableStateFlow("Остановлен")
         val connectionStatus: StateFlow<String> = _connectionStatus
@@ -101,6 +106,20 @@ class WarpVpnService : VpnService() {
         fun stop(context: Context) {
             val intent = Intent(context, WarpVpnService::class.java).apply {
                 action = ACTION_STOP
+            }
+            context.startService(intent)
+        }
+
+        fun pause(context: Context) {
+            val intent = Intent(context, WarpVpnService::class.java).apply {
+                action = ACTION_PAUSE
+            }
+            context.startService(intent)
+        }
+
+        fun resume(context: Context) {
+            val intent = Intent(context, WarpVpnService::class.java).apply {
+                action = ACTION_RESUME
             }
             context.startService(intent)
         }
@@ -177,6 +196,7 @@ class WarpVpnService : VpnService() {
         when (intent?.action) {
             ACTION_START -> {
                 isUserExplicitStop = false
+                _isPaused.value = false
                 startForegroundNotification("Подключение к Cloudflare WARP...")
                 startTunnel()
                 registerNetworkCallbackIfNeeded()
@@ -184,9 +204,18 @@ class WarpVpnService : VpnService() {
             }
             ACTION_STOP -> {
                 isUserExplicitStop = true
+                _isPaused.value = false
                 unregisterNetworkCallback()
                 stopTunnel()
                 return START_NOT_STICKY
+            }
+            ACTION_PAUSE -> {
+                pauseTunnel()
+                return START_STICKY
+            }
+            ACTION_RESUME -> {
+                resumeTunnel()
+                return START_STICKY
             }
             else -> {
                 Log.w(TAG, "Unknown action: ${intent?.action}")
@@ -408,6 +437,7 @@ class WarpVpnService : VpnService() {
                     startForegroundNotification("WARP активен (${initialPing}ms)")
                 }
 
+                var consecutiveFailures = 0
                 while (_isRunning.value && !isUserExplicitStop) {
                     delay(12000) // Regular check interval (12 seconds)
 
@@ -415,11 +445,36 @@ class WarpVpnService : VpnService() {
 
                     val ping = pingTunnel(3500)
                     if (ping >= 0) {
+                        consecutiveFailures = 0
                         _warpPingMs.value = ping
                         _connectionStatus.value = "Подключен (WARP активен)"
                         startForegroundNotification("WARP активен (${ping}ms)")
                     } else {
                         _warpPingMs.value = -1L
+                        consecutiveFailures++
+                        Log.w(TAG, "WARP packet loss detected (failure $consecutiveFailures/2)")
+
+                        // Новая стратегия 1.6: если 2 проверки подряд потеря пакетов (блокировка порта ТСПУ),
+                        // выполняем ротацию на следующий порт из пула (500 <-> 4500 <-> 1701 <-> 8854)
+                        if (consecutiveFailures >= 2 && !isUserExplicitStop && _isRunning.value) {
+                            consecutiveFailures = 0
+                            val currentConf = WarpConfigManager.currentConfig.value
+                            val currentEp = WarpConfigManager.extractEndpoint(currentConf)
+                            val nextEp = WarpEndpointOptimizer.getNextCandidateEndpoint(currentEp)
+                            Log.i(TAG, "Failover: rotating blocked port $currentEp -> $nextEp")
+                            val newConf = WarpEndpointOptimizer.optimizeConfigString(currentConf, nextEp)
+                            WarpConfigManager.saveConfig(this@WarpVpnService, newConf)
+                            _connectionStatus.value = "Смена порта на $nextEp..."
+                            startForegroundNotification("WARP: Смена порта ($nextEp)...")
+                            
+                            // Перезапуск туннеля на новый порт
+                            stopTunnelInternal()
+                            delay(400)
+                            if (_isRunning.value && !isUserExplicitStop) {
+                                startTunnelInternal()
+                            }
+                            break
+                        }
                     }
                 }
             } catch (_: CancellationException) {
@@ -680,6 +735,49 @@ class WarpVpnService : VpnService() {
         startWatchdog()
     }
 
+    private fun pauseTunnel() {
+        if (!_isRunning.value || _isPaused.value) return
+        _isPaused.value = true
+        watchdogJob?.cancel()
+        _connectionStatus.value = "Приостановлен"
+        try {
+            if (tunnelHandle >= 0) {
+                GoBackend.awgTurnOff(tunnelHandle)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error pausing tunnel", e)
+        }
+        startForegroundNotification("WARP (Приостановлен)")
+    }
+
+    private fun resumeTunnel() {
+        if (!_isRunning.value || !_isPaused.value) return
+        _isPaused.value = false
+        serviceScope.launch {
+            try {
+                stopTunnelInternal()
+                delay(200)
+                startTunnelInternal()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error resuming tunnel", e)
+            }
+        }
+    }
+
+    private suspend fun stopTunnelInternal() {
+        try {
+            WarpMasqueClient.stop()
+            if (tunnelHandle >= 0) {
+                GoBackend.awgTurnOff(tunnelHandle)
+                tunnelHandle = -1
+            }
+            tunFd?.close()
+            tunFd = null
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping tunnel internally", e)
+        }
+    }
+
     private fun stopTunnel() {
         watchdogJob?.cancel()
         watchdogJob = null
@@ -688,18 +786,10 @@ class WarpVpnService : VpnService() {
 
         serviceScope.launch {
             try {
-                WarpMasqueClient.stop()
-                if (tunnelHandle >= 0) {
-                    Log.i(TAG, "Turning off GoBackend handle: $tunnelHandle")
-                    GoBackend.awgTurnOff(tunnelHandle)
-                    tunnelHandle = -1
-                }
-                tunFd?.close()
-                tunFd = null
-            } catch (e: Exception) {
-                Log.e(TAG, "Error stopping tunnel", e)
+                stopTunnelInternal()
             } finally {
                 _isRunning.value = false
+                _isPaused.value = false
                 _connectionStatus.value = "Остановлен"
                 stopForeground(true)
                 stopSelf()
@@ -731,11 +821,52 @@ class WarpVpnService : VpnService() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
+        val paused = _isPaused.value
+        val pauseAction = if (paused) {
+            val resumeIntent = PendingIntent.getService(
+                this,
+                202,
+                Intent(this, WarpVpnService::class.java).apply { action = ACTION_RESUME },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            NotificationCompat.Action.Builder(
+                R.drawable.ic_play_arrow_24,
+                getString(R.string.action_resume),
+                resumeIntent
+            ).build()
+        } else {
+            val pauseIntent = PendingIntent.getService(
+                this,
+                202,
+                Intent(this, WarpVpnService::class.java).apply { action = ACTION_PAUSE },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            NotificationCompat.Action.Builder(
+                R.drawable.ic_pause_24,
+                getString(R.string.action_pause),
+                pauseIntent
+            ).build()
+        }
+
+        val stopIntent = PendingIntent.getService(
+            this,
+            201,
+            Intent(this, WarpVpnService::class.java).apply { action = ACTION_STOP },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val stopAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_stop_24,
+            getString(R.string.action_stop),
+            stopIntent
+        ).build()
+
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Cloudflare WARP (AmneziaWG)")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
+            .addAction(pauseAction)
+            .addAction(stopAction)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)

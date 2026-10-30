@@ -11,6 +11,34 @@ data class Strategy(
 object StrategyCatalog {
     val strategies = listOf(
         Strategy(
+            id = "tspu_2026_fake_disorder",
+            name = "Анти-ТСПУ 2026 (Fake TTL 3 + MultiSplit + Disorder)",
+            description = "Флагманская стратегия против новейших ТСПУ: фейк с коротким TTL 3, дробление SNI и разворот очереди TCP.",
+            args = "-f-1 -t3 -n www.google.com -d1 -s2+s -r1+s -q1 -a1",
+            recommendedFor = "ТСПУ 2026, YouTube 4K, Discord"
+        ),
+        Strategy(
+            id = "tls_sni_frag_reverse",
+            name = "Глубокая фрагментация SNI + Reverse Cascade",
+            description = "Многоступенчатое разбиение ClientHello на байтах 1, 3, 5, 7, 12 со сдвигом флагов и перестановкой сегментов.",
+            args = "-d1 -s1+s -d3+s -s5+s -d7+s -s12+s -r2+s -Mh,d -a1",
+            recommendedFor = "YouTube, Discord Voice, Twitch"
+        ),
+        Strategy(
+            id = "quic_drop_multisplit",
+            name = "Двойной мультисплит + Drop SACK 2026",
+            description = "Обход сигнатурного анализатора сбросом SACK и каскадом на 3, 6, 10 байтах с автопереключением.",
+            args = "-d1 -s3+s -s6+s -s10+s -q1+s -a1 -S",
+            recommendedFor = "Ростелеком, МТС, Мегафон, Билайн"
+        ),
+        Strategy(
+            id = "youtube_discord_combo_2026",
+            name = "Комбо 2026: YouTube + Discord Voice (OOB + Fake)",
+            description = "OOB-инъекция, фейк SNI YouTube с TTL 4 и сплит TLS записи для стабильного голоса и 4K видео.",
+            args = "-o1 -d2 -s3+s -r1+s -f-1 -t4 -n youtube.com -a1",
+            recommendedFor = "Discord Voice, YouTube 4K 60fps"
+        ),
+        Strategy(
             id = "cascade_10",
             name = "Каскадный сплит (10 шагов + TLSrec)",
             description = "Глубокая фрагментация пакетов на 10 интервалах с разворотом очереди и сплитом TLS записи.",

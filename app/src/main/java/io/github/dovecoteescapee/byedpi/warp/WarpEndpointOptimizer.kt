@@ -27,9 +27,16 @@ object WarpEndpointOptimizer {
         "162.159.193.1:500",
         "162.159.193.1:4500",
         "162.159.195.1:500",
+        "162.159.195.1:4500",
         "188.114.97.1:500",
+        "188.114.97.1:4500",
         "188.114.99.1:500",
+        "188.114.99.1:4500",
         "188.114.96.1:500",
+        "188.114.96.1:4500",
+        "162.159.192.1:1701",
+        "162.159.193.1:1701",
+        "162.159.195.1:1701",
         "162.159.192.1:2408",
         "162.159.193.1:2408",
         "188.114.97.1:8854",
@@ -40,6 +47,25 @@ object WarpEndpointOptimizer {
     )
 
     const val BEST_DEFAULT_ENDPOINT = "162.159.192.1:500"
+
+    /**
+     * Возвращает следующий альтернативный порт/эндпоинт для автоподбора при потере пакетов
+     */
+    fun getNextCandidateEndpoint(currentEndpoint: String): String {
+        val clean = currentEndpoint.trim()
+        val index = CANDIDATE_ENDPOINTS.indexOfFirst { it.equals(clean, ignoreCase = true) }
+        return if (index >= 0 && index + 1 < CANDIDATE_ENDPOINTS.size) {
+            CANDIDATE_ENDPOINTS[index + 1]
+        } else {
+            val host = clean.substringBefore(":")
+            when {
+                clean.endsWith(":500") -> "$host:4500"
+                clean.endsWith(":4500") -> "$host:1701"
+                clean.endsWith(":1701") -> "$host:8854"
+                else -> "$host:500"
+            }
+        }
+    }
 
     /**
      * Probes an endpoint to measure latency.

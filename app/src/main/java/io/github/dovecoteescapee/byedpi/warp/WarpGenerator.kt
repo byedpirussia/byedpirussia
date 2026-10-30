@@ -52,11 +52,19 @@ object WarpGenerator {
         val peerPub: String,
         val clientIpv4: String,
         val clientIpv6: String,
-        val endpoint: String
+        val endpoint: String,
+        val rawAwgConfig: String = ""
     ) {
         fun toAmneziaWgConfig(version: String = "3.1"): String {
+            if (rawAwgConfig.isNotBlank() && rawAwgConfig.contains("H1 =") && rawAwgConfig.contains("I1 =")) {
+                val clean = rawAwgConfig.trim()
+                return clean.replace("engage.cloudflareclient.com:500", "162.159.192.1:500")
+            }
             val (h1, h2, h3, h4) = listOf(1, 2, 3, 4)
-            val jc = if (version == "3.1") 8 else 7
+            // Новая динамическая стратегия AWG 3.1+ со случайным джиттером
+            val jc = if (version == "3.1") Random.nextInt(5, 9) else 7
+            val jmin = Random.nextInt(42, 65)
+            val jmax = Random.nextInt(190, 260)
             return """[Interface]
 PrivateKey = $privKey
 Address = $clientIpv4, $clientIpv6
@@ -67,8 +75,8 @@ S2 = 0
 S3 = 0
 S4 = 0
 Jc = $jc
-Jmin = 40
-Jmax = 70
+Jmin = $jmin
+Jmax = $jmax
 H1 = $h1
 H2 = $h2
 H3 = $h3

@@ -177,6 +177,8 @@
     <string name="tile_byedpi">ByeDPI</string>
     <string name="tile_tg_proxy">TG Прокси</string>
     <string name="tile_warp">Cloudflare WARP</string>
+    <string name="tile_stop_all">Отключить всё</string>
+    <string name="all_services_stopped">Все службы защиты отключены</string>
 
     <!-- Proxy Chains -->
     <string name="chain_title">Создать цепочку прокси</string>
