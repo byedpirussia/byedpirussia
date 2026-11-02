@@ -430,9 +430,25 @@ class WarpVpnService : VpnService() {
                 Log.i(TAG, "Starting WARP connection watchdog...")
 
                 // Initial background ping check after start
-                delay(2000)
-                val initialPing = pingTunnel(3500)
-                if (initialPing >= 0) {
+                delay(1500)
+                var initialPing = pingTunnel(3500)
+                if (initialPing < 0) {
+                    // Quick failover at launch if initial endpoint is blocked
+                    Log.w(TAG, "Initial ping failed, attempting immediate failover to alternate port...")
+                    val curConf = WarpConfigManager.currentConfig.value
+                    val curEp = WarpConfigManager.extractEndpoint(curConf)
+                    val altEp = WarpEndpointOptimizer.getNextCandidateEndpoint(curEp)
+                    val newConf = WarpEndpointOptimizer.optimizeConfigString(curConf, altEp)
+                    WarpConfigManager.saveConfig(this@WarpVpnService, newConf)
+                    _connectionStatus.value = "Смена узла на $altEp..."
+                    startForegroundNotification("WARP: Смена узла ($altEp)...")
+                    stopTunnelInternal()
+                    delay(300)
+                    if (_isRunning.value && !isUserExplicitStop) {
+                        startTunnelInternal()
+                    }
+                    return@launch
+                } else {
                     _warpPingMs.value = initialPing
                     startForegroundNotification("WARP активен (${initialPing}ms)")
                 }
@@ -539,10 +555,12 @@ class WarpVpnService : VpnService() {
 
         // Resolve letter-based/domain endpoints before creating TUN (prevents DNS deadlock & Go panic)
         var resolvedEndpoint = resolveEndpointToIp(parsed.peerEndpoint) ?: "162.159.192.1:500"
-        // В РФ порты Wireguard 2408, 854, 8854 заблокированы ТСПУ. Порт 500 (IKEv2) и 4500 не блокируются.
-        if (resolvedEndpoint.endsWith(":2408") || (!resolvedEndpoint.endsWith(":500") && !resolvedEndpoint.endsWith(":4500"))) {
+        // В РФ порты Wireguard 2408, 854, 8854 заблокированы ТСПУ.
+        // Белый список портов: 500 (IKEv2), 4500 (IPsec NAT-T), 1701 (L2TP).
+        val validPorts = listOf(":500", ":4500", ":1701")
+        if (validPorts.none { resolvedEndpoint.endsWith(it) }) {
             val ipPart = resolvedEndpoint.substringBefore(":")
-            val effectiveIp = if (ipPart.isBlank() || ipPart.startsWith("8.") || ipPart.startsWith("188.")) "162.159.192.1" else ipPart
+            val effectiveIp = if (ipPart.isBlank() || ipPart.contains("cloudflareclient") || ipPart.startsWith("8.") || ipPart.startsWith("188.")) "162.159.192.1" else ipPart
             resolvedEndpoint = "$effectiveIp:500"
         }
         var effectiveKeepalive = parsed.peerPersistentKeepalive ?: 25
@@ -721,15 +739,6 @@ class WarpVpnService : VpnService() {
         _connectionStatus.value = statusText
         startForegroundNotification("🟢 $statusText: ${parsed.peerEndpoint ?: "Cloudflare"}")
         Log.i(TAG, "WARP tunnel successfully activated. Handle: $handle")
-
-        if (tgFixEnabled && !io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.isRunning.value) {
-            try {
-                io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.start(this@WarpVpnService)
-                Log.i(TAG, "Auto-started TgWsProxyService for Telegram rescue")
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not auto-start TgWsProxyService", e)
-            }
-        }
 
         // Start ping and health watchdog
         startWatchdog()

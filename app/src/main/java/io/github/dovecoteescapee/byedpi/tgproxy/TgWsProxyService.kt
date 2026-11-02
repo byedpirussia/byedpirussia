@@ -159,11 +159,24 @@ class TgWsProxyService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val stopIntent = PendingIntent.getService(
+            this,
+            501,
+            Intent(this, TgWsProxyService::class.java).apply { action = ACTION_STOP },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val stopAction = NotificationCompat.Action.Builder(
+            R.drawable.ic_stop_24,
+            getString(R.string.action_stop),
+            stopIntent
+        ).build()
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Telegram MTProto Proxy")
             .setContentText(content)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
+            .addAction(stopAction)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .build()

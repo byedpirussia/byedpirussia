@@ -28,6 +28,12 @@ object WarpEndpointOptimizer {
         "162.159.193.1:4500",
         "162.159.195.1:500",
         "162.159.195.1:4500",
+        "162.159.204.1:500",
+        "162.159.204.1:4500",
+        "162.159.192.2:500",
+        "162.159.192.2:4500",
+        "162.159.193.2:500",
+        "162.159.193.2:4500",
         "188.114.97.1:500",
         "188.114.97.1:4500",
         "188.114.99.1:500",
@@ -36,14 +42,7 @@ object WarpEndpointOptimizer {
         "188.114.96.1:4500",
         "162.159.192.1:1701",
         "162.159.193.1:1701",
-        "162.159.195.1:1701",
-        "162.159.192.1:2408",
-        "162.159.193.1:2408",
-        "188.114.97.1:8854",
-        "188.114.99.1:8854",
-        "162.159.204.1:500",
-        "162.159.192.2:500",
-        "162.159.193.2:500"
+        "162.159.195.1:1701"
     )
 
     const val BEST_DEFAULT_ENDPOINT = "162.159.192.1:500"
@@ -56,13 +55,15 @@ object WarpEndpointOptimizer {
         val index = CANDIDATE_ENDPOINTS.indexOfFirst { it.equals(clean, ignoreCase = true) }
         return if (index >= 0 && index + 1 < CANDIDATE_ENDPOINTS.size) {
             CANDIDATE_ENDPOINTS[index + 1]
+        } else if (index >= 0) {
+            CANDIDATE_ENDPOINTS[0]
         } else {
             val host = clean.substringBefore(":")
+            val effectiveHost = if (host.isBlank() || host.contains("cloudflareclient") || host.startsWith("8.") || host.startsWith("188.")) "162.159.192.1" else host
             when {
-                clean.endsWith(":500") -> "$host:4500"
-                clean.endsWith(":4500") -> "$host:1701"
-                clean.endsWith(":1701") -> "$host:8854"
-                else -> "$host:500"
+                clean.endsWith(":500") -> "$effectiveHost:4500"
+                clean.endsWith(":4500") -> "$effectiveHost:1701"
+                else -> "$effectiveHost:500"
             }
         }
     }

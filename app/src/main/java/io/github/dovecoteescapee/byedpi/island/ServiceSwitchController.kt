@@ -26,6 +26,7 @@ object ServiceSwitchController {
         return when {
             WarpVpnService.isRunning.value -> MODE_WARP
             VlessVpnService.isRunning.value -> MODE_VLESS
+            io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.isRunning.value -> "tgproxy"
             byedpiStatus == AppStatus.Running -> MODE_BYEDPI
             else -> MODE_STOP
         }
@@ -135,6 +136,9 @@ object ServiceSwitchController {
         }
         if (VlessVpnService.isRunning.value) {
             VlessVpnService.stop(context)
+        }
+        if (io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.isRunning.value) {
+            io.github.dovecoteescapee.byedpi.tgproxy.TgWsProxyService.stop(context)
         }
     }
 
