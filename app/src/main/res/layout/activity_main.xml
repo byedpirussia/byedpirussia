@@ -537,7 +537,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 4. M3 Служба 2: AmneziaWG WARP -->
+            <!-- 4. M3 Служба 2: AmneziaWG 3.1 WARP -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/m3_card_warp"
                 style="@style/Widget.Material3.CardView.Elevated"
@@ -591,7 +591,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="AmneziaWG WARP"
+                                android:text="AmneziaWG 3.1 WARP"
                                 android:textSize="17sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -600,7 +600,7 @@
                                 android:id="@+id/m3_sub_warp"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Cloudflare WARP (AWG 2.0)"
+                                android:text="Cloudflare WARP (AmneziaWG 3.1)"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline"
                                 android:layout_marginTop="2dp" />

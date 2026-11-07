@@ -111,7 +111,7 @@
     <string name="card_byedpi_title">ByeDPI (Десинхронизация ТСПУ)</string>
     <string name="card_byedpi_desc">Прямой доступ к YouTube, Discord без прокси и VPN-серверов за рубежом</string>
     <string name="card_tg_desc">Автономный MTProto прокси с Cloudflare WebSocket транспортом</string>
-    <string name="card_warp_desc">Полноценный туннель Cloudflare WARP с защитой AWG 2.0 от блокировок</string>
+    <string name="card_warp_desc">Полноценный туннель Cloudflare WARP с защитой AmneziaWG 3.1 от блокировок</string>
     <string name="byedpi_active_btn">Отключить ByeDPI</string>
     <string name="byedpi_inactive_btn">Включить ByeDPI</string>
     <string name="tg_active_btn">Отключить Telegram Прокси</string>

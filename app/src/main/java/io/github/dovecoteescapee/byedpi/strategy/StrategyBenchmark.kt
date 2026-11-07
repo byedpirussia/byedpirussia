@@ -60,6 +60,81 @@ class StrategyBenchmark(private val context: Context) {
             "web.telegram.org" to "149.154.167.99",
             "static.cdninstagram.com" to "157.240.241.63"
         )
+
+        fun testTlsHandshake(host: String, proxyPort: Int = TEST_PORT): Long? {
+            val startTime = System.currentTimeMillis()
+            var rawSocket: Socket? = null
+            var sslSocket: SSLSocket? = null
+            return try {
+                val ipAddress = resolveIpv4(host)
+
+                val socksProxy = Proxy(Proxy.Type.SOCKS, InetSocketAddress("127.0.0.1", proxyPort))
+                rawSocket = Socket(socksProxy)
+                rawSocket.soTimeout = HANDSHAKE_TIMEOUT_MS
+                rawSocket.connect(InetSocketAddress(ipAddress, 443), CONNECT_TIMEOUT_MS)
+
+                val sslFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
+                sslSocket = sslFactory.createSocket(rawSocket, host, 443, true) as SSLSocket
+                sslSocket.soTimeout = HANDSHAKE_TIMEOUT_MS
+
+                val sslParams = SSLParameters()
+                sslParams.serverNames = listOf(SNIHostName(host))
+                sslSocket.sslParameters = sslParams
+
+                sslSocket.startHandshake()
+                val latency = System.currentTimeMillis() - startTime
+                latency
+            } catch (e: Exception) {
+                null
+            } finally {
+                try {
+                    sslSocket?.close()
+                    rawSocket?.close()
+                } catch (_: Exception) {}
+            }
+        }
+
+        fun resolveIpv4(host: String): String {
+            return try {
+                val addresses = InetAddress.getAllByName(host)
+                addresses.filterIsInstance<Inet4Address>().firstOrNull()?.hostAddress
+                    ?: FALLBACK_IPS[host]
+                    ?: host
+            } catch (e: Exception) {
+                FALLBACK_IPS[host] ?: host
+            }
+        }
+
+        suspend fun testCustomArgs(
+            customArgs: String,
+            testPort: Int = TEST_PORT
+        ): Pair<Long?, Long?> = withContext(Dispatchers.IO) {
+            val proxy = ByeDpiProxy()
+            val cmd = "-i 127.0.0.1 -p $testPort -X $customArgs"
+            val prefs = ByeDpiProxyCmdPreferences(cmd)
+
+            val proxyJob = launch(Dispatchers.IO) {
+                try {
+                    proxy.startProxy(prefs)
+                } catch (e: Exception) {
+                    Log.d(TAG, "Custom test proxy ended: ${e.message}")
+                }
+            }
+
+            delay(180)
+
+            try {
+                val ytLatency = testTlsHandshake("www.youtube.com", testPort)
+                val discordLatency = testTlsHandshake("discord.com", testPort)
+                ytLatency to discordLatency
+            } finally {
+                try {
+                    proxy.stopProxy()
+                } catch (_: Exception) {}
+                proxyJob.cancel()
+                delay(80)
+            }
+        }
     }
 
     suspend fun runBenchmark(
@@ -166,49 +241,5 @@ class StrategyBenchmark(private val context: Context) {
             .putString("selected_strategy_id", strategy.id)
             .apply()
         Log.i(TAG, "Applied strategy: ${strategy.name} (${strategy.args})")
-    }
-
-    private fun testTlsHandshake(host: String, proxyPort: Int): Long? {
-        val startTime = System.currentTimeMillis()
-        var rawSocket: Socket? = null
-        var sslSocket: SSLSocket? = null
-        return try {
-            val ipAddress = resolveIpv4(host)
-
-            val socksProxy = Proxy(Proxy.Type.SOCKS, InetSocketAddress("127.0.0.1", proxyPort))
-            rawSocket = Socket(socksProxy)
-            rawSocket.soTimeout = HANDSHAKE_TIMEOUT_MS
-            rawSocket.connect(InetSocketAddress(ipAddress, 443), CONNECT_TIMEOUT_MS)
-
-            val sslFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
-            sslSocket = sslFactory.createSocket(rawSocket, host, 443, true) as SSLSocket
-            sslSocket.soTimeout = HANDSHAKE_TIMEOUT_MS
-
-            val sslParams = SSLParameters()
-            sslParams.serverNames = listOf(SNIHostName(host))
-            sslSocket.sslParameters = sslParams
-
-            sslSocket.startHandshake()
-            val latency = System.currentTimeMillis() - startTime
-            latency
-        } catch (e: Exception) {
-            null
-        } finally {
-            try {
-                sslSocket?.close()
-                rawSocket?.close()
-            } catch (_: Exception) {}
-        }
-    }
-
-    private fun resolveIpv4(host: String): String {
-        return try {
-            val addresses = InetAddress.getAllByName(host)
-            addresses.filterIsInstance<Inet4Address>().firstOrNull()?.hostAddress
-                ?: FALLBACK_IPS[host]
-                ?: host
-        } catch (e: Exception) {
-            FALLBACK_IPS[host] ?: host
-        }
     }
 }

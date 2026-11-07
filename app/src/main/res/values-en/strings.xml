@@ -111,7 +111,7 @@
     <string name="card_byedpi_title">ByeDPI (DPI Desynchronization)</string>
     <string name="card_byedpi_desc">Direct access to YouTube &amp; Discord without external proxies or servers</string>
     <string name="card_tg_desc">Autonomous MTProto proxy with Cloudflare WebSocket transport</string>
-    <string name="card_warp_desc">Full-featured Cloudflare WARP tunnel with AWG 2.0 DPI protection</string>
+    <string name="card_warp_desc">Full-featured Cloudflare WARP tunnel with AmneziaWG 3.1 DPI protection</string>
     <string name="byedpi_active_btn">Turn Off ByeDPI</string>
     <string name="byedpi_inactive_btn">Turn On ByeDPI</string>
     <string name="tg_active_btn">Turn Off TG Proxy</string>

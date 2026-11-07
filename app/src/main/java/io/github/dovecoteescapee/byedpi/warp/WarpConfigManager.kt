@@ -17,7 +17,10 @@ object WarpConfigManager {
     private const val KEY_WARP_MODE = "pref_warp_mode" // "masque" or "awg"
     private const val KEY_MASQUE_ENDPOINT = "pref_masque_endpoint"
 
-    // Оптимизированный рабочий конфиг с зарегистрированными ключами Cloudflare, AWG 3.1 обфускацией и незаблокированным портом 500
+    // Канонический боевой конфиг AmneziaWG 3.1:
+    // - Полноценные заголовки AWG 3.1 (H1=1..H4=4, S1=0..S4=0, Jc=8, Jmin=50, Jmax=220)
+    // - Инициализационный вектор I1..I5 для обхода сигнатурных фильтров ТСПУ
+    // - Незаблокированный порт 500 и стабильный Anycast IP
     const val DEFAULT_CONFIG = """[Interface]
 PrivateKey = KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8=
 Address = 172.16.0.2, 2606:4700:110:8655:e6ef:f746:2058:dac0
@@ -27,9 +30,9 @@ S1 = 0
 S2 = 0
 S3 = 0
 S4 = 0
-Jc = 7
-Jmin = 47
-Jmax = 213
+Jc = 8
+Jmin = 50
+Jmax = 220
 H1 = 1
 H2 = 2
 H3 = 3
@@ -57,9 +60,11 @@ PersistentKeepalive = 25"""
     fun init(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val saved = prefs.getString(KEY_CONFIG, null)
+        // Если конфиг отсутствует, содержит старые неработающие ключи или не содержит параметров AWG 3.1
         if (saved.isNullOrBlank() || saved.contains("Wli/uh1ka24") || saved.contains("8HRm8YSHu+jcewZJA6+SN4o5mF+yRteV7NDQTfEiUiw=") || !saved.contains("H1 = 1") || !saved.contains("I1 =")) {
             _currentConfig.value = DEFAULT_CONFIG
             prefs.edit { putString(KEY_CONFIG, DEFAULT_CONFIG) }
+            Log.i(TAG, "Установлен проверенный профиль AmneziaWG 3.1")
         } else {
             // Авто-миграция с заблокированных и замедленных РКН эндпоинтов (2408, 854, 8854, 188.114.x)
             if (saved.contains(":2408") || saved.contains("188.114.98.8") || saved.contains(":854") || saved.contains(":8854") || saved.contains("engage.cloudflareclient.com:500")) {
@@ -104,7 +109,7 @@ PersistentKeepalive = 25"""
     fun getMasqueConfig(context: Context): WarpMasqueClient.MasqueConfig {
         val raw = _currentConfig.value
         val privKey = Regex("""(?m)^\s*PrivateKey\s*=\s*(.+)$""").find(raw)?.groupValues?.get(1)?.trim()
-            ?: "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc="
+            ?: "KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8="
         val pubKey = Regex("""(?m)^\s*PublicKey\s*=\s*(.+)$""").find(raw)?.groupValues?.get(1)?.trim()
             ?: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
 

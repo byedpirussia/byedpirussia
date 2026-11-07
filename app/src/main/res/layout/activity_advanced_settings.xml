@@ -204,6 +204,24 @@
                         app:iconGravity="textStart"
                         app:iconPadding="8dp" />
 
+                    <!-- Кнопка Конструктор стратегий (Tonal) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_strategy_builder"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:paddingVertical="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:text="🛠️ Конструктор стратегии ByeDPI"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_tune_24"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp" />
+
                     <!-- Кнопка ввода своей стратегии (Outlined) -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_custom_strategy"

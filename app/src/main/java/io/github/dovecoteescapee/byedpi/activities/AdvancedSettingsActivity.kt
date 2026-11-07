@@ -122,6 +122,10 @@ class AdvancedSettingsActivity : BaseActivity() {
             showStrategySelectionDialog()
         }
 
+        binding.btnStrategyBuilder.setOnClickListener {
+            showStrategyBuilderDialog()
+        }
+
         binding.btnCustomStrategy.setOnClickListener {
             showCustomStrategyDialog()
         }
@@ -335,6 +339,227 @@ class AdvancedSettingsActivity : BaseActivity() {
         binding.strategyDescription.text = currentStrategy.description
         binding.strategyArgs.text = currentStrategy.args
         binding.btnSelectStrategy.text = "Выбрать из ${StrategyCatalog.strategies.size} стратегий вручную"
+    }
+
+    private fun showStrategyBuilderDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_strategy_builder, null)
+        val tvPreview = dialogView.findViewById<android.widget.TextView>(R.id.tv_preview_cmd)
+        val tvTtl = dialogView.findViewById<android.widget.TextView>(R.id.tv_ttl_val)
+        val tvSplit = dialogView.findViewById<android.widget.TextView>(R.id.tv_split_val)
+        val tvDisorder = dialogView.findViewById<android.widget.TextView>(R.id.tv_disorder_val)
+        val tvTestResult = dialogView.findViewById<android.widget.TextView>(R.id.tv_test_result)
+
+        val chipGroupPresets = dialogView.findViewById<com.google.android.material.chip.ChipGroup>(R.id.chip_group_presets)
+        val switchFake = dialogView.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_fake)
+        val sliderTtl = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.slider_ttl)
+        val etFakeSni = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.et_fake_sni)
+
+        val sliderSplit = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.slider_split)
+        val switchSplitSni = dialogView.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_split_sni)
+
+        val sliderDisorder = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.slider_disorder)
+        val switchDisorderSni = dialogView.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_disorder_sni)
+
+        val switchTlsRec = dialogView.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_tlsrec)
+        val switchOob = dialogView.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_oob)
+        val switchSack = dialogView.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_sack)
+        val switchFakeUdp = dialogView.findViewById<com.google.android.material.materialswitch.MaterialSwitch>(R.id.switch_fake_udp)
+
+        val btnTest = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_test_strategy)
+        val btnApply = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_apply_strategy)
+
+        fun updatePreview(): String {
+            val parts = mutableListOf<String>()
+
+            if (switchFake.isChecked) {
+                parts.add("-f-1")
+                val ttl = sliderTtl.value.toInt()
+                parts.add("-t$ttl")
+                val sni = etFakeSni.text?.toString()?.trim().orEmpty()
+                if (sni.isNotEmpty()) {
+                    parts.add("-n $sni")
+                }
+            }
+
+            val splitVal = sliderSplit.value.toInt()
+            val splitSuffix = if (switchSplitSni.isChecked) "+s" else ""
+            parts.add("-s$splitVal$splitSuffix")
+
+            val disorderVal = sliderDisorder.value.toInt()
+            if (disorderVal > 0) {
+                val disSuffix = if (switchDisorderSni.isChecked) "+s" else ""
+                parts.add("-d$disorderVal$disSuffix")
+            }
+
+            if (switchTlsRec.isChecked) {
+                parts.add("-r1+s")
+            }
+            if (switchOob.isChecked) {
+                parts.add("-o1")
+            }
+            if (switchSack.isChecked) {
+                parts.add("-S")
+            }
+            if (switchFakeUdp.isChecked) {
+                parts.add("-a1")
+            }
+
+            val result = parts.joinToString(" ")
+            tvPreview.text = result
+            return result
+        }
+
+        sliderTtl.addOnChangeListener { _, value, _ ->
+            tvTtl.text = value.toInt().toString()
+            updatePreview()
+        }
+        sliderSplit.addOnChangeListener { _, value, _ ->
+            val suffix = if (switchSplitSni.isChecked) "+s" else ""
+            tvSplit.text = "${value.toInt()}$suffix"
+            updatePreview()
+        }
+        switchSplitSni.setOnCheckedChangeListener { _, isChecked ->
+            val suffix = if (isChecked) "+s" else ""
+            tvSplit.text = "${sliderSplit.value.toInt()}$suffix"
+            updatePreview()
+        }
+        sliderDisorder.addOnChangeListener { _, value, _ ->
+            val suffix = if (switchDisorderSni.isChecked) "+s" else ""
+            tvDisorder.text = if (value.toInt() == 0) "Выкл" else "${value.toInt()}$suffix"
+            updatePreview()
+        }
+        switchDisorderSni.setOnCheckedChangeListener { _, isChecked ->
+            val suffix = if (isChecked) "+s" else ""
+            val v = sliderDisorder.value.toInt()
+            tvDisorder.text = if (v == 0) "Выкл" else "$v$suffix"
+            updatePreview()
+        }
+
+        switchFake.setOnCheckedChangeListener { _, _ -> updatePreview() }
+        switchTlsRec.setOnCheckedChangeListener { _, _ -> updatePreview() }
+        switchOob.setOnCheckedChangeListener { _, _ -> updatePreview() }
+        switchSack.setOnCheckedChangeListener { _, _ -> updatePreview() }
+        switchFakeUdp.setOnCheckedChangeListener { _, _ -> updatePreview() }
+        etFakeSni.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { updatePreview() }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+
+        chipGroupPresets.setOnCheckedStateChangeListener { _, checkedIds ->
+            when {
+                checkedIds.contains(R.id.chip_preset_tspu) -> {
+                    switchFake.isChecked = true
+                    sliderTtl.value = 3f
+                    etFakeSni.setText("www.google.com")
+                    sliderSplit.value = 2f
+                    switchSplitSni.isChecked = true
+                    sliderDisorder.value = 1f
+                    switchDisorderSni.isChecked = false
+                    switchTlsRec.isChecked = false
+                    switchOob.isChecked = false
+                    switchSack.isChecked = true
+                    switchFakeUdp.isChecked = true
+                }
+                checkedIds.contains(R.id.chip_preset_yt) -> {
+                    switchFake.isChecked = true
+                    sliderTtl.value = 4f
+                    etFakeSni.setText("youtube.com")
+                    sliderSplit.value = 3f
+                    switchSplitSni.isChecked = true
+                    sliderDisorder.value = 2f
+                    switchDisorderSni.isChecked = false
+                    switchTlsRec.isChecked = true
+                    switchOob.isChecked = false
+                    switchSack.isChecked = true
+                    switchFakeUdp.isChecked = true
+                }
+                checkedIds.contains(R.id.chip_preset_discord) -> {
+                    switchFake.isChecked = false
+                    sliderSplit.value = 3f
+                    switchSplitSni.isChecked = true
+                    sliderDisorder.value = 2f
+                    switchDisorderSni.isChecked = true
+                    switchTlsRec.isChecked = true
+                    switchOob.isChecked = true
+                    switchSack.isChecked = true
+                    switchFakeUdp.isChecked = true
+                }
+                checkedIds.contains(R.id.chip_preset_cascade) -> {
+                    switchFake.isChecked = false
+                    sliderSplit.value = 6f
+                    switchSplitSni.isChecked = true
+                    sliderDisorder.value = 3f
+                    switchDisorderSni.isChecked = true
+                    switchTlsRec.isChecked = true
+                    switchOob.isChecked = false
+                    switchSack.isChecked = true
+                    switchFakeUdp.isChecked = true
+                }
+            }
+            updatePreview()
+        }
+
+        updatePreview()
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        btnTest.setOnClickListener {
+            val cmd = updatePreview()
+            tvTestResult.text = "⏳ Проверка доступности YouTube и Discord..."
+            btnTest.isEnabled = false
+
+            lifecycleScope.launch {
+                try {
+                    val (ytPing, discordPing) = StrategyBenchmark.testCustomArgs(cmd)
+                    val ytStr = if (ytPing != null) "YouTube: OK (${ytPing}ms)" else "YouTube: Ошибка"
+                    val dcStr = if (discordPing != null) "Discord: OK (${discordPing}ms)" else "Discord: Ошибка"
+                    tvTestResult.text = "Результат теста:\n$ytStr | $dcStr"
+                } catch (e: Exception) {
+                    tvTestResult.text = "Ошибка проверки: ${e.message}"
+                } finally {
+                    btnTest.isEnabled = true
+                }
+            }
+        }
+
+        btnApply.setOnClickListener {
+            val finalArgs = updatePreview()
+            val customStrategy = Strategy(
+                id = "custom",
+                name = "Конструктор ByeDPI",
+                description = "Пользовательская сборка правил",
+                args = finalArgs,
+                recommendedFor = "Индивидуальный профиль"
+            )
+            StrategyBenchmark(this).applyStrategy(customStrategy)
+            updateStrategyView()
+
+            val (status, _) = appStatus
+            if (status == AppStatus.Running) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Перезапуск службы")
+                    .setMessage("Служба ByeDPI активна. Перезапустить её для применения новой стратегии?")
+                    .setPositiveButton("Перезапустить") { _, _ ->
+                        lifecycleScope.launch {
+                            ServiceManager.stop(this@AdvancedSettingsActivity)
+                            delay(500)
+                            ServiceManager.start(this@AdvancedSettingsActivity, Mode.VPN)
+                        }
+                    }
+                    .setNegativeButton("Позже", null)
+                    .show()
+            } else {
+                Toast.makeText(this, "Стратегия применена!", Toast.LENGTH_SHORT).show()
+            }
+
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun showCustomStrategyDialog() {
