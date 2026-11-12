@@ -1032,6 +1032,10 @@ class MainActivity : BaseActivity() {
             startActivity(Intent(this, AdvancedSettingsActivity::class.java))
         }
 
+        binding.m3CardSplitTunnel.setOnClickListener {
+            startActivity(Intent(this, io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelActivity::class.java))
+        }
+
         // Quantum Core & AI Traffic Doctor
         binding.m3BtnRunDoctor.setOnClickListener {
             Toast.makeText(this, "Запуск сканирования сети AI Traffic Doctor...", Toast.LENGTH_SHORT).show()
@@ -1084,6 +1088,9 @@ class MainActivity : BaseActivity() {
         TvNavigationHelper.setupCardFocus(binding.m3CardTg) { toggleTgProxy() }
         TvNavigationHelper.setupCardFocus(binding.m3CardAdvanced) {
             startActivity(Intent(this, AdvancedSettingsActivity::class.java))
+        }
+        TvNavigationHelper.setupCardFocus(binding.m3CardSplitTunnel) {
+            startActivity(Intent(this, io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelActivity::class.java))
         }
 
         TvNavigationHelper.setupButtonFocus(binding.m3BtnDisconnectAll)
