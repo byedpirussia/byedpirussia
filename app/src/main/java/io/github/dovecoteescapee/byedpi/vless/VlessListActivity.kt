@@ -538,22 +538,28 @@ class VlessListActivity : BaseActivity() {
                         launch {
                             val ping = try {
                                 val delay = io.github.dovecoteescapee.byedpi.vless.core.VlessCoreImpl.measureDelay(config, testUrl)
-                                if (delay > 0) delay else -1L
-                            } catch (e: Exception) {
-                                // Fallback to direct TCP ping if outbounds test fails locally
-                                try {
-                                    val startTime = System.currentTimeMillis()
-                                    val socket = java.net.Socket()
-                                    socket.connect(java.net.InetSocketAddress(config.address, config.port), 3000)
-                                    socket.close()
-                                    System.currentTimeMillis() - startTime
-                                } catch (_: Exception) {
-                                    -1L
+                                if (delay > 0) delay else {
+                                    // Честный замер TLS handshake к целевому серверу с SNI
+                                    io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessRealPing(
+                                        address = config.address,
+                                        port = config.port,
+                                        sni = if (config.sni.isNotBlank()) config.sni else config.host,
+                                        timeoutMs = 3000
+                                    )
                                 }
+                            } catch (e: Exception) {
+                                // Честный fallback TLS Handshake
+                                io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessRealPing(
+                                    address = config.address,
+                                    port = config.port,
+                                    sni = if (config.sni.isNotBlank()) config.sni else config.host,
+                                    timeoutMs = 3000
+                                )
                             }
 
                             withContext(Dispatchers.Main) {
                                 adapter?.setPing(config.id, ping)
+                                VlessManager.setPing(this@VlessListActivity, config.id, ping)
                                 testedCount++
                                 binding.pingProgressIndicator.progress = testedCount
                             }

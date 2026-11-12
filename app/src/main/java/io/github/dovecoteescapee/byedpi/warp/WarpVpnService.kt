@@ -125,12 +125,14 @@ class WarpVpnService : VpnService() {
         }
 
         /**
-         * Pings through the active VPN tunnel. Uses HTTPS port 443 and HTTP 204 connectivity endpoints.
+         * Pings through the active VPN tunnel using genuine HTTP generate_204 and DNS roundtrips.
          */
         suspend fun pingTunnel(timeoutMs: Int = 3000): Long = withContext(Dispatchers.IO) {
-            val start = System.currentTimeMillis()
+            val realPing = io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureTunnelRealPing(timeoutMs = timeoutMs)
+            if (realPing > 0) return@withContext realPing
 
-            // 1. Direct TCP handshake to port 443 (DoH servers)
+            // Fallback: direct DNS TCP probe
+            val start = System.currentTimeMillis()
             val fastTargets = listOf(
                 InetSocketAddress("1.1.1.1", 443),
                 InetSocketAddress("1.0.0.1", 443),
@@ -145,31 +147,6 @@ class WarpVpnService : VpnService() {
                     }
                 } catch (_: Exception) {}
             }
-
-            // 2. HTTP generate_204 check
-            val httpUrls = listOf(
-                "http://cp.cloudflare.com/generate_204",
-                "http://connectivitycheck.gstatic.com/generate_204"
-            )
-            for (urlStr in httpUrls) {
-                try {
-                    val urlStart = System.currentTimeMillis()
-                    val url = java.net.URL(urlStr)
-                    val conn = (url.openConnection() as java.net.HttpURLConnection).apply {
-                        connectTimeout = timeoutMs
-                        readTimeout = timeoutMs
-                        instanceFollowRedirects = false
-                        requestMethod = "GET"
-                        useCaches = false
-                    }
-                    val code = conn.responseCode
-                    conn.disconnect()
-                    if (code in 200..399) {
-                        return@withContext (System.currentTimeMillis() - urlStart)
-                    }
-                } catch (_: Exception) {}
-            }
-
             -1L
         }
 

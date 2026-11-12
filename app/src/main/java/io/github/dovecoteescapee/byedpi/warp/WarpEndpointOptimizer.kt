@@ -69,41 +69,28 @@ object WarpEndpointOptimizer {
     }
 
     /**
-     * Probes an endpoint to measure latency.
-     * Measures TCP/socket handshake latency to the Cloudflare node.
+     * Probes an endpoint to measure true latency.
+     * Uses RealPingTester with UDP handshake to the Cloudflare node, falling back to real TLS handshake.
      */
     suspend fun probeEndpoint(endpoint: String, timeoutMs: Int = 1200): Long = withContext(Dispatchers.IO) {
+        val realUdp = io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureWarpRealPing(endpoint, timeoutMs)
+        if (realUdp in 1..timeoutMs) return@withContext realUdp
+
         val parts = endpoint.split(":")
         if (parts.size != 2) return@withContext -1L
         val host = parts[0].trim()
-        val port = parts[1].trim().toIntOrNull() ?: return@withContext -1L
 
         val start = System.currentTimeMillis()
         try {
             val targetAddr = InetAddress.getByName(host)
-
-            // Probe target host socket reachability
+            // Probe target host socket reachability via TLS port 443
             Socket().use { sock ->
                 sock.connect(InetSocketAddress(targetAddr, 443), timeoutMs)
             }
-
             val rtt = System.currentTimeMillis() - start
             if (rtt in 1..timeoutMs) rtt else -1L
         } catch (_: Exception) {
-            try {
-                // Secondary fallback: UDP ping attempt
-                val targetAddr = InetAddress.getByName(host)
-                DatagramSocket().use { udpSocket ->
-                    udpSocket.soTimeout = timeoutMs
-                    val probeData = byteArrayOf(0x01, 0x00, 0x00, 0x00)
-                    val packet = DatagramPacket(probeData, probeData.size, targetAddr, port)
-                    udpSocket.send(packet)
-                }
-                val rtt = System.currentTimeMillis() - start
-                if (rtt in 1..timeoutMs) rtt else -1L
-            } catch (_: Exception) {
-                -1L
-            }
+            -1L
         }
     }
 

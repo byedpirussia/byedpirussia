@@ -13,7 +13,29 @@ object VlessManager {
     private const val PREFS_NAME = "vless_preferences"
     private const val KEY_PROFILES = "vless_profiles_json"
     private const val KEY_SELECTED_ID = "vless_selected_profile_id"
-    private const val KEY_SUBSCRIPTIONS = "vless_subscriptions_list"
+    private const val KEY_SUBSCRIPTIONS = "vless_subscriptions_json"
+    private const val KEY_SERVER_PINGS = "vless_server_pings_map"
+
+    fun setPing(context: Context, serverId: String, pingMs: Long) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val jsonStr = prefs.getString(KEY_SERVER_PINGS, null) ?: "{}"
+        try {
+            val obj = JSONObject(jsonStr)
+            obj.put(serverId, pingMs)
+            prefs.edit().putString(KEY_SERVER_PINGS, obj.toString()).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun getPing(context: Context, serverId: String): Long? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val jsonStr = prefs.getString(KEY_SERVER_PINGS, null) ?: return null
+        return try {
+            val obj = JSONObject(jsonStr)
+            if (obj.has(serverId)) obj.getLong(serverId) else null
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     fun getSubscriptions(context: Context): List<String> {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

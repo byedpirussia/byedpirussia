@@ -16,13 +16,13 @@
 
 ## 📥 Скачать приложение (Download)
 
-### 📱 Android (Версия v1.6.4):
-[![Скачать Xray](https://img.shields.io/badge/Скачать_APK-v1.6.4_(Xray)-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
-[![Скачать SingBox](https://img.shields.io/badge/Скачать_APK-v1.6.4_(SingBox)-34a853?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+### 📱 Android (Версия v1.6.5):
+[![Скачать Xray](https://img.shields.io/badge/Скачать_APK-v1.6.5_(Xray)-5c6eff?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
+[![Скачать SingBox](https://img.shields.io/badge/Скачать_APK-v1.6.5_(SingBox)-34a853?style=for-the-badge&logo=android&logoColor=white)](https://github.com/byedpirussia/byedpirussia/releases/latest)
 [![Telegram Channel](https://img.shields.io/badge/Telegram_Канал-t.me%2FByedpirussia-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/Byedpirussia)
 
-- **[📦 ByeDPI-Russia-Android-v1.6.4-Xray.apk](https://github.com/byedpirussia/byedpirussia/releases/latest)** (73 МБ) — классическая стабильная версия на высокопроизводительном ядре **Xray-core** (VLESS Reality, Vision, uTLS, WS/gRPC).
-- **[⚡ ByeDPI-Russia-Android-v1.6.4-SingBox.apk](https://github.com/byedpirussia/byedpirussia/releases/latest)** (192 МБ) — версия на современном ядре **Sing-box 1.14.4** с нативной поддержкой TUN и энергоэффективной маршрутизацией.
+- **[📦 ByeDPI-Russia-Android-v1.6.5-Xray.apk](https://github.com/byedpirussia/byedpirussia/releases/latest)** (73 МБ) — классическая стабильная версия на высокопроизводительном ядре **Xray-core** (VLESS Reality, Vision, uTLS, WS/gRPC).
+- **[⚡ ByeDPI-Russia-Android-v1.6.5-SingBox.apk](https://github.com/byedpirussia/byedpirussia/releases/latest)** (192 МБ) — версия на современном ядре **Sing-box 1.14.4** с нативной поддержкой TUN и энергоэффективной маршрутизацией.
 - 💡 *Примечание*: Обе версии имеют одинаковую цифровую подпись и `applicationId` — можно устанавливать поверх друг друга без потери настроек и добавленных серверов!
 - **[Официальный Telegram-канал t.me/Byedpirussia](https://t.me/Byedpirussia)** — свежие релизы и новости проекта.
 

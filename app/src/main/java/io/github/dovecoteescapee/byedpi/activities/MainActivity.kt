@@ -572,17 +572,15 @@ class MainActivity : BaseActivity() {
 
         dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardModeSimple).setOnClickListener {
             setUiModeSelected(true)
-            setUiModePreference("auto")
             dialog.dismiss()
-            updateUiModeViews()
+            updateM3State()
             checkStarDialog()
         }
 
         dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardModeAdvanced).setOnClickListener {
             setUiModeSelected(true)
-            setUiModePreference("advanced")
             dialog.dismiss()
-            updateUiModeViews()
+            updateM3State()
             checkStarDialog()
         }
 
@@ -1089,46 +1087,13 @@ class MainActivity : BaseActivity() {
         }
 
         TvNavigationHelper.setupButtonFocus(binding.m3BtnDisconnectAll)
-        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpDns)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpPing)
-        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpOptimize)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpTgFix)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnVlessServers)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnTgOpen)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnTgChannel)
 
-        // Режимы интерфейса (Material 3 Toggle Switcher)
-        binding.m3ModeToggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                when (checkedId) {
-                    R.id.btn_mode_auto -> {
-                        setUiModePreference("auto")
-                        updateUiModeViews()
-                    }
-                    R.id.btn_mode_advanced -> {
-                        setUiModePreference("advanced")
-                        updateUiModeViews()
-                    }
-                }
-            }
-        }
-
-        // Автоматический режим: клики
-        binding.autoBtnMainToggle.setOnClickListener {
-            toggleAutoProtection()
-        }
-        binding.autoCardToolSelector.setOnClickListener {
-            showAutoToolSelectorDialog()
-        }
-        binding.autoBtnAdvancedSettings.setOnClickListener {
-            setUiModePreference("advanced")
-            updateUiModeViews()
-        }
-        binding.btnSwitchToAutoMode.setOnClickListener {
-            setUiModePreference("auto")
-            updateUiModeViews()
-        }
-        updateUiModeViews()
+        updateM3State()
 
         lifecycleScope.launch {
             TgWsProxyService.isRunning.collectLatest { updateM3State() }
@@ -1326,67 +1291,76 @@ class MainActivity : BaseActivity() {
             binding.m3SubTg.text = "⚪ Отключено • 127.0.0.1:1443"
         }
 
-        // 6. Автоматический режим: обновление главной кнопки и текста инструмента
-        updateAutoModeState(isAnyRunning)
+        // 6. Телеметрия пинга и скорости
+        val pingVal = when {
+            WarpVpnService.isRunning.value -> WarpVpnService.warpPingMs.value
+            VlessVpnService.isRunning.value -> {
+                val sel = VlessManager.getSelectedConfig(this)
+                if (sel != null) VlessManager.getPing(this, sel.id) else null
+            }
+            else -> null
+        }
+
+        if (pingVal != null && pingVal > 0) {
+            binding.autoToolPing.text = "$pingVal ms"
+            binding.autoToolPing.setTextColor(
+                when {
+                    pingVal < 120 -> ContextCompat.getColor(this, android.R.color.holo_green_dark)
+                    pingVal < 300 -> ContextCompat.getColor(this, android.R.color.holo_orange_dark)
+                    else -> ContextCompat.getColor(this, android.R.color.holo_red_dark)
+                }
+            )
+        } else if (isAnyRunning) {
+            binding.autoToolPing.text = "⚡ Активен"
+            binding.autoToolPing.setTextColor(colorPrimary)
+        } else {
+            binding.autoToolPing.text = "-- ms"
+            binding.autoToolPing.setTextColor(colorOutline)
+        }
+
+        updateRealtimeTrafficSpeed()
     }
 
-    private fun updateUiModeViews() {
-        if (!::binding.isInitialized) return
-        val isAuto = isAutoUiMode()
-        if (isAuto) {
-            binding.containerAutoMode.visibility = View.VISIBLE
-            binding.containerAdvancedServices.visibility = View.GONE
-            if (binding.m3ModeToggleGroup.checkedButtonId != R.id.btn_mode_auto) {
-                binding.m3ModeToggleGroup.check(R.id.btn_mode_auto)
+    private var lastRxBytes: Long = 0L
+    private var lastTxBytes: Long = 0L
+    private var lastSpeedCheckTime: Long = 0L
+
+    private fun updateRealtimeTrafficSpeed() {
+        val now = System.currentTimeMillis()
+        val totalRx = android.net.TrafficStats.getTotalRxBytes()
+        val totalTx = android.net.TrafficStats.getTotalTxBytes()
+
+        if (lastSpeedCheckTime > 0 && now > lastSpeedCheckTime) {
+            val timeDiffSec = (now - lastSpeedCheckTime) / 1000.0
+            if (timeDiffSec >= 0.5) {
+                val rxDiff = if (totalRx >= lastRxBytes && lastRxBytes > 0) totalRx - lastRxBytes else 0L
+                val txDiff = if (totalTx >= lastTxBytes && lastTxBytes > 0) totalTx - lastTxBytes else 0L
+
+                val downSpeedBytesPerSec = (rxDiff / timeDiffSec).toLong()
+                val upSpeedBytesPerSec = (txDiff / timeDiffSec).toLong()
+
+                binding.tvSpeedDown.text = formatSpeed(downSpeedBytesPerSec)
+                binding.tvSpeedUp.text = formatSpeed(upSpeedBytesPerSec)
+
+                lastRxBytes = totalRx
+                lastTxBytes = totalTx
+                lastSpeedCheckTime = now
             }
         } else {
-            binding.containerAutoMode.visibility = View.GONE
-            binding.containerAdvancedServices.visibility = View.VISIBLE
-            if (binding.m3ModeToggleGroup.checkedButtonId != R.id.btn_mode_advanced) {
-                binding.m3ModeToggleGroup.check(R.id.btn_mode_advanced)
-            }
+            lastRxBytes = totalRx
+            lastTxBytes = totalTx
+            lastSpeedCheckTime = now
+            binding.tvSpeedDown.text = "0.0 КБ/с"
+            binding.tvSpeedUp.text = "0.0 КБ/с"
         }
-        updateM3State()
     }
 
-    private fun updateAutoModeState(isAnyRunning: Boolean) {
-        val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
-        val colorOnPrimary = getThemeColor(com.google.android.material.R.attr.colorOnPrimary)
-        val colorError = getThemeColor(com.google.android.material.R.attr.colorError)
-        val colorOnError = getThemeColor(com.google.android.material.R.attr.colorOnError)
-
-        if (isAnyRunning) {
-            binding.autoBtnMainToggle.setCardBackgroundColor(colorError)
-            binding.autoToggleIcon.setImageResource(R.drawable.ic_shield_off_24)
-            binding.autoToggleIcon.imageTintList = ColorStateList.valueOf(colorOnError)
-            binding.autoToggleText.text = "Отключить защиту"
-            binding.autoToggleText.setTextColor(colorOnError)
-        } else {
-            binding.autoBtnMainToggle.setCardBackgroundColor(colorPrimary)
-            binding.autoToggleIcon.setImageResource(R.drawable.ic_shield_check_24)
-            binding.autoToggleIcon.imageTintList = ColorStateList.valueOf(colorOnPrimary)
-            binding.autoToggleText.text = "Включить защиту"
-            binding.autoToggleText.setTextColor(colorOnPrimary)
-        }
-
-        val toolKey = getAutoSelectedTool()
-        binding.autoToolSelectedName.text = when (toolKey) {
-            "byedpi" -> getString(R.string.tool_byedpi)
-            "warp" -> getString(R.string.tool_warp)
-            "vless" -> getString(R.string.tool_vless)
-            else -> getString(R.string.tool_warp)
-        }
-
-        if (toolKey == "warp" && WarpVpnService.isRunning.value) {
-            val ping = WarpVpnService.warpPingMs.value ?: -1L
-            if (ping > 0) {
-                binding.autoToolPing.text = "Пинг: ${ping}ms"
-                binding.autoToolPing.visibility = View.VISIBLE
-            } else {
-                binding.autoToolPing.visibility = View.GONE
-            }
-        } else {
-            binding.autoToolPing.visibility = View.GONE
+    private fun formatSpeed(bytesPerSec: Long): String {
+        return when {
+            bytesPerSec >= 1024 * 1024 -> String.format(java.util.Locale.US, "%.1f МБ/с", bytesPerSec / (1024.0 * 1024.0))
+            bytesPerSec >= 1024 -> String.format(java.util.Locale.US, "%.0f КБ/с", bytesPerSec / 1024.0)
+            bytesPerSec > 0 -> "$bytesPerSec Б/с"
+            else -> "0.0 КБ/с"
         }
     }
 

@@ -95,14 +95,13 @@ object VlessCoreImpl : IVlessCore {
     }
 
     override fun measureDelay(config: VlessConfig, testUrl: String): Long {
-        return try {
-            val start = System.currentTimeMillis()
-            Socket().use { socket ->
-                socket.connect(InetSocketAddress(config.address, config.port), 3000)
-            }
-            System.currentTimeMillis() - start
-        } catch (_: Exception) {
-            -1L
+        return kotlinx.coroutines.runBlocking {
+            io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessRealPing(
+                address = config.address,
+                port = config.port,
+                sni = if (config.sni.isNotBlank()) config.sni else config.host,
+                timeoutMs = 3000
+            )
         }
     }
 
