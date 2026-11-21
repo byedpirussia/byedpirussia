@@ -672,23 +672,7 @@ class WarpVpnService : VpnService() {
 
         // Establish TUN
         val pfd = builder.establish() ?: throw IllegalStateException("Не удалось создать TUN интерфейс")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            try {
-                val cm = connectivityManager
-                val currentNet = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    cm?.activeNetwork?.takeIf { net ->
-                        val c = cm.getNetworkCapabilities(net)
-                        c != null && !c.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
-                    }
-                } else null ?: cm?.allNetworks?.firstOrNull { net ->
-                    val c = cm.getNetworkCapabilities(net)
-                    c != null && !c.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
-                }
-                setUnderlyingNetworks(if (currentNet != null) arrayOf(currentNet) else null)
-            } catch (e: Exception) {
-                Log.w(TAG, "Cannot set underlying networks", e)
-            }
-        }
+        io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.setUnderlyingPhysicalNetworks(this@WarpVpnService)
         tunFd = pfd
 
         // Используем высокоскоростное нативное ядро GoBackend с обходом ТСПУ (AWG 3.1) и защитой сокетов

@@ -21,7 +21,7 @@
             android:layout_height="?attr/actionBarSize"
             app:title="@string/title_advanced_settings"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
-            app:subtitle="Стратегии ByeDPI, автоподбор и параметры"
+            app:subtitle="@string/adv_toolbar_subtitle"
             app:subtitleTextAppearance="@style/TextAppearance.Material3.BodySmall"
             app:navigationIcon="@drawable/ic_arrow_back_24" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -93,7 +93,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Стратегия ByeDPI"
+                                android:text="@string/adv_byedpi_title"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -101,7 +101,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Алгоритм десинхронизации пакетов"
+                                android:text="@string/adv_byedpi_subtitle"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline" />
                         </LinearLayout>
@@ -128,7 +128,7 @@
                             android:id="@+id/strategy_target"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🎯 Для: YouTube"
+                            tools:text="🎯 Для: YouTube"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorPrimary"
@@ -141,7 +141,7 @@
                         android:id="@+id/strategy_description"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Оптимальная стратегия для обхода замедления видео и Discord"
+                        android:text="@string/adv_byedpi_desc_default"
                         android:textSize="13sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="12dp" />
@@ -213,7 +213,7 @@
                         android:minHeight="48dp"
                         android:paddingVertical="10dp"
                         android:layout_marginBottom="10dp"
-                        android:text="🛠️ Конструктор стратегии ByeDPI"
+                        android:text="@string/adv_btn_strategy_builder"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textAllCaps="false"
@@ -266,7 +266,7 @@
                         android:id="@+id/autotune_status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Тестирование стратегии..."
+                        android:text="@string/adv_testing_strategy"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurface"
@@ -340,7 +340,7 @@
                                 android:id="@+id/tested_strategies_title"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="📊 Проверенные стратегии (0)"
+                                tools:text="📊 Проверенные стратегии (0)"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -349,7 +349,7 @@
                                 android:id="@+id/tested_strategies_subtitle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Нажмите, чтобы свернуть/развернуть список"
+                                android:text="@string/adv_tested_strategies_hint"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline"
                                 android:layout_marginTop="2dp" />
@@ -436,7 +436,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Конфигурация WARP"
+                                android:text="@string/adv_warp_title"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -444,7 +444,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="AmneziaWG протокол с обфускацией"
+                                android:text="@string/adv_warp_subtitle"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline" />
                         </LinearLayout>
@@ -497,7 +497,7 @@
                         android:minHeight="48dp"
                         android:paddingVertical="10dp"
                         android:layout_marginBottom="8dp"
-                        android:text="✨ Сгенерировать новый профиль"
+                        android:text="@string/adv_warp_btn_generate"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textAllCaps="false"
@@ -681,7 +681,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Динамический остров HyperOS"
+                                android:text="@string/adv_hyperos_title"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -689,7 +689,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Статус-бар капсула и фокус-уведомление"
+                                android:text="@string/adv_hyperos_subtitle"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline" />
                         </LinearLayout>
@@ -703,7 +703,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Интеграция с фокусными уведомлениями Xiaomi HyperOS / MIUI. Отображает интерактивную статус-бар капсулу («Динамический остров») и кнопки мгновенного переключения режимов (ByeDPI, WARP, VLESS) прямо в строке состояния и шторке уведомлений."
+                        android:text="@string/adv_hyperos_desc"
                         android:textSize="13sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:lineSpacingExtra="3dp" />
@@ -762,7 +762,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Резервная копия и перенос"
+                                android:text="@string/adv_backup_title"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -770,7 +770,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Экспорт и импорт всех настроек"
+                                android:text="@string/adv_backup_subtitle"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline" />
                         </LinearLayout>
@@ -779,7 +779,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Сохраните или восстановите всю конфигурацию (VLESS серверы, подписки, профиль WARP, правила Split Tunneling и настройки приложения) в один файл JSON."
+                        android:text="@string/adv_backup_desc"
                         android:textSize="13sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:lineSpacingExtra="3dp"
@@ -799,7 +799,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:minHeight="44dp"
-                            android:text="📤 Экспорт"
+                            android:text="@string/adv_btn_export"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             android:textAllCaps="false"
@@ -813,7 +813,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:minHeight="44dp"
-                            android:text="📥 Импорт"
+                            android:text="@string/adv_btn_import"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             android:textAllCaps="false"
@@ -832,7 +832,7 @@
                             style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📋 Скопировать JSON"
+                            android:text="@string/adv_btn_copy_json"
                             android:textSize="12sp"
                             android:textColor="?attr/colorPrimary"
                             android:textAllCaps="false" />
@@ -846,7 +846,7 @@
                             style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="📋 Вставить JSON"
+                            android:text="@string/adv_btn_paste_json"
                             android:textSize="12sp"
                             android:textColor="?attr/colorPrimary"
                             android:textAllCaps="false" />
@@ -859,7 +859,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:minHeight="48dp"
-                        android:text="🔄 Копировать данные (Wi-Fi / ТВ)"
+                        android:text="@string/adv_btn_sync_wifi_tv"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textAllCaps="false"
@@ -916,7 +916,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Экспериментальные настройки"
+                            android:text="@string/adv_experimental_title"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface" />
@@ -925,7 +925,7 @@
                             android:id="@+id/tv_experimental_summary"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Экономия энергии, TCP Fast Open, QUIC, MTU"
+                            android:text="@string/adv_experimental_subtitle"
                             android:textSize="12sp"
                             android:textColor="?attr/colorOutline"
                             android:layout_marginTop="2dp" />
@@ -994,7 +994,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Параметры ядра и прокси"
+                            android:text="@string/adv_kernel_title"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface" />
@@ -1002,7 +1002,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="IP-адрес, порты, DNS, размеры буфера и TTL"
+                            android:text="@string/adv_kernel_subtitle"
                             android:textSize="12sp"
                             android:textColor="?attr/colorOutline"
                             android:layout_marginTop="2dp" />

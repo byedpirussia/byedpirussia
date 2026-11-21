@@ -51,14 +51,6 @@
             android:summary="@string/game_mode_summary"
             android:defaultValue="false" />
 
-        <DropDownPreference
-            android:key="ui_mode_preference"
-            android:title="Режим экрана"
-            android:entries="@array/ui_modes_entries"
-            android:entryValues="@array/ui_modes_values"
-            android:defaultValue="auto"
-            app:useSimpleSummaryProvider="true" />
-
         <SwitchPreference
             android:key="ipv6_enable"
             android:title="@string/ipv6_setting"

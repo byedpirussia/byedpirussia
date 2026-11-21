@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <array name="themes">
+        <item name="system">سیستمی (پیش‌فرض)</item>
+        <item name="light">روشن</item>
+        <item name="dark">تاریک</item>
+    </array>
+    <array name="themes_entries">
+        <item name="system">system</item>
+        <item name="light">light</item>
+        <item name="dark">dark</item>
+    </array>
+
+    <array name="accent_colors">
+        <item name="dynamic">متریال یو (رنگ پویا / Material You)</item>
+        <item name="blue">آبی (Indigo)</item>
+        <item name="purple">بنفش (Deep Purple)</item>
+        <item name="green">سبز زمردی (Teal)</item>
+        <item name="orange">نارنجی (Sunset)</item>
+        <item name="red">قرمز (Crimson)</item>
+        <item name="pink">صورتی (Rose)</item>
+        <item name="cyan">فیروزه‌ای (Sky Cyan)</item>
+        <item name="amber">کهربایی (Gold Amber)</item>
+    </array>
+    <array name="accent_colors_entries">
+        <item name="dynamic">dynamic</item>
+        <item name="blue">blue</item>
+        <item name="purple">purple</item>
+        <item name="green">green</item>
+        <item name="orange">orange</item>
+        <item name="red">red</item>
+        <item name="pink">pink</item>
+        <item name="cyan">cyan</item>
+        <item name="amber">amber</item>
+    </array>
+
     <string-array name="languages">
         <item>سیستمی (پیش‌فرض)</item>
         <item>Русский</item>
@@ -12,4 +46,24 @@
         <item>en</item>
         <item>fa</item>
     </string-array>
+
+    <array name="byedpi_modes">
+        <item name="vpn">وی‌پی‌ان (VPN)</item>
+        <item name="proxy">پروکسی (Proxy)</item>
+    </array>
+    <array name="byedpi_modes_entries">
+        <item name="vpn">vpn</item>
+        <item name="proxy">proxy</item>
+    </array>
+
+    <array name="byedpi_hosts_modes">
+        <item name="disable">غیرفعال</item>
+        <item name="blacklist">لیست سیاه</item>
+        <item name="whitelist">لیست سفید</item>
+    </array>
+    <array name="byedpi_hosts_modes_entries">
+        <item name="disable">disable</item>
+        <item name="blacklist">blacklist</item>
+        <item name="whitelist">whitelist</item>
+    </array>
 </resources>

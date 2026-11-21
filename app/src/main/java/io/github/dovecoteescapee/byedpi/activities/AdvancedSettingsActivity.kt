@@ -214,9 +214,9 @@ class AdvancedSettingsActivity : BaseActivity() {
     private fun updateExperimentalSummary() {
         val count = ExperimentalConfigManager.getActiveCount(this)
         binding.tvExperimentalSummary.text = if (count > 0) {
-            "Активно опций: $count (Экономия, QUIC, MTU и др.)"
+            getString(R.string.adv_experimental_active, count)
         } else {
-            "Экономия энергии, TCP Fast Open, QUIC, MTU"
+            getString(R.string.adv_experimental_subtitle)
         }
     }
 
@@ -829,13 +829,13 @@ class AdvancedSettingsActivity : BaseActivity() {
 
         binding.btnWarpGenerate.setOnClickListener {
             binding.btnWarpGenerate.isEnabled = false
-            binding.btnWarpGenerate.text = "Генерация..."
+            binding.btnWarpGenerate.text = getString(R.string.warp_generating)
             Toast.makeText(this, R.string.warp_generating, Toast.LENGTH_SHORT).show()
 
             lifecycleScope.launch {
                 val result = WarpGenerator.generateConfig()
                 binding.btnWarpGenerate.isEnabled = true
-                binding.btnWarpGenerate.text = "✨ Сгенерировать"
+                binding.btnWarpGenerate.text = getString(R.string.adv_warp_btn_generate)
 
                 result.onSuccess { profile ->
                     val newConf = profile.toAmneziaWgConfig()

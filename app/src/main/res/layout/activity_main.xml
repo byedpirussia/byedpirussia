@@ -112,7 +112,7 @@
                             android:layout_height="wrap_content"
                             android:paddingHorizontal="16dp"
                             android:paddingVertical="5dp"
-                            android:text="⚪ Все службы отключены"
+                            android:text="@string/m3_status_badge_all_disabled"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.02"
@@ -134,7 +134,7 @@
                         android:id="@+id/m3_status_subtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Нажмите на щит или включите службу ниже"
+                        android:text="@string/m3_status_subtitle_tap_shield"
                         android:textSize="13sp"
                         android:textColor="?attr/colorOutline"
                         android:layout_marginTop="2dp" />
@@ -146,7 +146,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:minHeight="42dp"
-                        android:text="Отключить всё"
+                        android:text="@string/m3_btn_disconnect_all"
                         android:textSize="13sp"
                         android:textStyle="bold"
                         app:cornerRadius="24dp"
@@ -190,7 +190,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="⚡ ПИНГ"
+                            android:text="@string/m3_stat_ping"
                             android:textSize="10sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.05"
@@ -232,7 +232,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="⬇ СКАЧКА"
+                            android:text="@string/m3_stat_download"
                             android:textSize="10sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.05"
@@ -242,7 +242,7 @@
                             android:id="@+id/tv_speed_down"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0.0 КБ/с"
+                            android:text="0.0 KB/s"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"
@@ -274,7 +274,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="⬆ ОТДАЧА"
+                            android:text="@string/m3_stat_upload"
                             android:textSize="10sp"
                             android:textStyle="bold"
                             android:letterSpacing="0.05"
@@ -284,7 +284,7 @@
                             android:id="@+id/tv_speed_up"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0.0 КБ/с"
+                            android:text="0.0 KB/s"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="?attr/colorOnSurface"
@@ -316,7 +316,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="МОДУЛИ ЗАЩИТЫ"
+                    android:text="@string/m3_section_modules"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:textColor="?attr/colorPrimary"
@@ -373,7 +373,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="ByeDPI (Десинхронизация)"
+                                android:text="@string/m3_byedpi_title"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -382,7 +382,7 @@
                                 android:id="@+id/m3_sub_byedpi"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="⚪ Отключено • YouTube, Discord"
+                                android:text="@string/m3_byedpi_sub_default"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline"
                                 android:layout_marginTop="2dp" />
@@ -451,7 +451,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="AmneziaWG 3.1 WARP"
+                                    android:text="@string/m3_warp_title"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
                                     android:textColor="?attr/colorOnSurface" />
@@ -460,7 +460,7 @@
                                     android:id="@+id/m3_sub_warp"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="⚪ Отключено • Cloudflare Anycast"
+                                    android:text="@string/m3_warp_sub_default"
                                     android:textSize="12sp"
                                     android:textColor="?attr/colorOutline"
                                     android:layout_marginTop="2dp" />
@@ -487,7 +487,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:minHeight="38dp"
-                                android:text="Подбор узла"
+                                android:text="@string/m3_warp_btn_select_node"
                                 android:textSize="12sp"
                                 app:cornerRadius="14dp"
                                 android:layout_marginEnd="4dp" />
@@ -499,7 +499,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:minHeight="38dp"
-                                android:text="⚙️ DNS"
+                                android:text="@string/m3_warp_btn_dns"
                                 android:textSize="12sp"
                                 app:cornerRadius="14dp"
                                 android:layout_marginHorizontal="4dp" />
@@ -511,7 +511,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1.2"
                                 android:minHeight="38dp"
-                                android:text="Фикс TG"
+                                android:text="@string/m3_warp_btn_tg_fix"
                                 android:textSize="12sp"
                                 app:cornerRadius="14dp"
                                 android:layout_marginStart="4dp" />
@@ -582,7 +582,7 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="VLESS Reality &amp; Hysteria"
+                                    android:text="@string/m3_vless_title"
                                     android:textSize="16sp"
                                     android:textStyle="bold"
                                     android:textColor="?attr/colorOnSurface" />
@@ -591,7 +591,7 @@
                                     android:id="@+id/m3_sub_vless"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="⚪ Отключено • Сервер не выбран"
+                                    android:text="@string/m3_vless_sub_default"
                                     android:textSize="12sp"
                                     android:textColor="?attr/colorOutline"
                                     android:layout_marginTop="2dp" />
@@ -611,7 +611,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:minHeight="40dp"
-                            android:text="🌐 Список серверов и подписок"
+                            android:text="@string/m3_vless_btn_servers"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             app:cornerRadius="14dp"
@@ -669,7 +669,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Telegram Прокси"
+                                android:text="@string/m3_tg_title"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -678,7 +678,7 @@
                                 android:id="@+id/m3_sub_tg"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="⚪ Отключено • 127.0.0.1:1443"
+                                android:text="@string/m3_tg_sub_default"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline"
                                 android:layout_marginTop="2dp" />
@@ -690,7 +690,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="38dp"
-                            android:text="Открыть"
+                            android:text="@string/m3_tg_btn_open"
                             android:textSize="12sp"
                             app:cornerRadius="14dp"
                             android:visibility="gone"
@@ -761,7 +761,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Конструктор стратегий и параметры"
+                                android:text="@string/m3_settings_card_title"
                                 android:textSize="15sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -769,7 +769,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Автоподбор, сборка правил, резервные копии"
+                                android:text="@string/m3_settings_card_sub"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline"
                                 android:layout_marginTop="2dp" />
@@ -834,7 +834,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Раздельное туннелирование"
+                                android:text="@string/m3_split_card_title"
                                 android:textSize="15sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -842,7 +842,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Пропуск банков и Госуслуг РФ напрямую без VPN"
+                                android:text="@string/m3_split_card_sub"
                                 android:textSize="12sp"
                                 android:textColor="?attr/colorOutline"
                                 android:layout_marginTop="2dp" />
@@ -898,7 +898,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Канал разработчиков"
+                                android:text="@string/m3_channel_card_title"
                                 android:textSize="15sp"
                                 android:textStyle="bold"
                                 android:textColor="?attr/colorOnSurface" />
@@ -918,7 +918,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:minHeight="40dp"
-                            android:text="Перейти"
+                            android:text="@string/m3_channel_btn_go"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             app:cornerRadius="14dp" />

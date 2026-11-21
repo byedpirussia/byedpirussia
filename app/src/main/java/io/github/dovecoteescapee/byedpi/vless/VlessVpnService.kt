@@ -202,13 +202,7 @@ class VlessVpnService : VpnService() {
                     return@launch
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    try {
-                        setUnderlyingNetworks(null)
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Cannot set underlying networks", e)
-                    }
-                }
+                SplitTunnelManager.setUnderlyingPhysicalNetworks(this@VlessVpnService)
 
                 tunFd = pfd
 

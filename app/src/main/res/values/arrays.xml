@@ -11,19 +11,6 @@
         <item name="dark">dark</item>
     </array>
 
-    <array name="ui_modes">
-        <item name="m3">Material Design 3 (Новый стиль)</item>
-        <item name="classic">Классический стиль</item>
-    </array>
-    <array name="ui_modes_entries">
-        <item name="auto">Автоматика (Простой режим)</item>
-        <item name="advanced">Больше настроек (Полный режим)</item>
-    </array>
-    <array name="ui_modes_values">
-        <item name="auto">auto</item>
-        <item name="advanced">advanced</item>
-    </array>
-
     <array name="accent_colors">
         <item name="dynamic">Material You (Динамический цвет)</item>
         <item name="blue">Синий (Indigo)</item>

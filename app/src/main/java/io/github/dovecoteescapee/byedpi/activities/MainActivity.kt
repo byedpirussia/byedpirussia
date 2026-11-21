@@ -552,40 +552,8 @@ class MainActivity : BaseActivity() {
         if (!isTgChannelDialogShown()) {
             showTgChannelAnnouncementDialog()
         } else {
-            checkUiModeDialog()
-        }
-    }
-
-    private fun checkUiModeDialog() {
-        if (!isUiModeSelected()) {
-            showUiModeSelectionDialog()
-        } else {
             checkStarDialog()
         }
-    }
-
-    private fun showUiModeSelectionDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_ui_mode_selection, null)
-        val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-            .setView(dialogView)
-            .setCancelable(false)
-            .create()
-
-        dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardModeSimple).setOnClickListener {
-            setUiModeSelected(true)
-            dialog.dismiss()
-            updateM3State()
-            checkStarDialog()
-        }
-
-        dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.cardModeAdvanced).setOnClickListener {
-            setUiModeSelected(true)
-            dialog.dismiss()
-            updateM3State()
-            checkStarDialog()
-        }
-
-        dialog.show()
     }
 
     private fun showTgChannelAnnouncementDialog() {
@@ -597,12 +565,12 @@ class MainActivity : BaseActivity() {
                 setTgChannelDialogShown(true)
                 dialog.dismiss()
                 openTelegramWithVpnCheck()
-                checkUiModeDialog()
+                checkStarDialog()
             }
             .setNegativeButton(R.string.setup_wizard_btn_skip) { dialog, _ ->
                 setTgChannelDialogShown(true)
                 dialog.dismiss()
-                checkUiModeDialog()
+                checkStarDialog()
             }
             .show()
     }
@@ -1263,7 +1231,7 @@ class MainActivity : BaseActivity() {
 
             binding.m3StatusBadge.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3StatusBadge.strokeColor = colorPrimary
-            binding.m3StatusBadgeText.text = "🛡️ Система под защитой"
+            binding.m3StatusBadgeText.text = getString(R.string.m3_status_badge_protected)
             binding.m3StatusBadgeText.setTextColor(colorOnPrimaryContainer)
 
             binding.m3StatusCircle.setCardBackgroundColor(colorPrimaryContainer)
@@ -1278,7 +1246,7 @@ class MainActivity : BaseActivity() {
             if (isWarpRunning) activeList.add("WARP")
             if (isVlessRunning) activeList.add("VLESS")
             if (isTgRunning) activeList.add("TG Proxy")
-            binding.m3StatusSubtitle.text = "Активно: " + activeList.joinToString(", ")
+            binding.m3StatusSubtitle.text = getString(R.string.m3_status_subtitle_active_prefix, activeList.joinToString(", "))
             binding.m3BtnDisconnectAll.visibility = View.VISIBLE
         } else {
             binding.m3HeroCard.strokeColor = colorOutlineVariant
@@ -1287,7 +1255,7 @@ class MainActivity : BaseActivity() {
 
             binding.m3StatusBadge.setCardBackgroundColor(colorSurface)
             binding.m3StatusBadge.strokeColor = colorOutlineVariant
-            binding.m3StatusBadgeText.text = "⚪ Защита отключена"
+            binding.m3StatusBadgeText.text = getString(R.string.m3_status_badge_disabled)
             binding.m3StatusBadgeText.setTextColor(colorOutline)
 
             binding.m3StatusCircle.setCardBackgroundColor(colorSurface)
@@ -1296,7 +1264,7 @@ class MainActivity : BaseActivity() {
             binding.m3StatusIcon.imageTintList = ColorStateList.valueOf(colorOutline)
             binding.m3StatusTitle.text = getString(R.string.m3_status_unprotected)
             binding.m3StatusTitle.setTextColor(colorOnSurface)
-            binding.m3StatusSubtitle.text = "Все службы отключены"
+            binding.m3StatusSubtitle.text = getString(R.string.m3_status_subtitle_all_disabled)
             binding.m3BtnDisconnectAll.visibility = View.GONE
         }
 
@@ -1311,11 +1279,11 @@ class MainActivity : BaseActivity() {
         if (isByeDpiRunning) {
             binding.m3IconBoxByedpi.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconByedpi.imageTintList = ColorStateList.valueOf(colorPrimary)
-            binding.m3SubByedpi.text = "🟢 Активно • ${currentStrategy.name}"
+            binding.m3SubByedpi.text = getString(R.string.status_active_prefix, currentStrategy.name)
         } else {
             binding.m3IconBoxByedpi.setCardBackgroundColor(colorSurfaceVariant)
             binding.m3IconByedpi.imageTintList = ColorStateList.valueOf(colorOutline)
-            binding.m3SubByedpi.text = "⚪ Отключено • ${currentStrategy.name}"
+            binding.m3SubByedpi.text = getString(R.string.status_disabled_prefix, currentStrategy.name)
         }
 
         // 3. WARP Switch & Subtitle
@@ -1330,11 +1298,11 @@ class MainActivity : BaseActivity() {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)
             if (warpPing != null && warpPing >= 0) {
-                binding.m3SubWarp.text = "🟢 Подключен ($warpPing ms) • $protoTag"
+                binding.m3SubWarp.text = getString(R.string.status_connected_ping_prefix, warpPing, protoTag)
             } else if (warpStatus.contains("Проверка") || warpStatus.contains("Переподключение") || warpStatus.contains("Потеря")) {
                 binding.m3SubWarp.text = "🟡 $warpStatus • $protoTag"
             } else {
-                binding.m3SubWarp.text = "🟢 Подключен • $protoTag"
+                binding.m3SubWarp.text = getString(R.string.status_connected_prefix, protoTag)
             }
         } else {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorSurfaceVariant)
@@ -1342,7 +1310,7 @@ class MainActivity : BaseActivity() {
             if (warpStatus.contains("Ожидание") || warpStatus.contains("Переподключение") || warpStatus.contains("Потеря") || warpStatus.contains("Таймаут")) {
                 binding.m3SubWarp.text = "🟡 $warpStatus • $protoTag"
             } else {
-                binding.m3SubWarp.text = "⚪ Отключено • $protoTag"
+                binding.m3SubWarp.text = getString(R.string.status_disabled_prefix, protoTag)
             }
         }
 
@@ -1354,11 +1322,11 @@ class MainActivity : BaseActivity() {
         if (isVlessRunning) {
             binding.m3IconBoxVless.setCardBackgroundColor(colorPrimaryContainer)
             val serverName = selectedVless?.name ?: "VLESS"
-            binding.m3SubVless.text = "🟢 Подключен • $serverName"
+            binding.m3SubVless.text = getString(R.string.status_connected_prefix, serverName)
         } else {
             binding.m3IconBoxVless.setCardBackgroundColor(colorSurfaceVariant)
             if (selectedVless != null) {
-                binding.m3SubVless.text = "⚪ Отключено • ${selectedVless.name}"
+                binding.m3SubVless.text = getString(R.string.status_disabled_prefix, selectedVless.name)
             } else {
                 binding.m3SubVless.text = getString(R.string.vless_no_servers)
             }
@@ -1372,10 +1340,10 @@ class MainActivity : BaseActivity() {
         val tgStats = TgWsProxyService.trafficStats.value
         if (isTgRunning) {
             binding.m3IconBoxTg.setCardBackgroundColor(colorPrimaryContainer)
-            binding.m3SubTg.text = "🟢 Работает • $tgStats"
+            binding.m3SubTg.text = getString(R.string.status_working_prefix, tgStats)
         } else {
             binding.m3IconBoxTg.setCardBackgroundColor(colorSurfaceVariant)
-            binding.m3SubTg.text = "⚪ Отключено • 127.0.0.1:1443"
+            binding.m3SubTg.text = getString(R.string.status_disabled_prefix, "127.0.0.1:1443")
         }
 
         // 6. Телеметрия пинга и скорости

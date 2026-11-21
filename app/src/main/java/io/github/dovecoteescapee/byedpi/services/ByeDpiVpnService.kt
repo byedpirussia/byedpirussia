@@ -264,13 +264,7 @@ class ByeDpiVpnService : LifecycleVpnService() {
         val fd = createBuilder(dns, ipv6).establish()
             ?: throw IllegalStateException("VPN connection failed")
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            try {
-                setUnderlyingNetworks(null)
-            } catch (e: Exception) {
-                Log.w(TAG, "Cannot set underlying networks", e)
-            }
-        }
+        io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.setUnderlyingPhysicalNetworks(this)
 
         this.tunFd = fd
 

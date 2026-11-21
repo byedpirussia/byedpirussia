@@ -22,25 +22,41 @@ object SplitTunnelManager {
     // Префиксы и пакеты популярных российских сервисов, банков, госуслуг и маркетплейсов
     private val RUSSIAN_APP_PREFIXES = listOf(
         "ru.",
-        "com.idamob.tinkoff",
-        "com.yandex.",
-        "com.vk.",
-        "com.mail.",
+        "su.",
+        "by.",
+        "kz.",
+        "com.idamob.",
+        "com.tcsbank.",
+        "com.tbank.",
+        "com.tinkoff.",
         "com.sber.",
+        "com.sberbank.",
         "com.alfa.",
+        "com.alfabank.",
         "com.vtb.",
+        "com.vtb24.",
+        "com.gazprom.",
         "com.gazprombank.",
         "com.openbank.",
+        "com.sovcom.",
         "com.sovcombank.",
         "com.sovcomcard",
         "com.ubrr",
         "com.psbank.",
         "com.rosbank.",
-        "com.mironline.",
-        "com.cardmobile.",
+        "com.raiffeisen.",
+        "com.rshb.",
         "com.bspb",
         "com.ftc.",
-        "com.raiffeisen.",
+        "com.cardmobile.",
+        "com.mironline.",
+        "com.mirpay.",
+        "com.sbp.",
+        "com.sbpay.",
+        "com.yandex.",
+        "com.vk.",
+        "com.vkontakte.",
+        "com.mail.",
         "com.ozon.",
         "com.wildberries.",
         "com.avito.",
@@ -56,8 +72,29 @@ object SplitTunnelManager {
         "com.tele2.",
         "com.rostelecom.",
         "com.domru.",
-        "com.tbank.",
-        "com.t-bank."
+        "com.dublgis.",
+        "com.twogis.",
+        "com.akbars.",
+        "com.mkb.",
+        "com.rnkb.",
+        "com.genbank.",
+        "com.avangard.",
+        "com.homecredit.",
+        "com.otpbank."
+    )
+
+    private val RUSSIAN_APP_KEYWORDS = listOf(
+        "sber", "sberbank", "tinkoff", "tbank", "t-bank", "tcsbank", "idamob",
+        "vtb", "vtb24", "alfa", "alfabank", "gazprom", "gazprombank",
+        "raiffeisen", "sovcom", "sovcombank", "halva", "rosbank",
+        "openbank", "psbank", "promsvyaz", "rshb", "pochtabank",
+        "letobank", "bspb", "ubrr", "akbars", "mkb", "rnkb", "genbank",
+        "absolutbank", "avangard", "homecredit", "otpbank",
+        "ozon", "wildberries", "wbwb", "avito", "yandex", "kinopoisk", "rutube",
+        "megafon", "beeline", "tele2", "rostelecom", "domru",
+        "gosuslugi", "mirpay", "mironline", "sbpay", "sbp", "dublgis", "2gis",
+        "drom", "auto.ru", "pochta", "nalog", "mos.ru", "emias", "rzd",
+        "korona", "rustore", "vkontakte", "mail.ru", "dzen"
     )
 
     private fun getPrefs(context: Context): SharedPreferences {
@@ -81,7 +118,7 @@ object SplitTunnelManager {
     }
 
     fun isExcludeRussianAppsEnabled(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_EXCLUDE_RUSSIAN, false)
+        return getPrefs(context).getBoolean(KEY_EXCLUDE_RUSSIAN, true)
     }
 
     fun setExcludeRussianAppsEnabled(context: Context, enabled: Boolean) {
@@ -90,7 +127,8 @@ object SplitTunnelManager {
 
     fun isRussianApp(packageName: String): Boolean {
         val lower = packageName.lowercase()
-        return RUSSIAN_APP_PREFIXES.any { lower.startsWith(it) }
+        if (RUSSIAN_APP_PREFIXES.any { lower.startsWith(it) }) return true
+        return RUSSIAN_APP_KEYWORDS.any { lower.contains(it) }
     }
 
     // Популярные российские сервисы, банки, государственные порталы и маркетплейсы
@@ -245,6 +283,32 @@ object SplitTunnelManager {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Устанавливает реальную физическую сеть (Wi-Fi или сотовую) в качестве underlying network для VPN.
+     * Это гарантирует, что исключенные (disallowed) приложения подключаются напрямую через физическую сеть,
+     * а не через виртуальный интерфейс tun0, благодаря чему российские банки и сервисы не видят VPN.
+     */
+    fun setUnderlyingPhysicalNetworks(vpnService: VpnService) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            try {
+                val cm = vpnService.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+                val currentNet = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    cm?.activeNetwork?.takeIf { net ->
+                        val c = cm.getNetworkCapabilities(net)
+                        c != null && !c.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN)
+                    }
+                } else null ?: cm?.allNetworks?.firstOrNull { net ->
+                    val c = cm.getNetworkCapabilities(net)
+                    c != null && !c.hasTransport(android.net.NetworkCapabilities.TRANSPORT_VPN)
+                }
+                vpnService.setUnderlyingNetworks(if (currentNet != null) arrayOf(currentNet) else null)
+                Log.d(TAG, "Underlying physical network set: $currentNet")
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to set underlying physical networks", e)
             }
         }
     }

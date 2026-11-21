@@ -25,7 +25,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Имя сервера / Заметка">
+            android:hint="@string/vless_hint_name">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_cfg_name"
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="2.5"
                 android:layout_marginEnd="6dp"
-                android:hint="Адрес хоста / IP">
+                android:hint="@string/vless_hint_address">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_cfg_address"
@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:hint="Порт">
+                android:hint="@string/vless_hint_port">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_cfg_port"
@@ -78,7 +78,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:hint="UUID / Пароль пользователя">
+            android:hint="@string/vless_hint_uuid">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_cfg_uuid"
@@ -93,7 +93,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:hint="SNI (Server Name Indication)">
+            android:hint="@string/vless_hint_sni">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_cfg_sni"
@@ -108,7 +108,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:hint="Reality Public Key (pbk)">
+            android:hint="@string/vless_hint_pbk">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_cfg_pbk"
@@ -130,7 +130,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:hint="Short ID (sid)">
+                android:hint="@string/vless_hint_sid">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_cfg_sid"
@@ -145,7 +145,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:hint="Fingerprint (fp)">
+                android:hint="@string/vless_hint_fp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_cfg_fp"
@@ -168,7 +168,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:hint="Path (ws/http)">
+                android:hint="@string/vless_hint_path">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_cfg_path"
@@ -183,7 +183,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:hint="Host header">
+                android:hint="@string/vless_hint_host">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_cfg_host"
