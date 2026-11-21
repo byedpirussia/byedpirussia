@@ -1,0 +1,97 @@
+<Window x:Class="ByeDpiRussia.Desktop.EditServerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        Title="Настройка сервера VLESS (Happ-стиль)"
+        Height="560" Width="520"
+        MinHeight="500" MinWidth="480"
+        WindowStartupLocation="CenterOwner"
+        Background="#F210131B"
+        Foreground="#F8FAFC"
+        FontFamily="Segoe UI Variable Text, Segoe UI, sans-serif">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="⚙️ Параметры сервера &amp; Стратегия ByeDPI" FontSize="18" FontWeight="Bold"/>
+            <TextBlock Text="Настройте подключение и закрепите персональную стратегию обхода десинхронизации." FontSize="12" Foreground="#94A3B8"/>
+        </StackPanel>
+
+        <!-- Form fields -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ui:SimpleStackPanel Spacing="10">
+                <TextBlock Text="Название сервера:" FontSize="12" Foreground="#CBD5E1"/>
+                <TextBox x:Name="TxtName"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Адрес хоста (IP / Domain):" FontSize="12" Foreground="#CBD5E1"/>
+                        <TextBox x:Name="TxtAddress"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Порт:" FontSize="12" Foreground="#CBD5E1"/>
+                        <TextBox x:Name="TxtPort"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="UUID / Пароль:" FontSize="12" Foreground="#CBD5E1"/>
+                <TextBox x:Name="TxtUuid"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="SNI (Server Name):" FontSize="12" Foreground="#CBD5E1"/>
+                        <TextBox x:Name="TxtSni"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Fingerprint (fp):" FontSize="12" Foreground="#CBD5E1"/>
+                        <TextBox x:Name="TxtFp"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Public Key (pbk Reality):" FontSize="12" Foreground="#CBD5E1"/>
+                        <TextBox x:Name="TxtPbk"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Short ID (sid):" FontSize="12" Foreground="#CBD5E1"/>
+                        <TextBox x:Name="TxtSid"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- ByeDPI Strategy Integration (Happ Style) -->
+                <Border Background="#2B1E293B" BorderBrush="#3838BDF8" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,6,0,0">
+                    <ui:SimpleStackPanel Spacing="6">
+                        <TextBlock Text="🛡️ Привязка стратегии ByeDPI (как в Happ):" FontSize="13" FontWeight="SemiBold" Foreground="#38BDF8"/>
+                        <TextBlock Text="Трафик к этому VLESS-серверу будет автоматически десинхронизироваться выбранной стратегией для обхода ТСПУ." FontSize="11" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                        <ComboBox x:Name="CmbStrategy" HorizontalAlignment="Stretch" DisplayMemberPath="DisplayTitle" Margin="0,4,0,0"/>
+                    </ui:SimpleStackPanel>
+                </Border>
+            </ui:SimpleStackPanel>
+        </ScrollViewer>
+
+        <!-- Actions -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0" Spacing="10">
+            <Button x:Name="BtnCancel" Content="Отмена" Padding="16,6" Click="BtnCancel_Click"/>
+            <Button x:Name="BtnSave" Content="Сохранить изменения" Style="{StaticResource AccentButtonStyle}" Padding="16,6" Click="BtnSave_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

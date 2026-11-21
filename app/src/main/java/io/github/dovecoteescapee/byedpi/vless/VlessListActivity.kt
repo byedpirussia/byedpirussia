@@ -84,8 +84,8 @@ class VlessListActivity : BaseActivity() {
     private fun setupTabs() {
         binding.tabLayout.removeAllTabs()
 
-        binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Все"))
-        binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Ключи"))
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(getString(R.string.vless_tab_all)))
+        binding.tabLayout.addTab(binding.tabLayout.newTab().setText(getString(R.string.vless_tab_keys)))
 
         val subs = VlessManager.getSubscriptions(this)
         subs.forEachIndexed { index, subUrl ->
@@ -529,23 +529,23 @@ class VlessListActivity : BaseActivity() {
 
     private fun showPingMethodSelectorDialog() {
         val methods = arrayOf(
-            "Proxy GET (Настоящий пинг с TLS/HTTP)",
-            "TCP Connect (Подключение сокета)",
-            "ICMP (Системный Echo Ping)"
+            getString(R.string.vless_ping_proxy_get),
+            getString(R.string.vless_ping_tcp),
+            getString(R.string.vless_ping_icmp)
         )
         val methodKeys = arrayOf("proxy_get", "tcp", "icmp")
         val currentMethod = VlessManager.getPingMethod(this)
         val selectedIdx = methodKeys.indexOf(currentMethod).let { if (it >= 0) it else 0 }
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("⚙️ Метод измерения пинга")
+            .setTitle(getString(R.string.vless_ping_method_title))
             .setSingleChoiceItems(methods, selectedIdx) { dialog, which ->
                 val chosenKey = methodKeys[which]
                 VlessManager.setPingMethod(this, chosenKey)
-                Toast.makeText(this, "Выбран метод: ${methods[which]}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "${getString(R.string.vless_ping_method_title)}: ${methods[which]}", Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.common_cancel), null)
             .show()
     }
 
@@ -589,7 +589,7 @@ class VlessListActivity : BaseActivity() {
 
         MaterialAlertDialogBuilder(this)
             .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
+            .setPositiveButton(getString(R.string.common_save)) { _, _ ->
                 val newName = etName.text.toString().trim()
                 val newAddress = etAddress.text.toString().trim()
                 val newPort = etPort.text.toString().trim().toIntOrNull() ?: config.port
@@ -627,21 +627,21 @@ class VlessListActivity : BaseActivity() {
                     all[idx] = updatedConfig
                     VlessManager.saveConfigs(this, all)
                     loadServers()
-                    Toast.makeText(this, "Конфигурация сервера обновлена!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.vless_server_updated), Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.common_cancel), null)
             .show()
     }
 
     private fun showDeleteConfirm(config: VlessConfig) {
         MaterialAlertDialogBuilder(this)
             .setMessage("${getString(R.string.vless_delete_confirm)}\n${config.name}")
-            .setPositiveButton("Удалить") { _, _ ->
+            .setPositiveButton(getString(R.string.common_delete)) { _, _ ->
                 VlessManager.removeConfig(this, config.id)
                 loadServers()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(getString(R.string.common_cancel), null)
             .show()
     }
 
@@ -732,8 +732,8 @@ class VlessListActivity : BaseActivity() {
                 adapter?.updateList(sorted, selected?.id)
 
                 binding.btnTestPing.isEnabled = true
-                binding.btnTestPing.text = "⚡ Тест пинга"
-                Toast.makeText(this@VlessListActivity, "Тест завершен пакетами по 10! Серверы отсортированы", Toast.LENGTH_SHORT).show()
+                binding.btnTestPing.text = getString(R.string.warp_dns_ping_test)
+                Toast.makeText(this@VlessListActivity, getString(R.string.vless_ping_finished), Toast.LENGTH_SHORT).show()
             }
         }
     }

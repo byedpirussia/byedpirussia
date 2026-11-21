@@ -74,24 +74,24 @@
     <string name="byedpi_protocols_category">Protocols</string>
     <string name="byedpi_protocols_hint">Uncheck all to desync all traffic</string>
 
-    <!-- Strategy tuning and presets -->
+    <!-- Tuning & presets -->
     <string name="auto_tune_button">⚡ Auto-tune strategy</string>
     <string name="current_strategy_label">Current strategy:</string>
-    <string name="testing_strategy_title">Selecting best strategy...</string>
-    <string name="testing_strategy_msg">Testing YouTube and Discord availability...</string>
-    <string name="strategy_selected_title">Strategy selected!</string>
-    <string name="strategy_selected_msg">Optimal strategy applied: %1$s (latency: %2$d ms)</string>
-    <string name="strategy_manual_select">Choose strategy manually</string>
+    <string name="testing_strategy_title">Finding best strategy...</string>
+    <string name="testing_strategy_msg">Testing availability for YouTube and Discord...</string>
+    <string name="strategy_selected_title">Strategy Selected!</string>
+    <string name="strategy_selected_msg">Selected optimal strategy: %1$s (ping: %2$d ms)</string>
+    <string name="strategy_manual_select">Select strategy manually</string>
     <string name="status_testing">Testing strategies (%1$d/%2$d)...</string>
     <string name="tg_proxy_title">Telegram MTProto Proxy</string>
-    <string name="tg_proxy_subtitle">Direct TG bypass via Cloudflare WS</string>
+    <string name="tg_proxy_subtitle">Direct Telegram unblocking via Cloudflare WS</string>
     <string name="tg_proxy_status_stopped">Stopped (127.0.0.1:1443)</string>
     <string name="tg_proxy_status_running">Running (127.0.0.1:1443)</string>
-    <string name="tg_proxy_btn_start">Start proxy</string>
+    <string name="tg_proxy_btn_start">Start Proxy</string>
     <string name="tg_proxy_btn_stop">Stop</string>
-    <string name="tg_proxy_btn_apply">🚀 Connect to Telegram</string>
-    <string name="tg_proxy_btn_copy">Copy link</string>
-    <string name="tg_proxy_copied">Proxy link copied to clipboard!</string>
+    <string name="tg_proxy_btn_apply">🚀 Connect in Telegram</string>
+    <string name="tg_proxy_btn_copy">Copy Link</string>
+    <string name="tg_proxy_copied">Proxy link copied!</string>
 
     <string name="warp_card_title">Cloudflare WARP (AmneziaWG)</string>
     <string name="warp_card_subtitle">Obfuscated WireGuard against DPI</string>
@@ -101,97 +101,100 @@
     <string name="warp_btn_disconnect">Disable WARP</string>
     <string name="warp_btn_open_amnezia">Share / Amnezia</string>
     <string name="warp_btn_edit">✏️ Edit config</string>
-    <string name="warp_copied">AmneziaWG config copied!</string>
+    <string name="warp_copied">AmneziaWG configuration copied!</string>
     <string name="warp_generating">Generating WARP profile...</string>
-    <string name="warp_generated_success">New WARP profile generated!</string>
+    <string name="warp_generated_success">New WARP profile generated successfully!</string>
     <string name="warp_generated_error">Generation error: %1$s</string>
-    <string name="btn_advanced_settings">⚙️ Advanced settings &amp; strategies</string>
+    <string name="btn_advanced_settings">⚙️ Advanced Settings &amp; Strategies</string>
     <string name="title_advanced_settings">Advanced Settings</string>
-    <string name="app_subtitle_clean">All-in-one anti-censorship toolkit</string>
-    <string name="card_byedpi_title">ByeDPI (DPI Desynchronization)</string>
-    <string name="card_byedpi_desc">Direct access to YouTube &amp; Discord without external proxies or servers</string>
-    <string name="card_tg_desc">Autonomous MTProto proxy with Cloudflare WebSocket transport</string>
-    <string name="card_warp_desc">Full-featured Cloudflare WARP tunnel with AmneziaWG 3.1 DPI protection</string>
-    <string name="byedpi_active_btn">Turn Off ByeDPI</string>
-    <string name="byedpi_inactive_btn">Turn On ByeDPI</string>
-    <string name="tg_active_btn">Turn Off TG Proxy</string>
-    <string name="tg_inactive_btn">Turn On TG Proxy</string>
-    <string name="warp_active_btn">Turn Off WARP</string>
-    <string name="warp_inactive_btn">Turn On WARP</string>
-    <string name="nav_to_advanced_hint">Click to choose ByeDPI strategies, auto-tune, export WARP and configure core</string>
-    <string name="btn_select_strategy">Choose strategy manually</string>
-    <string name="btn_autotune">Automatic strategy selection</string>
-    <string name="btn_stop_autotune">Stop auto-tuning</string>
+    <string name="app_subtitle_clean">Universal Censorship Bypass Center</string>
+    <string name="card_byedpi_title">ByeDPI (TCP/TLS Desync)</string>
+    <string name="card_byedpi_desc">Direct access to YouTube and Discord without proxies or remote VPN servers</string>
+    <string name="card_tg_desc">Standalone MTProto proxy with Cloudflare WebSocket transport</string>
+    <string name="card_warp_desc">Complete Cloudflare WARP tunnel with AmneziaWG 3.1 obfuscation</string>
+    <string name="byedpi_active_btn">Disable ByeDPI</string>
+    <string name="byedpi_inactive_btn">Enable ByeDPI</string>
+    <string name="tg_active_btn">Disable Telegram Proxy</string>
+    <string name="tg_inactive_btn">Enable Telegram Proxy</string>
+    <string name="warp_active_btn">Disable WARP</string>
+    <string name="warp_inactive_btn">Enable WARP</string>
+    <string name="nav_to_advanced_hint">Tap to select ByeDPI strategies, auto-tune, export WARP, and fine-tune core</string>
+    <string name="btn_select_strategy">Select strategy manually</string>
+    <string name="btn_autotune">Automatic strategy tuning</string>
+    <string name="btn_stop_autotune">Stop auto-tune</string>
     <string name="split_tunnel_title">Split Tunneling</string>
-    <string name="split_tunnel_subtitle">Select apps to route through bypass</string>
-    <string name="split_tunnel_mode_title">Filtering mode</string>
+    <string name="split_tunnel_subtitle">Choose apps routed through bypass</string>
+    <string name="split_tunnel_mode_title">Filtering Mode</string>
     <string name="split_tunnel_mode_all">All device traffic (no exceptions)</string>
-    <string name="split_tunnel_mode_whitelist">Tunnel only selected apps</string>
-    <string name="split_tunnel_mode_blacklist">Tunnel all apps except selected</string>
-    <string name="split_tunnel_select_apps">Select applications</string>
+    <string name="split_tunnel_mode_whitelist">Tunnel selected apps only</string>
+    <string name="split_tunnel_mode_blacklist">Tunnel all except selected apps</string>
+    <string name="split_tunnel_select_apps">Select Applications</string>
     <string name="split_tunnel_apps_count">Selected apps: %1$d</string>
     <string name="split_tunnel_search_hint">Search apps...</string>
     <string name="split_tunnel_select_all">Select all</string>
     <string name="split_tunnel_deselect_all">Deselect all</string>
     <string name="card_vless_title">VLESS / Shadowsocks / Trojan / HY2</string>
-    <string name="card_vless_desc">Universal Xray client: VLESS (Reality), Shadowsocks, VMess, Trojan &amp; Hysteria 2</string>
-    <string name="vless_active_btn">Disconnect Proxy</string>
-    <string name="vless_inactive_btn">Connect Proxy</string>
+    <string name="card_vless_desc">Universal Xray/Sing-box client: VLESS (Reality), Shadowsocks, VMess, Trojan &amp; Hysteria 2</string>
+    <string name="vless_active_btn">Disable Proxy</string>
+    <string name="vless_inactive_btn">Enable Proxy</string>
     <string name="vless_manage_btn">Subscriptions &amp; Servers</string>
     <string name="vless_no_servers">No servers added (VLESS / SS / VMess / Trojan / HY2)</string>
     <string name="vless_servers_title">Servers &amp; Proxy Keys</string>
-    <string name="vless_add_single">Import key (vless, hy2, ss, vmess, trojan)</string>
+    <string name="vless_add_single">Add key (vless, hy2, ss, vmess, trojan)</string>
     <string name="vless_add_subscription">Add subscription URL</string>
     <string name="vless_enter_key_hint">Paste vless://, hy2://, ss://, vmess://, trojan:// link...</string>
     <string name="vless_enter_sub_hint">https://example.com/sub/...</string>
     <string name="vless_sub_updating">Updating subscription...</string>
-    <string name="vless_sub_success">Successfully fetched servers: %1$d</string>
+    <string name="vless_sub_success">Successfully loaded servers: %1$d</string>
     <string name="vless_sub_error">Update error: %1$s</string>
     <string name="vless_added_success">Server added successfully!</string>
     <string name="vless_invalid_link">Invalid link (supports vless://, hy2://, ss://, vmess://, trojan://)</string>
     <string name="vless_delete_confirm">Delete this server?</string>
 
     <!-- Discussions Banner -->
-    <string name="discussions_banner_text">Want to contact the developer? Check out our GitHub Discussions!</string>
-    <string name="discussions_banner_btn">Visit</string>
+    <string name="discussions_banner_text">Want to reach out to the developer? Visit our GitHub discussions page!</string>
+    <string name="discussions_banner_btn">Open</string>
 
     <!-- GitHub Star Dialog -->
-    <string name="star_dialog_text">Please consider giving us a star on GitHub! It only takes a second and motivates us to keep improving the app.</string>
-    <string name="star_dialog_btn_github">Go to GitHub</string>
-    <string name="star_dialog_btn_never">Don\'t show again</string>
+    <string name="star_dialog_text">Please give us a star on GitHub! It takes just 1 minute and greatly motivates ongoing updates.</string>
+    <string name="star_dialog_btn_github">Open GitHub</string>
+    <string name="star_dialog_btn_never">Do not show again</string>
     <string name="star_dialog_btn_later">Later</string>
 
     <!-- Initial Setup Wizard -->
     <string name="setup_wizard_title">Initial Setup</string>
-    <string name="setup_wizard_desc">Welcome to ByeDPI! The app can automatically generate a Cloudflare WARP profile and test ByeDPI strategies for optimal speed.</string>
+    <string name="setup_wizard_desc">Welcome to ByeDPI! The app will automatically generate a Cloudflare WARP profile and benchmark ByeDPI strategies for peak speeds.</string>
     <string name="setup_wizard_btn_start">Start Setup</string>
     <string name="setup_wizard_btn_skip">Skip</string>
     <string name="setup_wizard_step_warp">Generating Cloudflare WARP profile...</string>
     <string name="setup_wizard_step_benchmark">Auto-tuning ByeDPI strategy...</string>
     <string name="setup_wizard_done">Setup completed successfully!</string>
     <string name="setup_wizard_close">Done</string>
-    <string name="settings_rerun_setup">Re-run Initial Setup</string>
-    <string name="settings_rerun_setup_summary">Automatically create WARP profile and benchmark strategies</string>
+    <string name="settings_rerun_setup">Run initial setup again</string>
+    <string name="settings_rerun_setup_summary">Automatically generate WARP profile and test strategies</string>
 
     <!-- Quick Settings Tiles -->
     <string name="tile_byedpi">ByeDPI</string>
     <string name="tile_tg_proxy">TG Proxy</string>
     <string name="tile_warp">Cloudflare WARP</string>
+    <string name="tile_stop_all">Stop All</string>
+    <string name="all_services_stopped">All bypass services stopped</string>
 
     <!-- Proxy Chains -->
     <string name="chain_title">Create Proxy Chain</string>
     <string name="chain_name_hint">Chain name</string>
-    <string name="chain_type_warp_over_proxy">WARP over Proxy (WARP -> Proxy -> Target)</string>
-    <string name="chain_type_proxy_over_warp">Proxy over WARP (Proxy -> WARP -> Target)</string>
+    <string name="chain_type_warp_over_proxy">WARP over Proxy (WARP -> Proxy -> Site)</string>
+    <string name="chain_type_proxy_over_warp">Proxy over WARP (Proxy -> WARP -> Site)</string>
     <string name="chain_select_proxy">Select proxy (SS / VLESS / Trojan / VMess):</string>
-    <string name="chain_no_proxies_found">Please add at least one server first (e.g. Shadowsocks or VLESS)</string>
+    <string name="chain_no_proxies_found">Please add at least one server first (e.g., Shadowsocks or VLESS)</string>
     <string name="chain_created_success">Proxy chain created successfully!</string>
 
     <!-- Language selector -->
-    <string name="language_setting">Language / Язык</string>
-    <string name="dialog_select_language_title">Choose Language / Выберите язык</string>
+    <string name="language_setting">Language / Язык / زبان</string>
+    <string name="dialog_select_language_title">Choose Language / Выберите язык / انتخاب زبان</string>
     <string name="lang_ru">Русский</string>
     <string name="lang_en">English</string>
+    <string name="lang_fa">فارسی (Persian)</string>
 
     <!-- Telegram Channel -->
     <string name="tg_channel_title">Our Telegram Channel</string>
@@ -275,5 +278,71 @@
     <string name="disguise_pause">Pause</string>
     <string name="disguise_reset">Reset</string>
     <string name="disguise_unlocked_toast">Camouflage unlocked ✓</string>
-</resources>
+    
+    <!-- Gaming Mode -->
+    <string name="game_mode_title">🎮 Gaming Mode</string>
+    <string name="game_mode_summary">Optimize config and UDP for games with minimal latency and zero packet loss</string>
+    <string name="game_mode_active">Gaming mode active (UDP Fast-Path)</string>
+    <string name="game_mode_dialog_title">Gaming Mode</string>
 
+    <!-- UI Mode Selection -->
+    <string name="ui_mode_auto_title">Select Bypass Tool</string>
+    <string name="ui_mode_selection_title">Choose Interface Mode</string>
+    <string name="ui_mode_selection_desc">What matters most for you when using the app?</string>
+    <string name="ui_mode_simple_title">⚡ Automatic (Simple Mode)</string>
+    <string name="ui_mode_simple_desc">Single prominent connect button, fast tool selection, and minimal distractions.</string>
+    <string name="ui_mode_advanced_title">🛠️ More Settings (Full Mode)</string>
+    <string name="ui_mode_advanced_desc">Granular control over all services: ByeDPI, WARP, VLESS, Telegram proxy and manual switches.</string>
+    <string name="ui_mode_btn_advanced_settings">Advanced Settings</string>
+    <string name="ui_mode_switch_to_advanced">Switch to full interface</string>
+    <string name="ui_mode_switch_to_simple">Switch to simple interface</string>
+    <string name="tool_byedpi">ByeDPI (Desync)</string>
+    <string name="tool_warp">Cloudflare WARP (AWG)</string>
+    <string name="tool_vless">VLESS</string>
+
+    <!-- Notification Actions -->
+    <string name="action_stop">Stop</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_resume">Resume</string>
+    <string name="notification_paused">Paused</string>
+
+    <!-- Custom Strategy -->
+    <string name="btn_custom_strategy">Custom Strategy</string>
+    <string name="dialog_custom_strategy_title">Custom ByeDPI Strategy</string>
+    <string name="dialog_custom_strategy_hint">Enter arguments (e.g. -s1 -d2+s -r1+s)</string>
+    <string name="dialog_custom_strategy_name_hint">Name (e.g. My Preset)</string>
+    <string name="dialog_custom_strategy_apply">Apply</string>
+
+    <!-- VLESS Overhaul & WARP DNS strings -->
+    <string name="vless_tab_all">All</string>
+    <string name="vless_tab_keys">Keys</string>
+    <string name="vless_traffic_unlimited">📊 Unlimited</string>
+    <string name="vless_edit_server_title">Server Configuration Settings</string>
+    <string name="vless_edit_byedpi_title">🛡️ Custom ByeDPI Strategy</string>
+    <string name="vless_edit_byedpi_desc">Choose a desynchronization strategy to further obfuscate TLS handshakes to this server.</string>
+    <string name="vless_ping_method_title">⚙️ Ping Measurement Method</string>
+    <string name="vless_ping_proxy_get">Proxy GET (Real ping with TLS/HTTP)</string>
+    <string name="vless_ping_tcp">TCP Connect (Socket handshake)</string>
+    <string name="vless_ping_icmp">ICMP (System Echo Ping)</string>
+    <string name="vless_ping_unreachable">Unreachable</string>
+    <string name="vless_ping_batch_status">Testing batch %1$d/%2$d (servers %3$d–%4$d of %5$d)...</string>
+    <string name="vless_ping_finished">Test finished! Servers sorted by latency</string>
+    <string name="vless_server_updated">Server configuration updated!</string>
+    <string name="warp_dns_add_custom">+ Add Custom DNS Server</string>
+    <string name="warp_dns_ping_test">⚡ Ping Test</string>
+    <string name="warp_dns_custom_title_hint">DNS Name (e.g. My AdGuard)</string>
+    <string name="warp_dns_custom_addr_hint">Server Address / IP (IPv4 or domain)</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_add">Add</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_close">Close</string>
+    <string name="common_error">Error</string>
+    <string name="vless_btn_add_key">+ Key</string>
+    <string name="vless_btn_add_sub">+ Sub</string>
+    <string name="vless_btn_add_chain">🔗 Chain</string>
+    <string name="vless_btn_ping">⚡ Ping</string>
+    <string name="vless_btn_refresh_sub">🔄 Refresh</string>
+    <string name="vless_btn_delete_sub">🗑️ Delete</string>
+</resources>

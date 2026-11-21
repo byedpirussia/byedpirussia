@@ -1,15 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using ByeDpiRussia.Desktop.Models;
 
 namespace ByeDpiRussia.Desktop.Services
 {
     public static class SingBoxConfigGenerator
     {
-        public static string GenerateWarpConfig(string warpConfText, bool tunMode, int localPort = 10808)
+        public static string GenerateWarpConfig(string warpConfText, bool tunMode, string dnsServer = "1.1.1.1", int localPort = 10808)
         {
             var privKey = ExtractRegex(warpConfText, @"PrivateKey\s*=\s*(.+)") ?? "Wli/uh1ka24/qHSysIhhvdIqOKz58Gid0cEwlI0Nfhc=";
             var pubKey = ExtractRegex(warpConfText, @"PublicKey\s*=\s*(.+)") ?? "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=";
@@ -45,7 +48,7 @@ namespace ByeDpiRussia.Desktop.Services
             var root = new JsonObject
             {
                 ["log"] = new JsonObject { ["level"] = "warn" },
-                ["dns"] = CreateDnsConfig("wg-ep"),
+                ["dns"] = CreateDnsConfig("wg-ep", dnsServer),
                 ["endpoints"] = new JsonArray
                 {
                     new JsonObject
@@ -85,7 +88,7 @@ namespace ByeDpiRussia.Desktop.Services
             var root = new JsonObject
             {
                 ["log"] = new JsonObject { ["level"] = "warn" },
-                ["dns"] = CreateDnsConfig("proxy"),
+                ["dns"] = CreateDnsConfig("proxy", "1.1.1.1"),
                 ["inbounds"] = CreateInbounds(tunMode, localPort),
                 ["outbounds"] = new JsonArray
                 {
@@ -100,8 +103,9 @@ namespace ByeDpiRussia.Desktop.Services
             return tmpPath;
         }
 
-        private static JsonObject CreateDnsConfig(string targetDetour)
+        private static JsonObject CreateDnsConfig(string targetDetour, string dnsServer)
         {
+            var primaryDns = !string.IsNullOrWhiteSpace(dnsServer) ? dnsServer.Split(',')[0].Trim() : "1.1.1.1";
             return new JsonObject
             {
                 ["servers"] = new JsonArray
@@ -110,7 +114,7 @@ namespace ByeDpiRussia.Desktop.Services
                     {
                         ["type"] = "udp",
                         ["tag"] = "dns-remote",
-                        ["server"] = "1.1.1.1",
+                        ["server"] = primaryDns,
                         ["detour"] = targetDetour
                     }
                 },
@@ -173,15 +177,16 @@ namespace ByeDpiRussia.Desktop.Services
 
         private static JsonObject CreateVlessOutbound(VlessProfile p)
         {
+            var proto = p.Protocol.ToLowerInvariant();
             var outbound = new JsonObject
             {
-                ["type"] = p.Protocol.ToLowerInvariant() == "hysteria2" ? "hysteria2" : "vless",
+                ["type"] = proto == "hysteria2" ? "hysteria2" : (proto == "shadowsocks" ? "shadowsocks" : (proto == "trojan" ? "trojan" : "vless")),
                 ["tag"] = "proxy",
                 ["server"] = p.Address,
                 ["server_port"] = p.Port
             };
 
-            if (p.Protocol.ToLowerInvariant() == "hysteria2")
+            if (proto == "hysteria2")
             {
                 outbound["password"] = p.Uuid;
                 if (!string.IsNullOrEmpty(p.Sni))
@@ -193,7 +198,29 @@ namespace ByeDpiRussia.Desktop.Services
                     };
                 }
             }
-            else
+            else if (proto == "shadowsocks")
+            {
+                var method = "chacha20-ietf-poly1305";
+                var password = p.Uuid;
+                if (p.Uuid.Contains(':'))
+                {
+                    var sp = p.Uuid.Split(':');
+                    method = sp[0];
+                    password = sp[1];
+                }
+                outbound["method"] = method;
+                outbound["password"] = password;
+            }
+            else if (proto == "trojan")
+            {
+                outbound["password"] = p.Uuid;
+                outbound["tls"] = new JsonObject
+                {
+                    ["enabled"] = true,
+                    ["server_name"] = !string.IsNullOrEmpty(p.Sni) ? p.Sni : p.Address
+                };
+            }
+            else // vless
             {
                 outbound["uuid"] = p.Uuid;
                 if (!string.IsNullOrEmpty(p.Flow)) outbound["flow"] = p.Flow;

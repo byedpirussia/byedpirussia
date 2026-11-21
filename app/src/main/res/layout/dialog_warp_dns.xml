@@ -34,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minHeight="38dp"
-                android:text="⚡ Тест пинга"
+                android:text="@string/warp_dns_ping_test"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:cornerRadius="14dp" />
@@ -96,7 +96,7 @@
             android:layout_height="wrap_content"
             android:minHeight="44dp"
             android:layout_marginTop="10dp"
-            android:text="+ Добавить свой DNS сервер"
+            android:text="@string/warp_dns_add_custom"
             android:textSize="13sp"
             android:textStyle="bold"
             app:cornerRadius="14dp" />

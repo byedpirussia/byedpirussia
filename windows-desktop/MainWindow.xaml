@@ -6,29 +6,30 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
         Title="ByeDPI Russia — Единый центр обхода блокировок"
-        Height="760" Width="850"
-        MinHeight="620" MinWidth="720"
+        Height="840" Width="920"
+        MinHeight="680" MinWidth="780"
         FontFamily="Segoe UI Variable Text, Segoe UI, sans-serif"
         WindowStartupLocation="CenterScreen"
+        Icon="app_icon.ico"
         Background="Transparent">
 
-    <!-- DWM Mica Backdrop Overlay (Windows 11 Fluent) -->
-    <Grid Background="#E614161F">
-        <Grid Margin="24,18,24,18">
+    <!-- DWM Mica / Fluent Dark Backdrop -->
+    <Grid Background="#F210131B">
+        <Grid Margin="22,16,22,16">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- 1. Windows 11 Fluent Header & Status Banner -->
+            <!-- 1. Header & Quick Status -->
             <Border Grid.Row="0"
-                    Background="#38212433"
+                    Background="#381E2333"
                     BorderBrush="#24FFFFFF"
                     BorderThickness="1"
                     CornerRadius="12"
-                    Padding="18,14"
-                    Margin="0,0,0,16">
+                    Padding="16,12"
+                    Margin="0,0,0,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -36,16 +37,14 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                            <Border Background="#0078D4" Width="30" Height="30" CornerRadius="8" Margin="0,0,10,0">
-                                <TextBlock Text="🛡️" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Image Source="app_icon.png" Width="28" Height="28" Margin="0,0,10,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="ByeDPI Russia" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Foreground="#F8FAFC"/>
+                            <Border Background="#2563EB" CornerRadius="6" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="v1.6.8" FontSize="11" Foreground="White" FontWeight="SemiBold"/>
                             </Border>
-                            <TextBlock Text="ByeDPI Russia" FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <Border Background="#2563EB" CornerRadius="6" Padding="6,2" Margin="10,0,0,0">
-                                <TextBlock Text="v1.3.4" FontSize="11" Foreground="White" FontWeight="SemiBold"/>
-                            </Border>
-                            <Border Background="#1AFFFFFF" BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="6,0,0,0">
-                                <TextBlock Text="✨ Windows 11 DWM Mica" FontSize="11" Foreground="#93C5FD" FontWeight="Medium"/>
+                            <Border Background="#1AFFFFFF" BorderBrush="#26FFFFFF" BorderThickness="1" CornerRadius="6" Padding="6,2" Margin="6,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="✨ Windows 11 Fluent" FontSize="11" Foreground="#93C5FD" FontWeight="Medium"/>
                             </Border>
                         </StackPanel>
                         <TextBlock x:Name="TxtHeroStatus"
@@ -54,14 +53,14 @@
                                    Foreground="#94A3B8" />
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
                         <Button x:Name="BtnDisconnectAll"
                                 Content="Отключить всё"
                                 Style="{StaticResource AccentButtonStyle}"
                                 Background="#DC2626"
                                 BorderBrush="#DC2626"
                                 Foreground="White"
-                                Padding="16,6"
+                                Padding="14,6"
                                 FontWeight="SemiBold"
                                 Click="BtnDisconnectAll_Click"
                                 Visibility="Collapsed"/>
@@ -69,12 +68,12 @@
                 </Grid>
             </Border>
 
-            <!-- 2. Main Service Cards Grid -->
+            <!-- 2. Main Services List -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <ui:SimpleStackPanel Spacing="14">
 
                     <!-- CARD 1: BYEDPI ENGINE -->
-                    <Border Background="#38212433"
+                    <Border Background="#381E2333"
                             BorderBrush="#1FFFFFFF"
                             BorderThickness="1"
                             CornerRadius="12"
@@ -91,14 +90,13 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Header -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,10">
                                 <Border Background="#0078D4" Width="36" Height="36" CornerRadius="10" Margin="0,0,12,0">
                                     <TextBlock Text="🛡️" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="ByeDPI Engine" FontSize="16" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Прямой обход DPI (127.0.0.1:1080) • 32 стратегии • YouTube в 4K и Discord"
+                                    <TextBlock Text="ByeDPI Engine (ciadpi)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Прямой обход DPI (127.0.0.1:1080) • 32 стратегии • YouTube 4K, Discord и Twitch"
                                                FontSize="12" Foreground="#94A3B8"/>
                                 </StackPanel>
                             </StackPanel>
@@ -107,7 +105,7 @@
                                              OnContent="Активно" OffContent="Отключено"
                                              Toggled="SwitchByeDpi_Toggled"/>
 
-                            <!-- Description & Strategy Selection -->
+                            <!-- Strategy Selection & Benchmark -->
                             <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -122,7 +120,7 @@
                                           HorizontalAlignment="Stretch" Margin="0,0,8,0"/>
                                 <Button x:Name="BtnBenchmark" Grid.Column="2"
                                         Content="⚡ Автоподбор"
-                                        ToolTip="Автоматически протестировать все 32 стратегии на YouTube и Discord и применить лучшую"
+                                        ToolTip="Протестировать все 32 стратегии на YouTube и Discord и применить лучшую"
                                         Style="{StaticResource AccentButtonStyle}"
                                         Click="BtnBenchmark_Click"/>
                             </Grid>
@@ -162,8 +160,8 @@
                         </Grid>
                     </Border>
 
-                    <!-- CARD 2: CLOUDFLARE WARP -->
-                    <Border Background="#38212433"
+                    <!-- CARD 2: CLOUDFLARE WARP & DNS CENTER -->
+                    <Border Background="#381E2333"
                             BorderBrush="#1FFFFFFF"
                             BorderThickness="1"
                             CornerRadius="12"
@@ -173,20 +171,20 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Header -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,10">
                                 <Border Background="#EA580C" Width="36" Height="36" CornerRadius="10" Margin="0,0,12,0">
                                     <TextBlock Text="🌐" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Cloudflare WARP (WireGuard)" FontSize="16" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Полноценный туннель Cloudflare • Обход любых сайтов и сервисов"
+                                    <TextBlock Text="Cloudflare WARP + DNS Центр" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="WireGuard туннель • Выбор и пинг DNS (включая cf.dns-ai.ru и свои DNS)"
                                                FontSize="12" Foreground="#94A3B8"/>
                                 </StackPanel>
                             </StackPanel>
@@ -195,23 +193,42 @@
                                              OnContent="Подключено" OffContent="Отключено"
                                              Toggled="SwitchWarp_Toggled"/>
 
-                            <ui:SimpleStackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,4,0,0" Spacing="8">
+                            <!-- DNS selector and ping -->
+                            <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,2,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" Text="DNS Сервер:" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="13" Foreground="#CBD5E1"/>
+                                <ComboBox x:Name="CmbWarpDns" Grid.Column="1"
+                                          DisplayMemberPath="DisplayText"
+                                          SelectionChanged="CmbWarpDns_SelectionChanged"
+                                          HorizontalAlignment="Stretch" Margin="0,0,8,0"/>
+                                <Button x:Name="BtnPingDns" Grid.Column="2" Content="⚡ Тест пинга" ToolTip="Замерить задержку текущего DNS сервера" Margin="0,0,8,0" Click="BtnPingDns_Click"/>
+                                <Button x:Name="BtnAddCustomDns" Grid.Column="3" Content="+ Свой DNS" ToolTip="Добавить собственный DNS сервер" Click="BtnAddCustomDns_Click"/>
+                            </Grid>
+
+                            <!-- Actions -->
+                            <ui:SimpleStackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,2,0,0" Spacing="8">
                                 <Button x:Name="BtnGenerateWarp"
                                         Content="✨ Сгенерировать ключ WARP"
                                         Style="{StaticResource AccentButtonStyle}"
                                         ToolTip="Автоматически получить и настроить чистый бесплатный профиль Cloudflare WARP"
                                         Click="BtnGenerateWarp_Click"/>
-                                <Button x:Name="BtnEditWarpConfig" Content="📝 Настроить конфиг (.conf)" Click="BtnEditWarpConfig_Click"/>
+                                <Button x:Name="BtnEditWarpConfig" Content="📝 Настроить .conf" Click="BtnEditWarpConfig_Click"/>
                                 <Button x:Name="BtnImportWarpFile" Content="📥 Загрузить файл" Click="BtnImportWarpFile_Click"/>
                             </ui:SimpleStackPanel>
 
-                            <Border Grid.Row="2" Grid.ColumnSpan="2"
+                            <Border Grid.Row="3" Grid.ColumnSpan="2"
                                     Background="#240F172A"
                                     CornerRadius="8"
                                     Padding="10,8"
                                     Margin="0,10,0,0">
                                 <TextBlock x:Name="TxtWarpStatus"
-                                           Text="Готов к работе. Нажмите «Сгенерировать ключ WARP», чтобы получить свежую конфигурацию."
+                                           Text="Готов к работе. Нажмите «Сгенерировать ключ WARP» или выберите нужный DNS."
                                            FontSize="12"
                                            TextWrapping="Wrap"
                                            Foreground="#94A3B8"/>
@@ -219,8 +236,8 @@
                         </Grid>
                     </Border>
 
-                    <!-- CARD 3: VLESS / HYSTERIA 2 -->
-                    <Border Background="#38212433"
+                    <!-- CARD 3: VLESS / HYSTERIA 2 / SUBSCRIPTIONS (HAPP STYLE) -->
+                    <Border Background="#381E2333"
                             BorderBrush="#1FFFFFFF"
                             BorderThickness="1"
                             CornerRadius="12"
@@ -229,20 +246,21 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Header -->
                             <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,10">
                                 <Border Background="#8B5CF6" Width="36" Height="36" CornerRadius="10" Margin="0,0,12,0">
                                     <TextBlock Text="⚡" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="VLESS / Hysteria 2" FontSize="16" FontWeight="SemiBold"/>
-                                    <TextBlock Text="VLESS Reality, Hysteria 2 и Shadowsocks через Sing-Box ядро"
+                                    <TextBlock Text="VLESS / Reality / Hysteria 2 (Happ-стиль)" FontSize="16" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Поддержка подписок с остатком трафика • Привязка стратегий ByeDPI • Замер пинга"
                                                FontSize="12" Foreground="#94A3B8"/>
                                 </StackPanel>
                             </StackPanel>
@@ -251,32 +269,69 @@
                                              OnContent="Подключено" OffContent="Отключено"
                                              Toggled="SwitchVless_Toggled"/>
 
-                            <!-- Server selector and Add button -->
-                            <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,4,0,0">
+                            <!-- Subscription Info Banner (if available) -->
+                            <Border x:Name="PnlSubUserInfo" Grid.Row="1" Grid.ColumnSpan="2"
+                                    Background="#2638BDF8"
+                                    BorderBrush="#3838BDF8"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="12,8"
+                                    Margin="0,0,0,10"
+                                    Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="TxtSubUserInfo" Grid.Column="0" Text="📊 Трафик: 45.2 / 100.0 ГБ   •   ⏳ Осталось: 22 дн."
+                                               FontSize="12" FontWeight="SemiBold" Foreground="#BAE6FD" VerticalAlignment="Center"/>
+                                    <Button x:Name="BtnRefreshSub" Grid.Column="1" Content="🔄 Обновить подписку" FontSize="11" Padding="8,2" Click="BtnRefreshSub_Click"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- Server selector and Controls -->
+                            <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
                                 <ComboBox x:Name="CmbVlessProfiles" Grid.Column="0"
-                                          DisplayMemberPath="Name"
+                                          DisplayMemberPath="DisplayTitle"
+                                          SelectionChanged="CmbVlessProfiles_SelectionChanged"
                                           HorizontalAlignment="Stretch"
                                           Margin="0,0,8,0"/>
 
-                                <ui:SimpleStackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                    <Button x:Name="BtnAddVlessKey" Content="+ Добавить ключ / ссылку" Click="BtnAddVlessKey_Click"/>
+                                <ui:SimpleStackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                    <Button x:Name="BtnPingSingleServer" Content="⚡ Пинг" ToolTip="Замерить пинг текущего сервера" Click="BtnPingSingleServer_Click"/>
+                                    <Button x:Name="BtnPingMethod" Content="⚙️ Режим пинга" ToolTip="Выбрать метод пинга (Proxy GET, TCP, ICMP)" Click="BtnPingMethod_Click"/>
+                                    <Button x:Name="BtnEditServer" Content="✏️ Настроить" ToolTip="Редактировать параметры сервера и назначить стратегию ByeDPI" Click="BtnEditServer_Click"/>
+                                    <Button x:Name="BtnAddVlessKey" Content="+ Добавить" ToolTip="Вставить ключ VLESS/Reality или ссылку на подписку" Click="BtnAddVlessKey_Click"/>
                                     <Button x:Name="BtnDeleteVlessKey" Content="🗑️" ToolTip="Удалить выбранный сервер" Click="BtnDeleteVlessKey_Click"/>
                                 </ui:SimpleStackPanel>
                             </Grid>
+
+                            <!-- Assigned ByeDPI Strategy Badge for current VLESS server -->
+                            <Border Grid.Row="3" Grid.ColumnSpan="2"
+                                    Background="#240F172A"
+                                    CornerRadius="8"
+                                    Padding="10,8"
+                                    Margin="0,4,0,0">
+                                <TextBlock x:Name="TxtVlessAssignedStrategy"
+                                           Text="Стратегия ByeDPI для этого сервера: Не назначена (прямое подключение)"
+                                           FontSize="12"
+                                           TextWrapping="Wrap"
+                                           Foreground="#94A3B8"/>
+                            </Border>
                         </Grid>
                     </Border>
 
                 </ui:SimpleStackPanel>
             </ScrollViewer>
 
-            <!-- 3. Windows 11 Bottom Routing & Settings Bar -->
+            <!-- 3. Bottom Routing & Settings Bar -->
             <Border Grid.Row="2"
-                    Background="#38212433"
+                    Background="#381E2333"
                     BorderBrush="#24FFFFFF"
                     BorderThickness="1"
                     CornerRadius="12"
@@ -302,7 +357,7 @@
                     </ui:SimpleStackPanel>
 
                     <ui:SimpleStackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                        <Button x:Name="BtnImportBackup" Content="📥 Импорт бэкапа из Android" Click="BtnImportBackup_Click"/>
+                        <Button x:Name="BtnImportBackup" Content="📥 Импорт из Android" ToolTip="Импортировать резервную копию конфигураций Android" Click="BtnImportBackup_Click"/>
                         <Button x:Name="BtnAutoStart" Content="🚀 Автозапуск" Click="BtnAutoStart_Click"/>
                     </ui:SimpleStackPanel>
                 </Grid>

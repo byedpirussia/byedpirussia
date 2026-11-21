@@ -1,0 +1,348 @@
+<resources>
+    <string name="byedpi_docs">https://github.com/hufrea/byedpi/blob/v0.13/README.md</string>
+    <string name="app_name">بای‌دی‌پی (ByeDPI)</string>
+    <string name="vpn_connect">اتصال</string>
+    <string name="vpn_disconnect">قطع اتصال</string>
+    <string name="vpn_connected">متصل شد (VPN فعال است)</string>
+    <string name="vpn_disconnected">قطع شد</string>
+    <string name="proxy_up">پروکسی در حال اجرا است</string>
+    <string name="proxy_down">پروکسی متوقف شد</string>
+    <string name="proxy_start">شروع</string>
+    <string name="proxy_stop">توقف</string>
+    <string name="settings">تنظیمات</string>
+    <string name="vpn_permission_denied">مجوز VPN رد شد</string>
+    <string name="settings_unavailable">لطفاً قبل از تغییر تنظیمات، VPN را متوقف کنید</string>
+    <string name="title_settings">تنظیمات ByeDPI</string>
+    <string name="save_logs">ذخیره گزارش‌ها</string>
+    <string name="reset_settings">بازنشانی</string>
+    <string name="logs_failed">جمع‌آوری گزارش‌ها ناموفق بود</string>
+    <string name="proxy_address">%1$s:%2$s</string>
+    <string name="theme_settings">تم برنامه</string>
+    <string name="accent_color_setting">رنگ اصلی</string>
+    <string name="mode_setting">حالت عملکرد</string>
+    <string name="dbs_ip_setting">سرور DNS</string>
+    <string name="bye_dpi_proxy_ip_setting">آدرس پروکسی</string>
+    <string name="byedpi_proxy_port_setting">پورت پروکسی</string>
+    <string name="byedpi_max_connections_setting">حداکثر اتصالات</string>
+    <string name="byedpi_buffer_size_setting">اندازه بافر</string>
+    <string name="byedpi_default_ttl_setting">مقدار پیش‌فرض TTL</string>
+    <string name="byedpi_no_domain_setting">عدم حل نام دامنه‌ها</string>
+    <string name="byedpi_desync_method_setting">روش ناهمگام‌سازی (Desync)</string>
+    <string name="byedpi_split_position_setting">موقعیت تقسیم پکت</string>
+    <string name="byedpi_split_at_host_setting">تقسیم در Host/SNI</string>
+    <string name="byedpi_fake_ttl_setting">مقدار TTL پکت جعلی</string>
+    <string name="byedpi_host_mixed_case_setting">تغییر حروف کوچک و بزرگ Host</string>
+    <string name="byedpi_domain_mixed_case_setting">تغییر حروف کوچک و بزرگ دامنه</string>
+    <string name="byedpi_host_remove_spaces_setting">حذف فاصله‌ها در Host</string>
+    <string name="byedpi_tlsrec_enabled_setting">تکه‌تکه کردن رکورد TLS</string>
+    <string name="byedpi_tlsrec_position_setting">موقعیت تقسیم رکورد TLS</string>
+    <string name="byedpi_tlsrec_at_sni_setting">تقسیم رکورد TLS در SNI</string>
+    <string name="version">نسخه</string>
+    <string name="source_code_link">سورس‌کد پروژه</string>
+    <string name="byedpi_readme_link">راهنمای پارامترها</string>
+    <string name="failed_to_start">راه‌اندازی %1$s ناموفق بود</string>
+    <string name="vpn_channel_name">اتصال VPN</string>
+    <string name="proxy_channel_name">سرور پروکسی</string>
+    <string name="notification_title">ByeDPI</string>
+    <string name="vpn_notification_content">حفاظت و دور زدن فیلترینگ فعال است</string>
+    <string name="proxy_notification_content">پروکسی محلی در حال اجرا است</string>
+    <string name="general_category">عمومی</string>
+    <string name="byedpi_category">پارامترهای ByeDPI</string>
+    <string name="about_category">درباره برنامه</string>
+    <string name="command_line_editor">ویرایشگر خط فرمان</string>
+    <string name="ui_editor">ویرایشگر گرافیکی</string>
+    <string name="use_command_line_settings">تنظیمات خط فرمان</string>
+    <string name="desync_http">ناهمگام‌سازی HTTP</string>
+    <string name="desync_https">ناهمگام‌سازی HTTPS</string>
+    <string name="desync_udp">ناهمگام‌سازی UDP</string>
+    <string name="oob_data">بایت OOB</string>
+    <string name="sni_of_fake_packet">SNI جعلی</string>
+    <string name="byedpi_proxy">پروکسی</string>
+    <string name="byedpi_desync">ناهمگام‌سازی (Desync)</string>
+    <string name="command_line_arguments">آرگومان‌های راه‌اندازی</string>
+    <string name="byedpi_hosts_mode_setting">حالت لیست هاست‌ها</string>
+    <string name="byedpi_hosts_blacklist_setting">لیست سیاه</string>
+    <string name="byedpi_hosts_whitelist_setting">لیست سفید</string>
+    <string name="byedpi_tcp_fast_open_setting">TCP Fast Open</string>
+    <string name="byedpi_udp_fake_count">تعداد بسته‌های UDP جعلی</string>
+    <string name="ipv6_setting">پشتیبانی از IPv6</string>
+    <string name="byedpi_fake_offset_setting">آفست بسته جعلی</string>
+    <string name="byedpi_drop_sack_setting">نادیده گرفتن SACK (Drop SACK)</string>
+    <string name="desync_udp_category">پروتکل UDP</string>
+    <string name="desync_http_category">پروتکل HTTP</string>
+    <string name="desync_https_category">پروتکل HTTPS</string>
+    <string name="byedpi_protocols_category">پروتکل‌ها</string>
+    <string name="byedpi_protocols_hint">برای ناهمگام‌سازی کل ترافیک، تمام تیک‌ها را بردارید</string>
+
+    <!-- Tuning & presets -->
+    <string name="auto_tune_button">⚡ انتخاب خودکار استراتژی</string>
+    <string name="current_strategy_label">استراتژی فعلی:</string>
+    <string name="testing_strategy_title">یافتن بهترین استراتژی...</string>
+    <string name="testing_strategy_msg">در حال تست اتصال به یوتیوب و دیسکورد...</string>
+    <string name="strategy_selected_title">استراتژی انتخاب شد!</string>
+    <string name="strategy_selected_msg">بهترین استراتژی انتخاب شد: %1$s (پینگ: %2$d میلی‌ثانیه)</string>
+    <string name="strategy_manual_select">انتخاب دستی استراتژی</string>
+    <string name="status_testing">تست استراتژی‌ها (%1$d/%2$d)...</string>
+    <string name="tg_proxy_title">پروکسی MTProto تلگرام</string>
+    <string name="tg_proxy_subtitle">رفع فیلتر مستقیم تلگرام با کلودفلر وب‌سوکت</string>
+    <string name="tg_proxy_status_stopped">متوقف (127.0.0.1:1443)</string>
+    <string name="tg_proxy_status_running">در حال اجرا (127.0.0.1:1443)</string>
+    <string name="tg_proxy_btn_start">شروع پروکسی</string>
+    <string name="tg_proxy_btn_stop">توقف</string>
+    <string name="tg_proxy_btn_apply">🚀 اتصال در تلگرام</string>
+    <string name="tg_proxy_btn_copy">کپی لینک</string>
+    <string name="tg_proxy_copied">لینک پروکسی کپی شد!</string>
+
+    <string name="warp_card_title">وارپ کلودفلر (AmneziaWG)</string>
+    <string name="warp_card_subtitle">وایرگارد مبهم‌سازی‌شده در برابر فیلترینگ</string>
+    <string name="warp_btn_generate">✨ ساخت وارپ جدید</string>
+    <string name="warp_btn_copy">کپی کانفیگ (.conf)</string>
+    <string name="warp_btn_connect">روشن کردن وارپ</string>
+    <string name="warp_btn_disconnect">خاموش کردن وارپ</string>
+    <string name="warp_btn_open_amnezia">اشتراک‌گذاری / Amnezia</string>
+    <string name="warp_btn_edit">✏️ ویرایش کانفیگ</string>
+    <string name="warp_copied">کانفیگ AmneziaWG کپی شد!</string>
+    <string name="warp_generating">در حال تولید پروفایل وارپ...</string>
+    <string name="warp_generated_success">پروفایل وارپ جدید با موفقیت ایجاد شد!</string>
+    <string name="warp_generated_error">خطا در تولید وارپ: %1$s</string>
+    <string name="btn_advanced_settings">⚙️ تنظیمات پیشرفته و استراتژی‌ها</string>
+    <string name="title_advanced_settings">تنظیمات پیشرفته</string>
+    <string name="app_subtitle_clean">مرکز جامع دور زدن سانسور و فیلترینگ</string>
+    <string name="card_byedpi_title">بای‌دی‌پی ByeDPI (ناهمگام‌سازی بسته)</string>
+    <string name="card_byedpi_desc">دسترسی مستقیم به یوتیوب و دیسکورد بدون نیاز به سرور VPN خارجی</string>
+    <string name="card_tg_desc">پروکسی اختصاصی MTProto با پروتکل وب‌سوکت کلودفلر</string>
+    <string name="card_warp_desc">تونل کامل Cloudflare WARP مجهز به مبهم‌سازی پیشرفته AmneziaWG 3.1</string>
+    <string name="byedpi_active_btn">خاموش کردن ByeDPI</string>
+    <string name="byedpi_inactive_btn">روشن کردن ByeDPI</string>
+    <string name="tg_active_btn">خاموش کردن پروکسی تلگرام</string>
+    <string name="tg_inactive_btn">روشن کردن پروکسی تلگرام</string>
+    <string name="warp_active_btn">خاموش کردن وارپ</string>
+    <string name="warp_inactive_btn">روشن کردن وارپ</string>
+    <string name="nav_to_advanced_hint">برای تنظیم دقیق هسته، تست خودکار و استراتژی‌های بای‌دی‌پی کلیک کنید</string>
+    <string name="btn_select_strategy">انتخاب دستی استراتژی</string>
+    <string name="btn_autotune">تست و انتخاب خودکار بهترین استراتژی</string>
+    <string name="btn_stop_autotune">توقف تست خودکار</string>
+    <string name="split_tunnel_title">تونل‌بندی تفکیکی (Split Tunneling)</string>
+    <string name="split_tunnel_subtitle">انتخاب برنامه‌های عبوری از فیلترشکن</string>
+    <string name="split_tunnel_mode_title">حالت فیلتر برنامه‌ها</string>
+    <string name="split_tunnel_mode_all">کل ترافیک دستگاه (بدون استثنا)</string>
+    <string name="split_tunnel_mode_whitelist">فقط برنامه‌های انتخاب‌شده</string>
+    <string name="split_tunnel_mode_blacklist">همه برنامه‌ها به جز موارد انتخاب‌شده</string>
+    <string name="split_tunnel_select_apps">انتخاب برنامه‌ها</string>
+    <string name="split_tunnel_apps_count">برنامه‌های انتخاب‌شده: %1$d</string>
+    <string name="split_tunnel_search_hint">جستجوی برنامه...</string>
+    <string name="split_tunnel_select_all">انتخاب همه</string>
+    <string name="split_tunnel_deselect_all">لغو انتخاب همه</string>
+    <string name="card_vless_title">VLESS / Shadowsocks / Trojan / HY2</string>
+    <string name="card_vless_desc">کلاینت جامع با هسته Sing-Box/Xray: پشتیبانی از Reality، VLESS، Hysteria 2 و شادوساکس</string>
+    <string name="vless_active_btn">قطع اتصال پروکسی</string>
+    <string name="vless_inactive_btn">اتصال پروکسی</string>
+    <string name="vless_manage_btn">مدیریت سرورها و اشتراک‌ها</string>
+    <string name="vless_no_servers">سروری اضافه نشده است (VLESS / SS / VMess / Trojan / HY2)</string>
+    <string name="vless_servers_title">سرورها و کلیدهای پروکسی</string>
+    <string name="vless_add_single">افزودن لینک (vless, hy2, ss, vmess, trojan)</string>
+    <string name="vless_add_subscription">افزودن لینک سابسکریپشن</string>
+    <string name="vless_enter_key_hint">لینک vless://, hy2://, ss://, vmess://, trojan:// را جای‌گذاری کنید...</string>
+    <string name="vless_enter_sub_hint">https://example.com/sub/...</string>
+    <string name="vless_sub_updating">در حال به‌روزرسانی اشتراک...</string>
+    <string name="vless_sub_success">سرورها با موفقیت بارگیری شدند: %1$d</string>
+    <string name="vless_sub_error">خطا در به‌روزرسانی: %1$s</string>
+    <string name="vless_added_success">سرور با موفقیت اضافه شد!</string>
+    <string name="vless_invalid_link">لینک نامعتبر است (پروتکل‌های vless, hy2, ss, vmess, trojan پشتیبانی می‌شوند)</string>
+    <string name="vless_delete_confirm">این سرور حذف شود؟</string>
+
+    <!-- Discussions Banner -->
+    <string name="discussions_banner_text">می‌خواهید با سازنده در ارتباط باشید؟ به بخش بحث‌های گیت‌هاب ما بپیوندید!</string>
+    <string name="discussions_banner_btn">ورود</string>
+
+    <!-- GitHub Star Dialog -->
+    <string name="star_dialog_text">لطفاً در گیت‌هاب به ما ستاره (Star) بدهید! این کار فقط یک دقیقه زمان می‌برد ولی انگیزه بزرگی برای به‌روزرسانی‌های مداوم ماست.</string>
+    <string name="star_dialog_btn_github">مشاهده پروژه در گیت‌هاب</string>
+    <string name="star_dialog_btn_never">دیگر نشان نده</string>
+    <string name="star_dialog_btn_later">بعداً</string>
+
+    <!-- Initial Setup Wizard -->
+    <string name="setup_wizard_title">راه‌اندازی اولیه</string>
+    <string name="setup_wizard_desc">به ByeDPI خوش آمدید! برنامه به طور خودکار کانفیگ Cloudflare WARP را ساخته و استراتژی‌های ضد فیلتر را برای دستیابی به بالاترین سرعت آزمایش می‌کند.</string>
+    <string name="setup_wizard_btn_start">شروع راه‌اندازی</string>
+    <string name="setup_wizard_btn_skip">رد شدن</string>
+    <string name="setup_wizard_step_warp">در حال ساخت پروفایل وارپ...</string>
+    <string name="setup_wizard_step_benchmark">تست خودکار استراتژی ByeDPI...</string>
+    <string name="setup_wizard_done">راه‌اندازی با موفقیت انجام شد!</string>
+    <string name="setup_wizard_close">پایان</string>
+    <string name="settings_rerun_setup">اجرای دوباره راه‌اندازی اولیه</string>
+    <string name="settings_rerun_setup_summary">تولید خودکار پروفایل وارپ و بنچمارک استراتژی‌ها</string>
+
+    <!-- Quick Settings Tiles -->
+    <string name="tile_byedpi">ByeDPI</string>
+    <string name="tile_tg_proxy">پروکسی تلگرام</string>
+    <string name="tile_warp">وارپ کلودفلر</string>
+    <string name="tile_stop_all">قطع همه اتصالات</string>
+    <string name="all_services_stopped">تمامی سرویس‌های فیلترشکن متوقف شدند</string>
+
+    <!-- Proxy Chains -->
+    <string name="chain_title">ایجاد زنجیره پروکسی (Chain)</string>
+    <string name="chain_name_hint">نام زنجیره</string>
+    <string name="chain_type_warp_over_proxy">وارپ از طریق پروکسی (وارپ -> پروکسی -> سایت)</string>
+    <string name="chain_type_proxy_over_warp">پروکسی از طریق وارپ (پروکسی -> وارپ -> سایت)</string>
+    <string name="chain_select_proxy">پروکسی را انتخاب کنید (SS / VLESS / Trojan / VMess):</string>
+    <string name="chain_no_proxies_found">ابتدا حداقل یک سرور (مانند شادوساکس یا VLESS) اضافه کنید</string>
+    <string name="chain_created_success">زنجیره پروکسی با موفقیت ایجاد شد!</string>
+
+    <!-- Language selector -->
+    <string name="language_setting">Language / Язык / زبان</string>
+    <string name="dialog_select_language_title">Choose Language / Выберите язык / انتخاب زبان</string>
+    <string name="lang_ru">Русский</string>
+    <string name="lang_en">English</string>
+    <string name="lang_fa">فارسی (Persian)</string>
+
+    <!-- Telegram Channel -->
+    <string name="tg_channel_title">کانال تلگرام ما</string>
+    <string name="tg_channel_url">https://t.me/Byedpirussia</string>
+    <string name="tg_channel_banner_title">📢 کانال رسمی تلگرام</string>
+    <string name="tg_channel_banner_text">در کانال تلگرام ما t.me/Byedpirussia عضو شوید! تمام آپدیت‌های آینده و اخبار برنامه فقط در آنجا قرار می‌گیرد.</string>
+    <string name="tg_channel_banner_btn">عضویت در تلگرام</string>
+    <string name="tg_channel_dialog_title">📢 اطلاعیه مهم</string>
+    <string name="tg_channel_dialog_text">به کانال رسمی تلگرام ما بپیوندید: t.me/Byedpirussia\n\n⚠️ توجه: تمامی آپدیت‌ها و نسخه‌های جدید تنها در کانال تلگرام ما منتشر خواهد شد!</string>
+    <string name="tg_channel_dialog_btn_join">ورود به کانال</string>
+    <string name="tg_channel_pref_summary">t.me/Byedpirussia — همه آپدیت‌ها از این پس فقط در اینجا</string>
+
+    <!-- VPN Warning for Telegram -->
+    <string name="tg_vpn_warning_title">توجه</string>
+    <string name="tg_vpn_warning_msg">فیلترشکن شما روشن نیست و تلگرام بدون آن باز نمی‌شود. آیا وارپ روشن شود؟</string>
+    <string name="tg_vpn_warning_btn_warp">روشن کردن وارپ</string>
+    <string name="tg_vpn_warning_btn_anyway">ادامه بدون VPN</string>
+
+    <!-- WARP Auto-reconnect and DNS -->
+    <string name="warp_auto_reconnect_title">اتصال مجدد خودکار وارپ</string>
+    <string name="warp_auto_reconnect_help">این ویژگی در صورت قطع موقت اینترنت یا تغییر به داده موبایل، وارپ را خودکار وصل می‌کند</string>
+    <string name="warp_dns_settings_btn">⚙️ تنظیمات DNS برای وارپ</string>
+    <string name="warp_dns_dialog_title">تنظیمات DNS وارپ</string>
+    <string name="warp_dns_save_btn">ذخیره DNS</string>
+    <string name="warp_dns_saved">تنظیمات DNS ذخیره شد</string>
+    <string name="warp_dns_private_warning">⚠️ در اندروید Private DNS فعال است. سیستم تمام درخواست‌ها را از DoT سیستمی رد می‌کند، بنابراین DNS وارپ اعمال نخواهد شد. لطفاً در تنظیمات اندروید (Network &amp; internet → Private DNS: Off) آن را خاموش کنید.</string>
+    <string name="warp_dns_private_warning_with_server">⚠️ دی‌ان‌اس خصوصی اندروید فعال است (سرور: %1$s). برای اعمال DNS وارپ، لطفاً Private DNS را در تنظیمات گوشی خاموش کنید.</string>
+    <string name="warp_dns_force_use_btn">اعمال اجباری تنظیمات DNS</string>
+    <string name="warp_dns_force_unlocked">تنظیمات DNS باز شد ✓</string>
+
+    <!-- Builtin Subscriptions -->
+    <string name="builtin_subs_title">اشتراک‌های آماده برای لیست سفید (Б/С)</string>
+    <string name="builtin_subs_subtitle">مجموعه سرورهای تست شده از گیت‌ورس:</string>
+    <string name="builtin_subs_custom_url">یا لینک اشتراک اختصاصی خود را وارد کنید:</string>
+    <string name="builtin_subs_already_added">قبلاً اضافه شده</string>
+    <string name="builtin_subs_add_btn">دریافت و وارد کردن</string>
+    <string name="builtin_subs_load_custom_btn">بارگیری لینک اختصاصی</string>
+
+    <!-- Material Design 3 -->
+    <string name="m3_status_protected">محافظت شده (امن)</string>
+    <string name="m3_status_unprotected">بدون محافظت</string>
+    <string name="m3_services_title">سرویس‌های ضد فیلتر و VPN</string>
+    <string name="warp_btn_import">وارد کردن کانفیگ (.conf)</string>
+    <string name="warp_import_dialog_title">وارد کردن کانفیگ وارپ (AWG)</string>
+    <string name="warp_import_dialog_msg">متن کانفیگ وایرگارد یا امنزیا (.conf) را جای‌گذاری کنید یا فایل را انتخاب نمایید:</string>
+    <string name="warp_import_from_file">انتخاب فایل .conf</string>
+    <string name="warp_import_from_clipboard">جای‌گذاری از کلیپ‌بورد</string>
+    <string name="warp_import_save">ذخیره و اعمال</string>
+    <string name="warp_import_invalid">خطا: بخش‌های [Interface] یا [Peer] در کانفیگ یافت نشد</string>
+    <string name="warp_import_success">کانفیگ وارپ با موفقیت وارد شد!</string>
+
+    <!-- Anti-Tamper / Modified Banner -->
+    <string name="tamper_banner_title">⚠️ نسخه دستکاری‌شده غیررسمی</string>
+    <string name="tamper_banner_message">شناسایی شد که این برنامه تغییر یافته یا با گواهی دیگری امضا شده است.\n\nتوسعه‌دهنده اصلی ByeDPI هیچ مسئولیتی در قبال امنیت داده‌ها، رمزهای عبور و پایداری نسخه‌های دستکاری‌شده ندارد.\n\nهمیشه نسخه رسمی و امن را مستقیماً از گیت‌هاب دانلود کنید.</string>
+    <string name="tamper_banner_btn_github">دانلود نسخه اصلی از GitHub</string>
+    <string name="tamper_banner_btn_continue_format">ادامه (%1$d)</string>
+    <string name="tamper_banner_btn_continue">ادامه</string>
+    <string name="tamper_guard_blocked">اجرا مسدود شد: یکپارچگی برنامه نقض شده است.</string>
+
+    <!-- Stealth / Camouflage Mode -->
+    <string name="disguise_setting_title">حالت استتار برنامه (Camouflage)</string>
+    <string name="disguise_setting_summary">تغییر آیکون و نام برنامه برای پنهان‌سازی</string>
+    <string name="disguise_dialog_title">حالت استتار را انتخاب کنید</string>
+    <string name="disguise_default">پیش‌فرض (ByeDPI)</string>
+    <string name="disguise_calculator">ماشین‌حساب</string>
+    <string name="disguise_notes">یادداشت‌ها</string>
+    <string name="disguise_clock">ساعت</string>
+    <string name="disguise_applied_toast">آیکون و نام به «%1$s» تغییر یافت. تا چند ثانیه دیگر در گوشی اعمال می‌شود.</string>
+    <string name="disguise_fake_ui_title">صفحه محافظتی هنگام باز شدن</string>
+    <string name="disguise_fake_ui_summary">باز کردن ماشین‌حساب، یادداشت یا ساعت واقعی به جای صفحه VPN</string>
+    <string name="disguise_unlock_code_title">رمز مخفی بازگشایی</string>
+    <string name="disguise_unlock_code_summary">کد ورود به ByeDPI (پیش‌فرض: 1337)</string>
+    <string name="disguise_lock_action">قفل و رفتن به حالت استتار</string>
+    <string name="disguise_notes_title">یادداشت‌های سریع</string>
+    <string name="disguise_notes_hint">متن یادداشت را اینجا بنویسید...</string>
+    <string name="disguise_notes_save">ذخیره</string>
+    <string name="disguise_notes_saved">یادداشت ذخیره شد ✓</string>
+    <string name="disguise_clock_title">ساعت جهانی و کرونومتر</string>
+    <string name="disguise_clock_stopwatch">کرونومتر</string>
+    <string name="disguise_start">شروع</string>
+    <string name="disguise_pause">مکث</string>
+    <string name="disguise_reset">صفر کردن</string>
+    <string name="disguise_unlocked_toast">استتار باز شد ✓</string>
+    
+    <!-- Gaming Mode -->
+    <string name="game_mode_title">🎮 حالت گیمینگ</string>
+    <string name="game_mode_summary">بهینه‌سازی UDP برای بازی‌ها با حداقل پینگ و بدون افت بسته (Zero Packet Loss)</string>
+    <string name="game_mode_active">حالت گیمینگ فعال است (UDP Fast-Path)</string>
+    <string name="game_mode_dialog_title">حالت گیمینگ</string>
+
+    <!-- UI Mode Selection -->
+    <string name="ui_mode_auto_title">انتخاب ابزار دور زدن فیلتر</string>
+    <string name="ui_mode_selection_title">انتخاب حالت رابط کاربری</string>
+    <string name="ui_mode_selection_desc">کدام حالت برای شما مناسب‌تر است؟</string>
+    <string name="ui_mode_simple_title">⚡ حالت ساده و خودکار</string>
+    <string name="ui_mode_simple_desc">یک دکمه بزرگ اتصال، انتخاب سریع ابزار و بدون پیچیدگی اضافی.</string>
+    <string name="ui_mode_advanced_title">🛠️ حالت پیشرفته و کامل</string>
+    <string name="ui_mode_advanced_desc">کنترل کامل روی تمام سرویس‌ها: ByeDPI, WARP, VLESS و پروکسی تلگرام.</string>
+    <string name="ui_mode_btn_advanced_settings">تنظیمات پیشرفته</string>
+    <string name="ui_mode_switch_to_advanced">تغییر به رابط کاربری کامل</string>
+    <string name="ui_mode_switch_to_simple">تغییر به رابط کاربری ساده</string>
+    <string name="tool_byedpi">بای‌دی‌پی (ByeDPI Desync)</string>
+    <string name="tool_warp">وارپ کلودفلر (AWG)</string>
+    <string name="tool_vless">پروتکل VLESS</string>
+
+    <!-- Notification Actions -->
+    <string name="action_stop">توقف</string>
+    <string name="action_pause">مکث</string>
+    <string name="action_resume">ادامه</string>
+    <string name="notification_paused">متوقف موقت</string>
+
+    <!-- Custom Strategy -->
+    <string name="btn_custom_strategy">استراتژی سفارشی</string>
+    <string name="dialog_custom_strategy_title">استراتژی سفارشی ByeDPI</string>
+    <string name="dialog_custom_strategy_hint">آرگومان‌ها را وارد کنید (مثال: -s1 -d2+s -r1+s)</string>
+    <string name="dialog_custom_strategy_name_hint">نام استراتژی (مثال: کانفیگ من)</string>
+    <string name="dialog_custom_strategy_apply">اعمال</string>
+
+    <!-- VLESS Overhaul & WARP DNS strings -->
+    <string name="vless_tab_all">همه</string>
+    <string name="vless_tab_keys">کلیدها</string>
+    <string name="vless_traffic_unlimited">📊 نامحدود</string>
+    <string name="vless_edit_server_title">تنظیمات پیکربندی سرور</string>
+    <string name="vless_edit_byedpi_title">🛡️ استراتژی اختصاصی ByeDPI</string>
+    <string name="vless_edit_byedpi_desc">امکان انتخاب استراتژی ناهمگام‌سازی بسته‌ها برای مبهم‌سازی بیشتر هندشیک TLS این سرور.</string>
+    <string name="vless_ping_method_title">⚙️ روش اندازه‌گیری پینگ</string>
+    <string name="vless_ping_proxy_get">Proxy GET (پینگ واقعی با TLS/HTTP)</string>
+    <string name="vless_ping_tcp">TCP Connect (هندشیک سوکت TCP)</string>
+    <string name="vless_ping_icmp">ICMP (پینگ اکو سیستمی)</string>
+    <string name="vless_ping_unreachable">غیرقابل دسترس</string>
+    <string name="vless_ping_batch_status">بررسی دسته %1$d/%2$d (سرورهای %3$d–%4$d از %5$d)...</string>
+    <string name="vless_ping_finished">تست به پایان رسید! سرورها بر اساس پینگ مرتب شدند</string>
+    <string name="vless_server_updated">پیکربندی سرور به‌روز شد!</string>
+    <string name="warp_dns_add_custom">+ افزودن سرور DNS دلخواه</string>
+    <string name="warp_dns_ping_test">⚡ تست پینگ</string>
+    <string name="warp_dns_custom_title_hint">نام DNS (مثال: AdGuard من)</string>
+    <string name="warp_dns_custom_addr_hint">آدرس / IP سرور (IPv4 یا دامنه)</string>
+    <string name="common_cancel">لغو</string>
+    <string name="common_save">ذخیره</string>
+    <string name="common_add">افزودن</string>
+    <string name="common_delete">حذف</string>
+    <string name="common_refresh">به‌روزرسانی</string>
+    <string name="common_close">بستن</string>
+    <string name="common_error">خطا</string>
+    <string name="vless_btn_add_key">+ کلید</string>
+    <string name="vless_btn_add_sub">+ اشتراک</string>
+    <string name="vless_btn_add_chain">🔗 زنجیره</string>
+    <string name="vless_btn_ping">⚡ پینگ</string>
+    <string name="vless_btn_refresh_sub">🔄 به‌روزرسانی</string>
+    <string name="vless_btn_delete_sub">🗑️ حذف</string>
+</resources>

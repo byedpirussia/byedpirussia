@@ -190,10 +190,11 @@
     <string name="chain_created_success">Цепочка успешно создана!</string>
 
     <!-- Language selector -->
-    <string name="language_setting">Language / Язык</string>
-    <string name="dialog_select_language_title">Choose Language / Выберите язык</string>
+    <string name="language_setting">Language / Язык / زبان</string>
+    <string name="dialog_select_language_title">Choose Language / Выберите язык / انتخاب زبان</string>
     <string name="lang_ru">Русский</string>
     <string name="lang_en">English</string>
+    <string name="lang_fa">فارسی (Persian)</string>
 
     <!-- Telegram Channel -->
     <string name="tg_channel_title">Наш Telegram-канал</string>
@@ -311,5 +312,37 @@
     <string name="dialog_custom_strategy_hint">Введите аргументы (например, -s1 -d2+s -r1+s)</string>
     <string name="dialog_custom_strategy_name_hint">Название (например, Мой конфиг)</string>
     <string name="dialog_custom_strategy_apply">Применить</string>
-</resources>
 
+    <!-- VLESS Overhaul & WARP DNS strings -->
+    <string name="vless_tab_all">Все</string>
+    <string name="vless_tab_keys">Ключи</string>
+    <string name="vless_traffic_unlimited">📊 Без лимита</string>
+    <string name="vless_edit_server_title">Параметры конфигурации сервера</string>
+    <string name="vless_edit_byedpi_title">🛡️ Индивидуальная стратегия ByeDPI</string>
+    <string name="vless_edit_byedpi_desc">Можно выбрать стратегию десинхронизации пакетов для дополнительной маскировки TLS рукопожатия к этому серверу.</string>
+    <string name="vless_ping_method_title">⚙️ Метод измерения пинга</string>
+    <string name="vless_ping_proxy_get">Proxy GET (Настоящий пинг с TLS/HTTP)</string>
+    <string name="vless_ping_tcp">TCP Connect (Подключение сокета)</string>
+    <string name="vless_ping_icmp">ICMP (Системный Echo Ping)</string>
+    <string name="vless_ping_unreachable">Недоступен</string>
+    <string name="vless_ping_batch_status">Проверка пакета %1$d/%2$d (серверы %3$d–%4$d из %5$d)...</string>
+    <string name="vless_ping_finished">Тест завершен! Серверы отсортированы по пингу</string>
+    <string name="vless_server_updated">Конфигурация сервера обновлена!</string>
+    <string name="warp_dns_add_custom">+ Добавить свой DNS сервер</string>
+    <string name="warp_dns_ping_test">⚡ Тест пинга</string>
+    <string name="warp_dns_custom_title_hint">Название DNS (например: Мой AdGuard)</string>
+    <string name="warp_dns_custom_addr_hint">Адрес / IP сервера (IPv4 или домен)</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_add">Добавить</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_refresh">Обновить</string>
+    <string name="common_close">Закрыть</string>
+    <string name="common_error">Ошибка</string>
+    <string name="vless_btn_add_key">+ Ключ</string>
+    <string name="vless_btn_add_sub">+ Подписка</string>
+    <string name="vless_btn_add_chain">🔗 Цепочка</string>
+    <string name="vless_btn_ping">⚡ Пинг</string>
+    <string name="vless_btn_refresh_sub">🔄 Обновить</string>
+    <string name="vless_btn_delete_sub">🗑️ Удалить</string>
+</resources>

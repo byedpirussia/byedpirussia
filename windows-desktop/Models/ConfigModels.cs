@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Web;
 
@@ -21,6 +22,38 @@ namespace ByeDpiRussia.Desktop.Models
             {
                 new Strategy
                 {
+                    Id = "tspu_2026_fake_disorder",
+                    Name = "🛡️ Анти-ТСПУ 2026 (Fake TTL 3 + MultiSplit + Disorder)",
+                    Description = "Флагманская стратегия против новейших ТСПУ: фейк с коротким TTL 3, дробление SNI и разворот очереди TCP.",
+                    Args = "-f-1 -t3 -n www.google.com -d1 -s2+s -r1+s -q1 -a1",
+                    RecommendedFor = "ТСПУ 2026, YouTube 4K, Discord"
+                },
+                new Strategy
+                {
+                    Id = "tls_sni_frag_reverse",
+                    Name = "⚡ Глубокая фрагментация SNI + Reverse Cascade",
+                    Description = "Многоступенчатое разбиение ClientHello на байтах 1, 3, 5, 7, 12 со сдвигом флагов и перестановкой сегментов.",
+                    Args = "-d1 -s1+s -d3+s -s5+s -d7+s -s12+s -r2+s -Mh,d -a1",
+                    RecommendedFor = "YouTube, Discord Voice, Twitch"
+                },
+                new Strategy
+                {
+                    Id = "quic_drop_multisplit",
+                    Name = "🚫 Двойной мультисплит + Drop SACK 2026",
+                    Description = "Обход сигнатурного анализатора сбросом SACK и каскадом на 3, 6, 10 байтах с автопереключением.",
+                    Args = "-d1 -s3+s -s6+s -s10+s -q1+s -a1 -S",
+                    RecommendedFor = "Ростелеком, МТС, Мегафон, Билайн"
+                },
+                new Strategy
+                {
+                    Id = "youtube_discord_combo_2026",
+                    Name = "🎧 Комбо 2026: YouTube + Discord Voice (OOB + Fake)",
+                    Description = "OOB-инъекция, фейк SNI YouTube с TTL 4 и сплит TLS записи для стабильного голоса и 4K видео.",
+                    Args = "-o1 -d2 -s3+s -r1+s -f-1 -t4 -n youtube.com -a1",
+                    RecommendedFor = "Discord Voice, YouTube 4K 60fps"
+                },
+                new Strategy
+                {
                     Id = "cascade_10",
                     Name = "⚡ Каскадный сплит (10 шагов + TLSrec)",
                     Description = "Глубокая фрагментация пакетов на 10 интервалах с разворотом очереди и сплитом TLS записи.",
@@ -30,17 +63,17 @@ namespace ByeDpiRussia.Desktop.Models
                 new Strategy
                 {
                     Id = "cascade_10_md5",
-                    Name = "🛡️ Каскадный сплит 10 + Fake UDP",
-                    Description = "10 интервалов каскада с разворотом очереди и фейковыми UDP пакетами.",
-                    Args = "-d1 -d3+s -s6+s -d9+s -s12+s -d15+s -s20+s -d25+s -s30+s -d35+s -r1+s -a1",
+                    Name = "🛡️ Каскадный сплит 10 + MD5Sig + Fake UDP",
+                    Description = "10 интервалов каскада с подменой контрольной суммы MD5 и фейковыми UDP пакетами.",
+                    Args = "-d1 -d3+s -s6+s -d9+s -s12+s -d15+s -s20+s -d25+s -s30+s -d35+s -r1+s -S -a1",
                     RecommendedFor = "ТСПУ, YouTube, Discord"
                 },
                 new Strategy
                 {
                     Id = "cascade_double_auto",
                     Name = "🔄 Двойной каскад с автопереключением (Auto TLS)",
-                    Description = "Двухуровневый каскад с автоматическим переходом на резервный профиль при ошибках TLS.",
-                    Args = "-d1 -d3+s -s6+s -d9+s -s12+s -d15+s -s20+s -d25+s -s30+s -d35+s -r1+s -a1 -A s -d1 -d3+s -s6+s -d9+s -s12+s -d15+s -s20+s -d25+s -s30+s -d35+s -a1",
+                    Description = "Двухуровневый каскад с автоматическим переходом на резервный профиль при ошибках TLS/RST.",
+                    Args = "-d1 -d3+s -s6+s -d9+s -s12+s -d15+s -s20+s -d25+s -s30+s -d35+s -r1+s -S -a1 -As -d1 -d3+s -s6+s -d9+s -s12+s -d15+s -s20+s -d25+s -s30+s -d35+s -S -a1",
                     RecommendedFor = "YouTube 4K, Ростелеком, Дом.ru"
                 },
                 new Strategy
@@ -80,15 +113,15 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "rhythmic_disoob_tlsrec",
                     Name = "🎵 Ритмичный Disoob + TLSrec + HTTP mod",
                     Description = "Чередование коротких сплитов, TLS записей и модификаций HTTP-заголовков.",
-                    Args = "-q2 -s2 -s3+s -r3 -s4 -r4 -s5+s -r5+s -s6 -s7+s -r8 -s9+s -M h,d,r -a1 -A t,r -s2+s -r2 -d2 -s3 -r3 -r4 -s4 -d5+s -r5 -d6 -s7+s -d7 -a1",
+                    Args = "-q2 -s2 -s3+s -r3 -s4 -r4 -s5+s -r5+s -s6 -s7+s -r8 -s9+s -Mh,d,r -a1 -At,r -s2+s -r2 -d2 -s3 -r3 -r4 -s4 -d5+s -r5 -d6 -s7+s -d7 -a1",
                     RecommendedFor = "Discord, Голосовые каналы, Twitch"
                 },
                 new Strategy
                 {
                     Id = "oob_cascade_sack",
-                    Name = "🛡️ OOB каскад (Auto TLS/RST)",
-                    Description = "Внедрение OOB-байтов и глубокая фрагментация с автоподстройкой на ошибки TLS.",
-                    Args = "-o1 -d1 -a1 -A t,r,s -s1 -d1 -s5+s -s10+s -s15+s -s20+s -r1+s -a1 -A s -s1 -d1 -s5+s -s10+s -s15+s -s20+s -a1",
+                    Name = "🛡️ OOB каскад + Drop SACK (Auto TLS/RST)",
+                    Description = "Сброс SACK, OOB-байт и глубокая фрагментация с автоподстройкой на ошибки TLS.",
+                    Args = "-o1 -d1 -a1 -At,r,s -s1 -d1 -s5+s -s10+s -s15+s -s20+s -r1+s -S -a1 -As -s1 -d1 -s5+s -s10+s -s15+s -s20+s -S -a1",
                     RecommendedFor = "МТС, Мегафон, Билайн, Tele2"
                 },
                 new Strategy
@@ -96,7 +129,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "fake_ttl8",
                     Name = "🌐 Fake SNI (Google) + TTL 8",
                     Description = "Отправка фиктивного ClientHello с SNI google.com с последующим сплитом TLS записи.",
-                    Args = "-f -1 -n www.google.com -s2+s -r3 -t4",
+                    Args = "-f-1 -n www.google.com -s2+s -r3 -t4",
                     RecommendedFor = "ТСПУ обход (все сервисы)"
                 },
                 new Strategy
@@ -104,7 +137,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "fake_tlsrec_ttl8",
                     Name = "🎯 Фейк + TLSrec (TTL 8)",
                     Description = "Фейковый пакет с TTL 8 и фрагментацией TLS записи.",
-                    Args = "-d1 -s1+s -r1+s -f -1 -t8",
+                    Args = "-d1 -s1+s -r1+s -f-1 -t8",
                     RecommendedFor = "ТСПУ, YouTube"
                 },
                 new Strategy
@@ -112,7 +145,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "fake_low_ttl",
                     Name = "⏱️ Фейк с низким TTL (TTL 2)",
                     Description = "Фейковый пакет умирает до сервера, сбивая только оборудование ТСПУ.",
-                    Args = "-d1 -s1+s -r1+s -f -1 -t2",
+                    Args = "-d1 -s1+s -r1+s -f-1 -t2",
                     RecommendedFor = "Мобильные операторы"
                 },
                 new Strategy
@@ -120,7 +153,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "fake_google_clean",
                     Name = "🔎 Fake SNI Google + TLS split",
                     Description = "Фейковый заголовок google.com со сплитом TLS записи на 1-м байте.",
-                    Args = "-n www.google.com -f -1 -r1+s",
+                    Args = "-n www.google.com -f-1 -r1+s",
                     RecommendedFor = "Discord, YouTube"
                 },
                 new Strategy
@@ -128,7 +161,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "sni_google_multisplit",
                     Name = "🔀 Fake SNI Google + Мульти-сплит и OOB",
                     Description = "Фейковый SNI google.com с каскадным разделением и внедрением OOB-байтов.",
-                    Args = "-n www.google.com -f -1 -s1+s -d1 -s3+s -s5+s -q7 -a1 -A s -o2 -f -1 -a1 -A s -r5 -M h -s1+s -s3+s -a1",
+                    Args = "-n www.google.com -f-1 -s1+s -d1 -s3+s -s5+s -q7 -a1 -As -o2 -f-1 -a1 -As -r5 -Mh -s1+s -s3+s -a1",
                     RecommendedFor = "ТСПУ, YouTube, Мессенджеры"
                 },
                 new Strategy
@@ -136,7 +169,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "sni_google_triple_auto",
                     Name = "⚡ Fake SNI Google + Тройной авто-профиль",
                     Description = "Трёхуровневый адаптивный профиль с фейковым SNI и OOB защитой.",
-                    Args = "-n www.google.com -f -1 -a1 -A s -s1+s -a1 -A s -s5+s -a1 -A s -d3 -q7 -o2 -f -1 -r5 -M h -a1",
+                    Args = "-n www.google.com -f-1 -a1 -As -s1+s -a1 -As -s5+s -a1 -As -d3 -q7 -o2 -f-1 -r5 -Mh -a1",
                     RecommendedFor = "YouTube 1080p/4K, Discord Web"
                 },
                 new Strategy
@@ -144,15 +177,15 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "split50_multi_ttl",
                     Name = "🔢 Мульти-сплит до 60 шагов + Fake TTL 2",
                     Description = "Глубокое дробление пакета с шагом до 60 байт и фейком с ультракоротким TTL.",
-                    Args = "-d1+s -s50+s -a1 -A s -f -1 -t2 -r2+s -a1 -A t -d2 -s1+s -s5+s -s10+s -s15+s -s25+s -s35+s -s50+s -s60+s -a1",
+                    Args = "-d1+s -s50+s -a1 -As -f-1 -t2 -r2+s -a1 -At -d2 -s1+s -s5+s -s10+s -s15+s -s25+s -s35+s -s50+s -s60+s -a1",
                     RecommendedFor = "Мобильный интернет, Сложные блокировки"
                 },
                 new Strategy
                 {
                     Id = "oob_fake_split11",
-                    Name = "🪓 OOB + Fake SNI (Split 1-11)",
-                    Description = "Адаптивное разделение первых 11 байт с фейковым SNI и проверкой desync.",
-                    Args = "-o1 -a1 -A t,r,s -f -1 -a1 -A t,r,s -d1+s -s11+s -a1 -A t,r,s -n www.google.com -f -1 -d1+s -s1+s -a1",
+                    Name = "🪓 OOB + Fake SNI + MD5Sig (Split 1-11)",
+                    Description = "Адаптивное разделение первых 11 байт с фейковым SNI и контрольной суммой MD5.",
+                    Args = "-o1 -a1 -At,r,s -f-1 -a1 -At,r,s -d1+s -s11+s -S -a1 -At,r,s -n www.google.com -f-1 -d1+s -s1+s -S -a1",
                     RecommendedFor = "YouTube, Discord, ТСПУ"
                 },
                 new Strategy
@@ -168,7 +201,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "fake_cascade_http",
                     Name = "🌍 Фейк + смещение HTTP Host + TLSrec",
                     Description = "Специализированная стратегия для одновременного обхода HTTP и HTTPS цензуры.",
-                    Args = "-f -1 -s3+s -a1 -A s -d1 -s4+s -s8+h -d6+h -a1 -A t,r,s -o2 -r5 -M h -r6+h -s2+s -s3+s -a1",
+                    Args = "-f-1 -s3+s -a1 -As -d1 -s4+s -s8+h -d6+h -a1 -At,r,s -o2 -r5 -Mh -r6+h -s2+s -s3+s -a1",
                     RecommendedFor = "Веб-серфинг, Трекеры, Сайты"
                 },
                 new Strategy
@@ -182,9 +215,9 @@ namespace ByeDpiRussia.Desktop.Models
                 new Strategy
                 {
                     Id = "fake_low_ttl_md5",
-                    Name = "⏳ Fake SNI Google + Низкий TTL 3",
+                    Name = "⏳ Fake SNI Google + Низкий TTL 3 + MD5",
                     Description = "Короткоживущий фейковый пакет умирает перед сервером, оставляя ТСПУ в тупике.",
-                    Args = "-f -1 -t3 -n www.google.com -d1 -s2+s -r1+s -a1",
+                    Args = "-f-1 -t3 -n www.google.com -d1 -s2+s -r1+s -S -a1",
                     RecommendedFor = "Ростелеком, МТС, Билайн"
                 },
                 new Strategy
@@ -230,9 +263,9 @@ namespace ByeDpiRussia.Desktop.Models
                 new Strategy
                 {
                     Id = "disoob_fake_sack",
-                    Name = "💥 Disoob + Fake",
-                    Description = "Специальная комбинация Disoob с фейком.",
-                    Args = "-q1+s -s29+s -o5+s -f -1",
+                    Name = "💥 Disoob + Fake + Drop SACK",
+                    Description = "Специальная комбинация Disoob с фейком и сбросом SACK.",
+                    Args = "-q1+s -s29+s -o5+s -f-1 -S",
                     RecommendedFor = "ТСПУ Ростелеком/МТС/Билайн"
                 },
                 new Strategy
@@ -240,7 +273,7 @@ namespace ByeDpiRussia.Desktop.Models
                     Id = "heavy_fake_oob",
                     Name = "🥊 Полный фарш: Fake + OOB + TLSrec",
                     Description = "Максимально агрессивный режим: OOB-байт, фейковый пакет и сплит TLS записи.",
-                    Args = "-d1 -s1+s -r1+s -e 1 -o1+s -f -1 -t2",
+                    Args = "-d1 -s1+s -r1+s -e1 -o1+s -f-1 -t2",
                     RecommendedFor = "Сложные блокировки"
                 },
                 new Strategy
@@ -292,11 +325,76 @@ namespace ByeDpiRussia.Desktop.Models
                 : "❌ Недоступно";
     }
 
+    public class WarpDnsPreset
+    {
+        public string Key { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string HostOrIps { get; set; } = string.Empty;
+        public List<string> StaticIps { get; set; } = new();
+        public bool IsCustom { get; set; } = false;
+        public string PingDisplay { get; set; } = "";
+
+        public string DisplayText => string.IsNullOrEmpty(PingDisplay) ? $"{Title} ({HostOrIps})" : $"{Title} ({HostOrIps}) • {PingDisplay}";
+
+        public static List<WarpDnsPreset> GetBuiltinPresets()
+        {
+            return new List<WarpDnsPreset>
+            {
+                new WarpDnsPreset { Key = "cloudflare", Title = "Cloudflare DNS", HostOrIps = "1.1.1.1, 1.0.0.1", StaticIps = new() { "1.1.1.1", "1.0.0.1" } },
+                new WarpDnsPreset { Key = "google", Title = "Google DNS", HostOrIps = "8.8.8.8, 8.8.4.4", StaticIps = new() { "8.8.8.8", "8.8.4.4" } },
+                new WarpDnsPreset { Key = "xbox", Title = "Xbox DNS", HostOrIps = "xbox-dns.ru", StaticIps = new() { "111.88.96.57", "111.88.96.56" } },
+                new WarpDnsPreset { Key = "comss", Title = "COMSS DNS", HostOrIps = "dns.comss.one", StaticIps = new() { "92.223.109.31", "91.230.211.67" } },
+                new WarpDnsPreset { Key = "malw", Title = "DNS Malw Link", HostOrIps = "dns.malw.link", StaticIps = new() { "95.216.204.218", "193.23.209.189" } },
+                new WarpDnsPreset { Key = "ai", Title = "DNS AI", HostOrIps = "dns.dns-ai.ru", StaticIps = new() { "186.246.49.127", "185.251.90.181" } },
+                new WarpDnsPreset { Key = "ai_cf", Title = "DNS AI Зеркало CF", HostOrIps = "cf.dns-ai.ru", StaticIps = new() { "188.114.97.1", "188.114.96.1" } }
+            };
+        }
+    }
+
+    public class SubUserInfo
+    {
+        public long UploadBytes { get; set; }
+        public long DownloadBytes { get; set; }
+        public long TotalBytes { get; set; }
+        public long ExpireEpochSec { get; set; }
+
+        public long RemainingBytes => TotalBytes > 0 ? Math.Max(0L, TotalBytes - (UploadBytes + DownloadBytes)) : 0L;
+
+        public string FormatRemainingTraffic()
+        {
+            if (TotalBytes <= 0) return "";
+            double remGb = RemainingBytes / (1024.0 * 1024.0 * 1024.0);
+            double totalGb = TotalBytes / (1024.0 * 1024.0 * 1024.0);
+            return $"{remGb:F1} / {totalGb:F1} ГБ";
+        }
+
+        public string FormatExpireDays()
+        {
+            if (ExpireEpochSec <= 0) return "";
+            long nowSec = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            long diffSec = ExpireEpochSec - nowSec;
+            if (diffSec <= 0) return "Срок истек";
+            long days = diffSec / 86400;
+            return days > 0 ? $"{days} дн." : $"{diffSec / 3600} ч.";
+        }
+
+        public string FormatShortSummary()
+        {
+            var parts = new List<string>();
+            var traf = FormatRemainingTraffic();
+            if (!string.IsNullOrWhiteSpace(traf)) parts.Add($"📊 Трафик: {traf}");
+            var exp = FormatExpireDays();
+            if (!string.IsNullOrWhiteSpace(exp)) parts.Add($"⏳ Осталось: {exp}");
+            return string.Join("   •   ", parts);
+        }
+    }
+
     public class VlessProfile
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string SubscriptionUrl { get; set; } = string.Empty;
         public string Name { get; set; } = "VLESS Профиль";
-        public string Protocol { get; set; } = "vless"; // vless, hysteria2, shadowsocks, trojan
+        public string Protocol { get; set; } = "vless"; // vless, hysteria2, shadowsocks, trojan, vmess
         public string Address { get; set; } = string.Empty;
         public int Port { get; set; } = 443;
         public string Uuid { get; set; } = string.Empty;
@@ -310,26 +408,27 @@ namespace ByeDpiRussia.Desktop.Models
         public string Fp { get; set; } = "chrome";
         public string Path { get; set; } = string.Empty;
         public string Host { get; set; } = string.Empty;
+        public string DesyncStrategyId { get; set; } = string.Empty;
         public string RawUri { get; set; } = string.Empty;
+        public long? LastPingMs { get; set; }
+
+        public string PingDisplay => LastPingMs.HasValue ? (LastPingMs.Value > 0 ? $"{LastPingMs.Value} мс" : "Таймаут") : "—";
+        public string DisplayTitle => $"{Name}  [{Address}:{Port}] • {PingDisplay}";
     }
 
     public static class VlessParser
     {
-        public static VlessProfile? Parse(string rawUri)
+        public static VlessProfile? Parse(string rawUri, string subscriptionUrl = "")
         {
             var uri = rawUri.Trim();
-            if (uri.StartsWith("vless://", StringComparison.OrdinalIgnoreCase))
-            {
-                return ParseVless(uri);
-            }
-            if (uri.StartsWith("hysteria2://", StringComparison.OrdinalIgnoreCase) || uri.StartsWith("hy2://", StringComparison.OrdinalIgnoreCase))
-            {
-                return ParseHysteria2(uri);
-            }
+            if (uri.StartsWith("vless://", StringComparison.OrdinalIgnoreCase)) return ParseVless(uri, subscriptionUrl);
+            if (uri.StartsWith("hysteria2://", StringComparison.OrdinalIgnoreCase) || uri.StartsWith("hy2://", StringComparison.OrdinalIgnoreCase)) return ParseHysteria2(uri, subscriptionUrl);
+            if (uri.StartsWith("ss://", StringComparison.OrdinalIgnoreCase)) return ParseShadowsocks(uri, subscriptionUrl);
+            if (uri.StartsWith("trojan://", StringComparison.OrdinalIgnoreCase)) return ParseTrojan(uri, subscriptionUrl);
             return null;
         }
 
-        private static VlessProfile? ParseVless(string uriStr)
+        private static VlessProfile? ParseVless(string uriStr, string subscriptionUrl)
         {
             try
             {
@@ -339,6 +438,7 @@ namespace ByeDpiRussia.Desktop.Models
 
                 return new VlessProfile
                 {
+                    SubscriptionUrl = subscriptionUrl,
                     Name = name,
                     Protocol = "vless",
                     Address = uri.Host,
@@ -363,7 +463,7 @@ namespace ByeDpiRussia.Desktop.Models
             }
         }
 
-        private static VlessProfile? ParseHysteria2(string uriStr)
+        private static VlessProfile? ParseHysteria2(string uriStr, string subscriptionUrl)
         {
             try
             {
@@ -373,12 +473,62 @@ namespace ByeDpiRussia.Desktop.Models
 
                 return new VlessProfile
                 {
+                    SubscriptionUrl = subscriptionUrl,
                     Name = name,
                     Protocol = "hysteria2",
                     Address = uri.Host,
                     Port = uri.Port > 0 ? uri.Port : 443,
                     Uuid = uri.UserInfo,
                     Sni = query["sni"] ?? "",
+                    RawUri = uriStr
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static VlessProfile? ParseShadowsocks(string uriStr, string subscriptionUrl)
+        {
+            try
+            {
+                var uri = new Uri(uriStr);
+                var name = !string.IsNullOrEmpty(uri.Fragment) ? Uri.UnescapeDataString(uri.Fragment.TrimStart('#')) : $"SS - {uri.Host}:{uri.Port}";
+                return new VlessProfile
+                {
+                    SubscriptionUrl = subscriptionUrl,
+                    Name = name,
+                    Protocol = "shadowsocks",
+                    Address = uri.Host,
+                    Port = uri.Port > 0 ? uri.Port : 8388,
+                    Uuid = uri.UserInfo,
+                    RawUri = uriStr
+                };
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static VlessProfile? ParseTrojan(string uriStr, string subscriptionUrl)
+        {
+            try
+            {
+                var uri = new Uri(uriStr);
+                var query = HttpUtility.ParseQueryString(uri.Query);
+                var name = !string.IsNullOrEmpty(uri.Fragment) ? Uri.UnescapeDataString(uri.Fragment.TrimStart('#')) : $"Trojan - {uri.Host}:{uri.Port}";
+                return new VlessProfile
+                {
+                    SubscriptionUrl = subscriptionUrl,
+                    Name = name,
+                    Protocol = "trojan",
+                    Address = uri.Host,
+                    Port = uri.Port > 0 ? uri.Port : 443,
+                    Uuid = uri.UserInfo,
+                    Sni = query["sni"] ?? "",
+                    Security = query["security"] ?? "tls",
                     RawUri = uriStr
                 };
             }

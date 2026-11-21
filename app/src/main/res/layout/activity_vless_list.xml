@@ -40,7 +40,7 @@
                 android:minHeight="42dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="4dp"
-                android:text="+ Ключ"
+                android:text="@string/vless_btn_add_key"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:cornerRadius="14dp" />
@@ -53,7 +53,7 @@
                 android:minHeight="42dp"
                 android:layout_weight="1.1"
                 android:layout_marginHorizontal="4dp"
-                android:text="+ Подписка"
+                android:text="@string/vless_btn_add_sub"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:cornerRadius="14dp" />
@@ -66,7 +66,7 @@
                 android:minHeight="42dp"
                 android:layout_weight="1.1"
                 android:layout_marginEnd="4dp"
-                android:text="🔗 Цепочка"
+                android:text="@string/vless_btn_add_chain"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:cornerRadius="14dp" />
@@ -78,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="42dp"
                 android:layout_weight="1"
-                android:text="⚡ Пинг"
+                android:text="@string/vless_btn_ping"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:cornerRadius="14dp" />
@@ -169,7 +169,7 @@
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔄 Обновить"
+                    android:text="@string/vless_btn_refresh_sub"
                     android:textSize="12sp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -178,7 +178,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="?attr/colorError"
-                    android:text="🗑️ Удалить"
+                    android:text="@string/vless_btn_delete_sub"
                     android:textSize="12sp" />
             </LinearLayout>
 

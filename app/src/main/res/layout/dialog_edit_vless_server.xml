@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Параметры конфигурации сервера"
+            android:text="@string/vless_edit_server_title"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"
@@ -198,7 +198,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="🛡️ Индивидуальная стратегия ByeDPI"
+            android:text="@string/vless_edit_byedpi_title"
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="?attr/colorPrimary" />
@@ -206,7 +206,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Можно выбрать стратегию десинхронизации пакетов для дополнительной маскировки TLS рукопожатия к этому серверу."
+            android:text="@string/vless_edit_byedpi_desc"
             android:textSize="11sp"
             android:textColor="?attr/colorOutline"
             android:layout_marginTop="2dp"

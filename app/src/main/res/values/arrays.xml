@@ -51,11 +51,13 @@
         <item name="system">Как в системе</item>
         <item name="ru">Русский</item>
         <item name="en">English</item>
+        <item name="fa">فارسی (Persian)</item>
     </array>
     <array name="languages_entries">
         <item name="system">system</item>
         <item name="ru">ru</item>
         <item name="en">en</item>
+        <item name="fa">fa</item>
     </array>
 
     <array name="byedpi_modes">

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="languages">
+        <item>سیستمی (پیش‌فرض)</item>
+        <item>Русский</item>
+        <item>English</item>
+        <item>فارسی (Persian)</item>
+    </string-array>
+    <string-array name="languages_entries">
+        <item>system</item>
+        <item>ru</item>
+        <item>en</item>
+        <item>fa</item>
+    </string-array>
+</resources>
