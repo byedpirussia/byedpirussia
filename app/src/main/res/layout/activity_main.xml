@@ -490,26 +490,37 @@
                                 android:text="Подбор узла"
                                 android:textSize="12sp"
                                 app:cornerRadius="14dp"
-                                android:layout_marginEnd="6dp" />
+                                android:layout_marginEnd="4dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/m3_btn_warp_dns"
+                                style="@style/Widget.Material3.Button.TonalButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:minHeight="38dp"
+                                android:text="⚙️ DNS"
+                                android:textSize="12sp"
+                                app:cornerRadius="14dp"
+                                android:layout_marginHorizontal="4dp" />
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/m3_btn_warp_tg_fix"
                                 style="@style/Widget.Material3.Button.OutlinedButton"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
+                                android:layout_weight="1.2"
                                 android:minHeight="38dp"
-                                android:text="Фикс Telegram"
+                                android:text="Фикс TG"
                                 android:textSize="12sp"
                                 app:cornerRadius="14dp"
-                                android:layout_marginStart="6dp" />
+                                android:layout_marginStart="4dp" />
 
                             <!-- Скрытые старые кнопки для совместимости -->
                             <View android:id="@+id/m3_btn_warp_gen" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
                             <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/m3_switch_warp_autoreconnect" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
                             <View android:id="@+id/m3_btn_warp_optimize" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
                             <View android:id="@+id/m3_btn_run_doctor" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-                            <View android:id="@+id/m3_btn_warp_dns" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
                             <View android:id="@+id/m3_switch_warp_reconnect" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
                             <View android:id="@+id/m3_switch_warp_tspu" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
                         </LinearLayout>

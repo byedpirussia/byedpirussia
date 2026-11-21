@@ -37,7 +37,9 @@ data class VlessConfig(
     val isChain: Boolean = false,
     val chainMode: String = "", // "warp_over_proxy" (WARP -> Proxy -> Site), "proxy_over_warp" (Proxy -> WARP -> Site)
     val chainHop1ConfigJson: String = "", // JSON serialized VlessConfig for hop
-    val chainWarpConfigText: String = "" // AmneziaWG / WireGuard config text for WARP hop
+    val chainWarpConfigText: String = "", // AmneziaWG / WireGuard config text for WARP hop
+    // Custom ByeDPI Desync Strategy for this server (Happ-style)
+    val desyncStrategyId: String = "" // e.g. "fake_split", "tls_rec", etc. Empty = default
 ) {
     companion object {
         private const val TAG = "VlessConfig"
@@ -84,7 +86,8 @@ data class VlessConfig(
                 isChain = obj.optBoolean("isChain", false),
                 chainMode = obj.optString("chainMode", ""),
                 chainHop1ConfigJson = obj.optString("chainHop1ConfigJson", ""),
-                chainWarpConfigText = obj.optString("chainWarpConfigText", "")
+                chainWarpConfigText = obj.optString("chainWarpConfigText", ""),
+                desyncStrategyId = obj.optString("desyncStrategyId", "")
             )
         }
 

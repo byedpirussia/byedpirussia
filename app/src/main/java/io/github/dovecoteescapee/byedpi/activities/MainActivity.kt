@@ -28,6 +28,7 @@ import androidx.lifecycle.lifecycleScope
 import io.github.dovecoteescapee.byedpi.R
 import io.github.dovecoteescapee.byedpi.data.*
 import io.github.dovecoteescapee.byedpi.databinding.ActivityMainBinding
+import io.github.dovecoteescapee.byedpi.warp.WarpDnsPreset
 import io.github.dovecoteescapee.byedpi.fragments.MainSettingsFragment
 import io.github.dovecoteescapee.byedpi.services.ServiceManager
 import io.github.dovecoteescapee.byedpi.services.appStatus
@@ -759,26 +760,77 @@ class MainActivity : BaseActivity() {
             .create()
 
         val cardWarning = dialogView.findViewById<android.view.View>(R.id.card_private_dns_warning)
-        val rgDns = dialogView.findViewById<android.widget.RadioGroup>(R.id.rg_warp_dns)
-        val rbCloudflare = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_cloudflare)
-        val rbGoogle = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_google)
-        val rbXbox = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_xbox)
-        val rbComss = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_comss)
-        val rbMalw = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_malw)
-        val rbAi = dialogView.findViewById<android.widget.RadioButton>(R.id.rb_dns_ai)
+        val containerDns = dialogView.findViewById<android.widget.LinearLayout>(R.id.container_dns_items)
+        val btnAddCustom = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_add_custom_dns)
+        val btnPingAll = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_dns_ping_all)
         val btnSave = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_save_warp_dns)
-
-        val isPrivateDns = WarpDnsManager.isPrivateDnsActive(this)
-        val isForced = isWarpDnsForceOverride()
         val btnForceUseDns = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_force_use_dns)
 
-        fun unlockDnsOptions() {
-            for (i in 0 until rgDns.childCount) {
-                rgDns.getChildAt(i).isEnabled = true
+        val isPrivateDns = WarpDnsManager.isPrivateDnsActive(this)
+        var isForced = isWarpDnsForceOverride()
+
+        var selectedKey = getWarpDnsKey()
+        val dnsItemViews = mutableListOf<android.view.View>()
+
+        fun renderDnsList() {
+            containerDns.removeAllViews()
+            dnsItemViews.clear()
+
+            val presets = WarpDnsManager.getAllPresets(this)
+            for (preset in presets) {
+                val itemView = layoutInflater.inflate(R.layout.item_warp_dns, containerDns, false)
+                val card = itemView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.card_dns_item)
+                val rb = itemView.findViewById<com.google.android.material.radiobutton.MaterialRadioButton>(R.id.rb_dns_select)
+                val tvTitle = itemView.findViewById<android.widget.TextView>(R.id.tv_dns_title)
+                val tvAddr = itemView.findViewById<android.widget.TextView>(R.id.tv_dns_address)
+                val btnDelete = itemView.findViewById<android.widget.ImageButton>(R.id.btn_dns_delete)
+
+                tvTitle.text = preset.title
+                tvAddr.text = preset.hostOrIps
+                val isChecked = (preset.key == selectedKey)
+                rb.isChecked = isChecked
+                card.strokeColor = if (isChecked) getThemeColor(com.google.android.material.R.attr.colorPrimary) else getThemeColor(com.google.android.material.R.attr.colorOutlineVariant)
+                card.strokeWidth = if (isChecked) dpToPx(1.8f) else dpToPx(1f)
+
+                if (preset.isCustom) {
+                    btnDelete.visibility = android.view.View.VISIBLE
+                    btnDelete.setOnClickListener {
+                        WarpDnsManager.removeCustomDns(this@MainActivity, preset.key)
+                        if (selectedKey == preset.key) {
+                            selectedKey = "cloudflare"
+                        }
+                        renderDnsList()
+                    }
+                } else {
+                    btnDelete.visibility = android.view.View.GONE
+                }
+
+                card.setOnClickListener {
+                    if (isPrivateDns && !isForced) {
+                        Toast.makeText(this@MainActivity, R.string.warp_dns_private_warning, Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+                    selectedKey = preset.key
+                    renderDnsList()
+                }
+
+                if (isPrivateDns && !isForced) {
+                    card.alpha = 0.5f
+                } else {
+                    card.alpha = 1.0f
+                }
+
+                itemView.tag = preset
+                dnsItemViews.add(itemView)
+                containerDns.addView(itemView)
             }
-            btnSave.isEnabled = true
+        }
+
+        fun unlockDnsOptions() {
+            isForced = true
             btnForceUseDns?.text = getString(R.string.warp_dns_force_unlocked)
             btnForceUseDns?.isEnabled = false
+            renderDnsList()
         }
 
         if (isPrivateDns) {
@@ -794,12 +846,6 @@ class MainActivity : BaseActivity() {
             if (isForced) {
                 unlockDnsOptions()
             } else {
-                // Блокируем выбор DNS радиокнопками
-                for (i in 0 until rgDns.childCount) {
-                    rgDns.getChildAt(i).isEnabled = false
-                }
-                btnSave.isEnabled = false
-
                 btnForceUseDns?.setOnClickListener {
                     setWarpDnsForceOverride(true)
                     unlockDnsOptions()
@@ -807,32 +853,67 @@ class MainActivity : BaseActivity() {
             }
         } else {
             cardWarning.visibility = android.view.View.GONE
-            for (i in 0 until rgDns.childCount) {
-                rgDns.getChildAt(i).isEnabled = true
-            }
-            btnSave.isEnabled = true
         }
 
-        // Текущий выбранный DNS
-        val currentKey = getWarpDnsKey()
-        when (currentKey) {
-            "google" -> rbGoogle.isChecked = true
-            "xbox" -> rbXbox.isChecked = true
-            "comss" -> rbComss.isChecked = true
-            "malw" -> rbMalw.isChecked = true
-            "ai" -> rbAi.isChecked = true
-            else -> rbCloudflare.isChecked = true
+        renderDnsList()
+
+        // ⚡ Тест пинга всех DNS
+        btnPingAll.setOnClickListener {
+            btnPingAll.isEnabled = false
+            btnPingAll.text = "Тест..."
+            lifecycleScope.launch {
+                val presets = WarpDnsManager.getAllPresets(this@MainActivity)
+                for (preset in presets) {
+                    val ping = WarpDnsManager.pingDnsServer(preset)
+                    for (itemView in dnsItemViews) {
+                        val p = itemView.tag as? WarpDnsPreset
+                        if (p?.key == preset.key) {
+                            val tvPing = itemView.findViewById<android.widget.TextView>(R.id.tv_dns_ping)
+                            tvPing.visibility = android.view.View.VISIBLE
+                            if (ping > 0) {
+                                tvPing.text = "⚡ $ping ms"
+                                val color = when {
+                                    ping < 60 -> ContextCompat.getColor(this@MainActivity, android.R.color.holo_green_dark)
+                                    ping < 150 -> ContextCompat.getColor(this@MainActivity, android.R.color.holo_orange_dark)
+                                    else -> ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark)
+                                }
+                                tvPing.setTextColor(color)
+                            } else {
+                                tvPing.text = "Таймаут"
+                                tvPing.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
+                            }
+                        }
+                    }
+                }
+                btnPingAll.isEnabled = true
+                btnPingAll.text = "⚡ Тест пинга"
+            }
+        }
+
+        // + Добавить свой DNS
+        btnAddCustom.setOnClickListener {
+            val customDialogView = layoutInflater.inflate(R.layout.dialog_add_custom_dns, null)
+            val etTitle = customDialogView.findViewById<android.widget.EditText>(R.id.et_custom_dns_title)
+            val etAddr = customDialogView.findViewById<android.widget.EditText>(R.id.et_custom_dns_address)
+
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Добавить свой DNS")
+                .setView(customDialogView)
+                .setPositiveButton("Добавить") { _, _ ->
+                    val title = etTitle.text.toString().trim()
+                    val addr = etAddr.text.toString().trim()
+                    if (addr.isNotBlank()) {
+                        val created = WarpDnsManager.addCustomDns(this, title, addr)
+                        selectedKey = created.key
+                        renderDnsList()
+                        Toast.makeText(this, "Пользовательский DNS добавлен!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton("Отмена", null)
+                .show()
         }
 
         btnSave.setOnClickListener {
-            val selectedKey = when {
-                rbGoogle.isChecked -> "google"
-                rbXbox.isChecked -> "xbox"
-                rbComss.isChecked -> "comss"
-                rbMalw.isChecked -> "malw"
-                rbAi.isChecked -> "ai"
-                else -> "cloudflare"
-            }
             setWarpDnsKey(selectedKey)
             if (isPrivateDns) {
                 setWarpDnsForceOverride(true)
@@ -840,7 +921,6 @@ class MainActivity : BaseActivity() {
             Toast.makeText(this, R.string.warp_dns_saved, Toast.LENGTH_SHORT).show()
             dialog.dismiss()
 
-            // Если WARP прямо сейчас запущен, перезапускаем для применения нового DNS
             if (WarpVpnService.isRunning.value) {
                 WarpVpnService.stop(this)
                 binding.root.postDelayed({

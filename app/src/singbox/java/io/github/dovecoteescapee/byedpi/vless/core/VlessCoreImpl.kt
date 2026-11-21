@@ -95,13 +95,18 @@ object VlessCoreImpl : IVlessCore {
     }
 
     override fun measureDelay(config: VlessConfig, testUrl: String): Long {
-        return kotlinx.coroutines.runBlocking {
-            io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessRealPing(
-                address = config.address,
-                port = config.port,
-                sni = if (config.sni.isNotBlank()) config.sni else config.host,
-                timeoutMs = 3000
-            )
+        return try {
+            kotlinx.coroutines.runBlocking {
+                io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessRealPing(
+                    address = config.address,
+                    port = config.port,
+                    sni = if (config.sni.isNotBlank()) config.sni else config.host,
+                    timeoutMs = 3000
+                )
+            }
+        } catch (e: Throwable) {
+            Log.w(TAG, "Sing-box measureDelay error", e)
+            -1L
         }
     }
 

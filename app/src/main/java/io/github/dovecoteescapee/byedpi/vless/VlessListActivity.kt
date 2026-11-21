@@ -65,6 +65,10 @@ class VlessListActivity : BaseActivity() {
             startUrlPingTest()
         }
 
+        binding.btnPingMethodSettings.setOnClickListener {
+            showPingMethodSelectorDialog()
+        }
+
         binding.btnRefreshSub.setOnClickListener {
             refreshCurrentSubscription()
         }
@@ -122,6 +126,17 @@ class VlessListActivity : BaseActivity() {
             binding.subControlBar.visibility = View.VISIBLE
             val subName = BuiltinSubscriptions.getDisplayName(currentSub)
             binding.tvSubInfo.text = if (subName != currentSub) "$subName\n$currentSub" else currentSub
+
+            val userInfo = VlessManager.getSubUserInfo(this, currentSub)
+            if (userInfo != null && (userInfo.totalBytes > 0 || userInfo.expireEpochSec > 0)) {
+                binding.cardSubUserInfo.visibility = View.VISIBLE
+                val traf = userInfo.formatRemainingTraffic()
+                binding.tvSubTrafficBadge.text = if (traf.isNotBlank()) "📊 $traf" else "📊 Без лимита"
+                val exp = userInfo.formatExpireDays()
+                binding.tvSubExpireBadge.text = if (exp.isNotBlank()) "⏳ $exp" else ""
+            } else {
+                binding.cardSubUserInfo.visibility = View.GONE
+            }
         } else {
             binding.subControlBar.visibility = View.GONE
         }
@@ -155,6 +170,12 @@ class VlessListActivity : BaseActivity() {
                         VlessVpnService.stop(this)
                         VlessVpnService.start(this)
                     }
+                },
+                onEdit = { config ->
+                    showEditServerDialog(config)
+                },
+                onPingSingle = { config ->
+                    pingSingleServer(config)
                 },
                 onDelete = { config ->
                     showDeleteConfirm(config)
@@ -410,7 +431,7 @@ class VlessListActivity : BaseActivity() {
     private fun downloadSubscription(url: String) {
         binding.progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
-            val result = VlessManager.fetchSubscription(url)
+            val result = VlessManager.fetchSubscription(this@VlessListActivity, url)
             binding.progressBar.visibility = View.GONE
             result.onSuccess { configs ->
                 VlessManager.replaceSubscriptionConfigs(this@VlessListActivity, url, configs)
@@ -444,7 +465,7 @@ class VlessListActivity : BaseActivity() {
         val subUrl = getCurrentSubUrl() ?: return
         binding.progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
-            val result = VlessManager.fetchSubscription(subUrl)
+            val result = VlessManager.fetchSubscription(this@VlessListActivity, subUrl)
             binding.progressBar.visibility = View.GONE
             result.onSuccess { configs ->
                 // Полностью заменяем конфигурации этой подписки
@@ -477,6 +498,137 @@ class VlessListActivity : BaseActivity() {
                 selectedTabIndex = 0
                 setupTabs()
                 loadServers()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun pingSingleServer(config: VlessConfig) {
+        adapter?.setPing(config.id, -2L)
+        val method = VlessManager.getPingMethod(this)
+        lifecycleScope.launch(Dispatchers.IO) {
+            val ping = try {
+                io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessPingByMethod(
+                    method = method,
+                    address = config.address,
+                    port = config.port,
+                    sni = if (config.sni.isNotBlank()) config.sni else config.host,
+                    timeoutMs = 3000
+                )
+            } catch (e: Exception) {
+                -1L
+            }
+            withContext(Dispatchers.Main) {
+                adapter?.setPing(config.id, ping)
+                VlessManager.setPing(this@VlessListActivity, config.id, ping)
+                val statusText = if (ping > 0) "$ping ms" else "Недоступен"
+                Toast.makeText(this@VlessListActivity, "${config.name}: $statusText", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showPingMethodSelectorDialog() {
+        val methods = arrayOf(
+            "Proxy GET (Настоящий пинг с TLS/HTTP)",
+            "TCP Connect (Подключение сокета)",
+            "ICMP (Системный Echo Ping)"
+        )
+        val methodKeys = arrayOf("proxy_get", "tcp", "icmp")
+        val currentMethod = VlessManager.getPingMethod(this)
+        val selectedIdx = methodKeys.indexOf(currentMethod).let { if (it >= 0) it else 0 }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("⚙️ Метод измерения пинга")
+            .setSingleChoiceItems(methods, selectedIdx) { dialog, which ->
+                val chosenKey = methodKeys[which]
+                VlessManager.setPingMethod(this, chosenKey)
+                Toast.makeText(this, "Выбран метод: ${methods[which]}", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun showEditServerDialog(config: VlessConfig) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_vless_server, null)
+        val etName = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_name)
+        val etAddress = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_address)
+        val etPort = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_port)
+        val etUuid = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_uuid)
+        val etSni = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_sni)
+        val etPbk = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_pbk)
+        val etSid = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_sid)
+        val etFp = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_fp)
+        val etPath = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_path)
+        val etHost = dialogView.findViewById<android.widget.EditText>(R.id.et_cfg_host)
+        val spinnerStrategy = dialogView.findViewById<android.widget.Spinner>(R.id.spinner_cfg_strategy)
+
+        etName.setText(config.name)
+        etAddress.setText(config.address)
+        etPort.setText(config.port.toString())
+        etUuid.setText(config.uuid)
+        etSni.setText(config.sni)
+        etPbk.setText(config.pbk)
+        etSid.setText(config.sid)
+        etFp.setText(config.fp)
+        etPath.setText(config.path)
+        etHost.setText(config.host)
+
+        val strategies = io.github.dovecoteescapee.byedpi.strategy.StrategyCatalog.strategies
+        val strategyNames = mutableListOf("По умолчанию (системная)")
+        strategyNames.addAll(strategies.map { "${it.name} (${it.description})" })
+
+        val spinnerAdapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, strategyNames)
+        spinnerStrategy.adapter = spinnerAdapter
+
+        val initialStrategyIdx = if (config.desyncStrategyId.isNotBlank()) {
+            val idx = strategies.indexOfFirst { it.id == config.desyncStrategyId }
+            if (idx >= 0) idx + 1 else 0
+        } else 0
+        spinnerStrategy.setSelection(initialStrategyIdx)
+
+        MaterialAlertDialogBuilder(this)
+            .setView(dialogView)
+            .setPositiveButton("Сохранить") { _, _ ->
+                val newName = etName.text.toString().trim()
+                val newAddress = etAddress.text.toString().trim()
+                val newPort = etPort.text.toString().trim().toIntOrNull() ?: config.port
+                val newUuid = etUuid.text.toString().trim()
+                val newSni = etSni.text.toString().trim()
+                val newPbk = etPbk.text.toString().trim()
+                val newSid = etSid.text.toString().trim()
+                val newFp = etFp.text.toString().trim()
+                val newPath = etPath.text.toString().trim()
+                val newHost = etHost.text.toString().trim()
+
+                val chosenStrategyIdx = spinnerStrategy.selectedItemPosition
+                val chosenStrategyId = if (chosenStrategyIdx > 0 && chosenStrategyIdx - 1 < strategies.size) {
+                    val st = strategies[chosenStrategyIdx - 1]
+                    st.id
+                } else ""
+
+                val updatedConfig = config.copy(
+                    name = if (newName.isNotBlank()) newName else config.name,
+                    address = if (newAddress.isNotBlank()) newAddress else config.address,
+                    port = newPort,
+                    uuid = if (newUuid.isNotBlank()) newUuid else config.uuid,
+                    sni = newSni,
+                    pbk = newPbk,
+                    sid = newSid,
+                    fp = if (newFp.isNotBlank()) newFp else "chrome",
+                    path = newPath,
+                    host = newHost,
+                    desyncStrategyId = chosenStrategyId
+                )
+
+                val all = VlessManager.getConfigs(this).toMutableList()
+                val idx = all.indexOfFirst { it.id == config.id }
+                if (idx != -1) {
+                    all[idx] = updatedConfig
+                    VlessManager.saveConfigs(this, all)
+                    loadServers()
+                    Toast.makeText(this, "Конфигурация сервера обновлена!", Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -518,6 +670,7 @@ class VlessListActivity : BaseActivity() {
         // Помечаем все серверы как ожидающие проверки (-2L)
         configsToTest.forEach { adapter?.setPing(it.id, -2L) }
 
+        val method = VlessManager.getPingMethod(this)
         lifecycleScope.launch(Dispatchers.IO) {
             val testUrl = "https://www.gstatic.com/generate_204"
             val batchSize = 10
@@ -537,24 +690,15 @@ class VlessListActivity : BaseActivity() {
                     chunk.map { config ->
                         launch {
                             val ping = try {
-                                val delay = io.github.dovecoteescapee.byedpi.vless.core.VlessCoreImpl.measureDelay(config, testUrl)
-                                if (delay > 0) delay else {
-                                    // Честный замер TLS handshake к целевому серверу с SNI
-                                    io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessRealPing(
-                                        address = config.address,
-                                        port = config.port,
-                                        sni = if (config.sni.isNotBlank()) config.sni else config.host,
-                                        timeoutMs = 3000
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                // Честный fallback TLS Handshake
-                                io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessRealPing(
+                                io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureVlessPingByMethod(
+                                    method = method,
                                     address = config.address,
                                     port = config.port,
                                     sni = if (config.sni.isNotBlank()) config.sni else config.host,
                                     timeoutMs = 3000
                                 )
+                            } catch (e: Throwable) {
+                                -1L
                             }
 
                             withContext(Dispatchers.Main) {

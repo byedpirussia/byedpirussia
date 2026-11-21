@@ -81,6 +81,62 @@ object RealPingTester {
     }
 
     /**
+     * 2. Измерение пинга VLESS / Reality / Hysteria2 в зависимости от выбранного метода:
+     * - "proxy_get": Real TLS Handshake + HTTP GET generate_204 probe
+     * - "tcp": Быстрый замер подключения TCP сокета
+     * - "icmp": Проверка доступности хоста через InetAddress.isReachable (ICMP Echo / TCP 7)
+     */
+    suspend fun measureVlessPingByMethod(
+        method: String,
+        address: String,
+        port: Int,
+        sni: String? = null,
+        timeoutMs: Int = DEFAULT_TIMEOUT_MS
+    ): Long = withContext(Dispatchers.IO) {
+        when (method.lowercase()) {
+            "tcp" -> measureTcpPing(address, port, timeoutMs)
+            "icmp" -> measureIcmpPing(address, timeoutMs)
+            else -> measureVlessRealPing(address, port, sni, timeoutMs)
+        }
+    }
+
+    suspend fun measureTcpPing(
+        address: String,
+        port: Int,
+        timeoutMs: Int = DEFAULT_TIMEOUT_MS
+    ): Long = withContext(Dispatchers.IO) {
+        val start = System.currentTimeMillis()
+        try {
+            Socket().use { s ->
+                s.connect(InetSocketAddress(address, port), timeoutMs)
+            }
+            val elapsed = System.currentTimeMillis() - start
+            if (elapsed > 0) elapsed else -1L
+        } catch (_: Exception) {
+            -1L
+        }
+    }
+
+    suspend fun measureIcmpPing(
+        address: String,
+        timeoutMs: Int = DEFAULT_TIMEOUT_MS
+    ): Long = withContext(Dispatchers.IO) {
+        val start = System.currentTimeMillis()
+        try {
+            val inet = InetAddress.getByName(address)
+            // isReachable пытается отправить ICMP ECHO REQUEST, а при отсутствии прав - TCP на порт 7
+            val reachable = inet.isReachable(timeoutMs)
+            val elapsed = System.currentTimeMillis() - start
+            if (reachable && elapsed > 0) elapsed else {
+                // Если ICMP заблокирован в сети, fallback на TCP порт 443
+                measureTcpPing(address, 443, timeoutMs)
+            }
+        } catch (_: Exception) {
+            -1L
+        }
+    }
+
+    /**
      * 2. Настоящий пинг для VLESS/Reality сервера перед подключением (до запуска VPN):
      * Выполняет полный TLS Handshake с отправкой ClientHello и получением ServerHello
      * с реальным SNI хостом целевого сервера. Это гарантирует, что сервер не просто

@@ -2,6 +2,7 @@ package io.github.dovecoteescapee.byedpi.vless
 
 import android.content.Context
 import android.util.Base64
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -10,11 +11,95 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object VlessManager {
+    private const val TAG = "VlessManager"
     private const val PREFS_NAME = "vless_preferences"
     private const val KEY_PROFILES = "vless_profiles_json"
     private const val KEY_SELECTED_ID = "vless_selected_profile_id"
     private const val KEY_SUBSCRIPTIONS = "vless_subscriptions_json"
     private const val KEY_SERVER_PINGS = "vless_server_pings_map"
+    private const val KEY_SUB_USER_INFOS = "vless_sub_user_infos_map"
+    private const val KEY_PING_METHOD = "vless_ping_method_setting"
+
+    data class SubUserInfo(
+        val uploadBytes: Long = 0L,
+        val downloadBytes: Long = 0L,
+        val totalBytes: Long = 0L,
+        val expireEpochSec: Long = 0L
+    ) {
+        val remainingBytes: Long
+            get() = if (totalBytes > 0) (totalBytes - (uploadBytes + downloadBytes)).coerceAtLeast(0L) else 0L
+
+        fun formatRemainingTraffic(): String {
+            if (totalBytes <= 0) return ""
+            val remGb = remainingBytes.toDouble() / (1024 * 1024 * 1024)
+            val totalGb = totalBytes.toDouble() / (1024 * 1024 * 1024)
+            return String.format(java.util.Locale.US, "%.1f / %.1f ГБ", remGb, totalGb)
+        }
+
+        fun formatExpireDays(): String {
+            if (expireEpochSec <= 0) return ""
+            val nowSec = System.currentTimeMillis() / 1000
+            val diffSec = expireEpochSec - nowSec
+            if (diffSec <= 0) return "Срок истек"
+            val days = diffSec / 86400
+            return if (days > 0) "$days дн." else "${diffSec / 3600} ч."
+        }
+
+        fun formatShortSummary(): String {
+            val parts = mutableListOf<String>()
+            val traf = formatRemainingTraffic()
+            if (traf.isNotBlank()) parts.add("📊 $traf")
+            val exp = formatExpireDays()
+            if (exp.isNotBlank()) parts.add("⏳ $exp")
+            return parts.joinToString("  •  ")
+        }
+    }
+
+    fun getPingMethod(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_PING_METHOD, "proxy_get") ?: "proxy_get"
+    }
+
+    fun setPingMethod(context: Context, method: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_PING_METHOD, method).apply()
+    }
+
+    fun setSubUserInfo(context: Context, subUrl: String, info: SubUserInfo) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val jsonStr = prefs.getString(KEY_SUB_USER_INFOS, null) ?: "{}"
+        try {
+            val obj = JSONObject(jsonStr)
+            val subObj = JSONObject().apply {
+                put("upload", info.uploadBytes)
+                put("download", info.downloadBytes)
+                put("total", info.totalBytes)
+                put("expire", info.expireEpochSec)
+            }
+            obj.put(subUrl.trim(), subObj)
+            prefs.edit().putString(KEY_SUB_USER_INFOS, obj.toString()).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun getSubUserInfo(context: Context, subUrl: String): SubUserInfo? {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val jsonStr = prefs.getString(KEY_SUB_USER_INFOS, null) ?: return null
+        return try {
+            val obj = JSONObject(jsonStr)
+            val trimmed = subUrl.trim()
+            if (obj.has(trimmed)) {
+                val subObj = obj.getJSONObject(trimmed)
+                SubUserInfo(
+                    uploadBytes = subObj.optLong("upload", 0L),
+                    downloadBytes = subObj.optLong("download", 0L),
+                    totalBytes = subObj.optLong("total", 0L),
+                    expireEpochSec = subObj.optLong("expire", 0L)
+                )
+            } else null
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     fun setPing(context: Context, serverId: String, pingMs: Long) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -113,7 +198,8 @@ object VlessManager {
                         isChain = obj.optBoolean("isChain", false),
                         chainMode = obj.optString("chainMode", ""),
                         chainHop1ConfigJson = obj.optString("chainHop1ConfigJson", ""),
-                        chainWarpConfigText = obj.optString("chainWarpConfigText", "")
+                        chainWarpConfigText = obj.optString("chainWarpConfigText", ""),
+                        desyncStrategyId = obj.optString("desyncStrategyId", "")
                     )
                 )
             }
@@ -173,6 +259,7 @@ object VlessManager {
                 put("chainMode", cfg.chainMode)
                 put("chainHop1ConfigJson", cfg.chainHop1ConfigJson)
                 put("chainWarpConfigText", cfg.chainWarpConfigText)
+                put("desyncStrategyId", cfg.desyncStrategyId)
             }
             jsonArray.put(obj)
         }
@@ -273,6 +360,64 @@ object VlessManager {
             }
         }
         return results
+    }
+
+    suspend fun fetchSubscription(context: Context, subscriptionUrl: String): Result<List<VlessConfig>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL(subscriptionUrl.trim())
+                val connection = (url.openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 15000
+                    readTimeout = 15000
+                    setRequestProperty("User-Agent", "v2rayNG/2.2.6")
+                    instanceFollowRedirects = true
+                }
+
+                // Читаем заголовок Subscription-Userinfo: upload=1234; download=5678; total=99999; expire=1732000000
+                val userInfoHeader = connection.getHeaderField("Subscription-Userinfo") ?: connection.getHeaderField("subscription-userinfo")
+                if (!userInfoHeader.isNullOrBlank()) {
+                    try {
+                        var up = 0L
+                        var down = 0L
+                        var total = 0L
+                        var exp = 0L
+                        val tokens = userInfoHeader.split(";")
+                        for (token in tokens) {
+                            val kv = token.trim().split("=")
+                            if (kv.size == 2) {
+                                val k = kv[0].trim().lowercase()
+                                val v = kv[1].trim().toLongOrNull() ?: 0L
+                                when (k) {
+                                    "upload" -> up = v
+                                    "download" -> down = v
+                                    "total" -> total = v
+                                    "expire" -> exp = v
+                                }
+                            }
+                        }
+                        if (total > 0 || exp > 0) {
+                            setSubUserInfo(context, subscriptionUrl, SubUserInfo(up, down, total, exp))
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error parsing Subscription-Userinfo header", e)
+                    }
+                }
+
+                if (connection.responseCode !in 200..299) {
+                    return@withContext Result.failure(Exception("HTTP error ${connection.responseCode}"))
+                }
+
+                val body = connection.inputStream.bufferedReader().use { it.readText() }
+                val parsed = parseSubscriptionContent(body, subscriptionUrl.trim())
+                if (parsed.isEmpty()) {
+                    Result.failure(Exception("Не найдено серверов (vless, hy2, ss, vmess, trojan)"))
+                } else {
+                    Result.success(parsed)
+                }
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
     }
 
     suspend fun fetchSubscription(subscriptionUrl: String): Result<List<VlessConfig>> {

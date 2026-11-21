@@ -9,6 +9,8 @@ class VlessServerAdapter(
     private var items: List<VlessConfig>,
     private var selectedId: String?,
     private val onSelect: (VlessConfig) -> Unit,
+    private val onEdit: (VlessConfig) -> Unit,
+    private val onPingSingle: (VlessConfig) -> Unit,
     private val onDelete: (VlessConfig) -> Unit
 ) : RecyclerView.Adapter<VlessServerAdapter.ViewHolder>() {
 
@@ -46,6 +48,14 @@ class VlessServerAdapter(
         }
         holder.binding.rbSelected.isChecked = (item.id == selectedId)
 
+        if (item.desyncStrategyId.isNotBlank()) {
+            holder.binding.tvStrategyBadge.visibility = android.view.View.VISIBLE
+            val strat = io.github.dovecoteescapee.byedpi.strategy.StrategyCatalog.getStrategyById(item.desyncStrategyId)
+            holder.binding.tvStrategyBadge.text = "🛡️ ${strat.name}"
+        } else {
+            holder.binding.tvStrategyBadge.visibility = android.view.View.GONE
+        }
+
         val ping = pingResults[item.id]
         if (ping != null) {
             holder.binding.tvPing.visibility = android.view.View.VISIBLE
@@ -72,6 +82,14 @@ class VlessServerAdapter(
             selectedId = item.id
             notifyDataSetChanged()
             onSelect(item)
+        }
+
+        holder.binding.btnPingSingle.setOnClickListener {
+            onPingSingle(item)
+        }
+
+        holder.binding.btnEditServer.setOnClickListener {
+            onEdit(item)
         }
 
         holder.binding.btnDelete.setOnClickListener {

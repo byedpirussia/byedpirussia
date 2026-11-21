@@ -77,10 +77,22 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:minHeight="42dp"
-                android:layout_weight="1.1"
+                android:layout_weight="1"
                 android:text="⚡ Пинг"
                 android:textSize="12sp"
                 android:textStyle="bold"
+                app:cornerRadius="14dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_ping_method_settings"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="42dp"
+                android:layout_height="wrap_content"
+                android:minHeight="42dp"
+                android:padding="0dp"
+                android:layout_marginStart="4dp"
+                android:text="⚙️"
+                android:textSize="14sp"
                 app:cornerRadius="14dp" />
         </LinearLayout>
 
@@ -124,45 +136,92 @@
             app:tabSelectedTextColor="?attr/colorPrimary"
             app:tabTextColor="?attr/colorOutline" />
 
-        <!-- Панель управления выбранной подпиской (Обновить / Удалить подписку) -->
+        <!-- Панель управления выбранной подпиской (Обновить / Удалить подписку + Трафик/Срок) -->
         <LinearLayout
             android:id="@+id/sub_control_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
+            android:orientation="vertical"
             android:paddingHorizontal="16dp"
             android:paddingVertical="4dp"
             android:visibility="gone"
             tools:visibility="visible">
 
-            <TextView
-                android:id="@+id/tv_sub_info"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="12sp"
-                android:textColor="?attr/colorOutline"
-                android:maxLines="1"
-                android:ellipsize="middle"
-                tools:text="https://domain.com/sub/..." />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_refresh_sub"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🔄 Обновить"
-                android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/tv_sub_info"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOutline"
+                    android:maxLines="1"
+                    android:ellipsize="middle"
+                    tools:text="https://domain.com/sub/..." />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_delete_sub"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_refresh_sub"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔄 Обновить"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_delete_sub"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/colorError"
+                    android:text="🗑️ Удалить"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Карточка с остатком гигабайт и дней подписки (как в Happ) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_sub_user_info"
+                style="@style/Widget.Material3.CardView.Filled"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/colorError"
-                android:text="🗑️ Удалить"
-                android:textSize="12sp" />
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp">
+
+                    <TextView
+                        android:id="@+id/tv_sub_traffic_badge"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorPrimary"
+                        tools:text="📊 45.2 / 100.0 ГБ" />
+
+                    <TextView
+                        android:id="@+id/tv_sub_expire_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOutline"
+                        tools:text="⏳ Осталось 22 дн." />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
     </com.google.android.material.appbar.AppBarLayout>

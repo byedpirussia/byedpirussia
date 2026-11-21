@@ -46,7 +46,12 @@ object VlessCoreImpl : IVlessCore {
     }
 
     override fun measureDelay(config: VlessConfig, testUrl: String): Long {
-        val xrayJson = config.toXrayConfigJson(localSocksPort = 0)
-        return Libv2ray.measureOutboundDelay(xrayJson, testUrl)
+        return try {
+            val xrayJson = config.toXrayConfigJson(localSocksPort = 0)
+            Libv2ray.measureOutboundDelay(xrayJson, testUrl)
+        } catch (e: Throwable) {
+            Log.w(TAG, "measureDelay exception, fallback to RealPingTester", e)
+            -1L
+        }
     }
 }
