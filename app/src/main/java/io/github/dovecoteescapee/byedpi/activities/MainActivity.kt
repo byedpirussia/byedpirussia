@@ -1001,6 +1001,31 @@ class MainActivity : BaseActivity() {
 
         binding.m3SwitchWarp.setOnClickListener { toggleWarp() }
         binding.m3CardWarp.setOnClickListener { toggleWarp() }
+
+        val isMasqueInitial = WarpConfigManager.isMasqueMode(this)
+        if (isMasqueInitial) {
+            binding.m3WarpProtocolGroup.check(R.id.m3_btn_warp_mode_masque)
+        } else {
+            binding.m3WarpProtocolGroup.check(R.id.m3_btn_warp_mode_awg)
+        }
+
+        binding.m3WarpProtocolGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            val newIsMasque = (checkedId == R.id.m3_btn_warp_mode_masque)
+            if (WarpConfigManager.isMasqueMode(this) != newIsMasque) {
+                WarpConfigManager.setMasqueMode(this, newIsMasque)
+                val msgRes = if (newIsMasque) R.string.m3_warp_proto_switched_masque else R.string.m3_warp_proto_switched_awg
+                Toast.makeText(this, msgRes, Toast.LENGTH_SHORT).show()
+                if (WarpVpnService.isRunning.value) {
+                    WarpVpnService.stop(this)
+                    lifecycleScope.launch {
+                        delay(400)
+                        WarpVpnService.start(this@MainActivity)
+                    }
+                }
+                updateM3State()
+            }
+        }
         binding.m3BtnWarpGen.setOnClickListener {
             showWarpGenOptionsDialog()
         }
@@ -1142,6 +1167,8 @@ class MainActivity : BaseActivity() {
         }
 
         TvNavigationHelper.setupButtonFocus(binding.m3BtnDisconnectAll)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpModeMasque)
+        TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpModeAwg)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpPing)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnWarpTgFix)
         TvNavigationHelper.setupButtonFocus(binding.m3BtnVlessServers)
@@ -1293,7 +1320,11 @@ class MainActivity : BaseActivity() {
         binding.m3CardWarp.strokeColor = if (isWarpRunning) colorPrimary else colorOutlineVariant
         binding.m3CardWarp.strokeWidth = if (isWarpRunning) dpToPx(1.5f) else dpToPx(1f)
         val isMasque = WarpConfigManager.isMasqueMode(this)
-        val protoTag = if (isMasque) "MASQUE" else "AmneziaWG"
+        val expectedButtonId = if (isMasque) R.id.m3_btn_warp_mode_masque else R.id.m3_btn_warp_mode_awg
+        if (binding.m3WarpProtocolGroup.checkedButtonId != expectedButtonId) {
+            binding.m3WarpProtocolGroup.check(expectedButtonId)
+        }
+        val protoTag = if (isMasque) "MASQUE HTTP/3" else "AmneziaWG 3.1"
         if (isWarpRunning) {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)

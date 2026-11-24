@@ -354,11 +354,15 @@
     <string name="m3_section_modules">PROTECTION MODULES</string>
     <string name="m3_byedpi_title">ByeDPI (TCP/TLS Desync)</string>
     <string name="m3_byedpi_sub_default">⚪ Disabled • YouTube, Discord</string>
-    <string name="m3_warp_title">AmneziaWG 3.1 WARP</string>
-    <string name="m3_warp_sub_default">⚪ Disabled • Cloudflare Anycast</string>
+    <string name="m3_warp_title">Cloudflare WARP (MASQUE HTTP/3)</string>
+    <string name="m3_warp_sub_default">⚪ Disabled • Cloudflare MASQUE (HTTP/3)</string>
     <string name="m3_warp_btn_select_node">Select Node</string>
     <string name="m3_warp_btn_dns">⚙️ DNS</string>
     <string name="m3_warp_btn_tg_fix">TG Fix</string>
+    <string name="m3_warp_proto_masque">⚡ MASQUE HTTP/3</string>
+    <string name="m3_warp_proto_awg">🛡️ AWG 3.1</string>
+    <string name="m3_warp_proto_switched_masque">Switched to MASQUE protocol (HTTP/3 CONNECT-UDP) [Primary]</string>
+    <string name="m3_warp_proto_switched_awg">Switched to AmneziaWG 3.1 protocol [Backup]</string>
     <string name="m3_vless_title">VLESS Reality &amp; Hysteria</string>
     <string name="m3_vless_sub_default">⚪ Disabled • No server selected</string>
     <string name="m3_vless_btn_servers">🌐 Servers &amp; Subscriptions</string>

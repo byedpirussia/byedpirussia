@@ -473,6 +473,39 @@
                                 android:layout_marginStart="8dp" />
                         </LinearLayout>
 
+                        <!-- Переключатель протокола: MASQUE (HTTP/3) vs AWG 3.1 -->
+                        <com.google.android.material.button.MaterialButtonToggleGroup
+                            android:id="@+id/m3_warp_protocol_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            app:singleSelection="true"
+                            app:selectionRequired="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/m3_btn_warp_mode_masque"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.2"
+                                android:minHeight="36dp"
+                                android:text="@string/m3_warp_proto_masque"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="12dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/m3_btn_warp_mode_awg"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:minHeight="36dp"
+                                android:text="@string/m3_warp_proto_awg"
+                                android:textSize="11sp"
+                                app:cornerRadius="12dp" />
+                        </com.google.android.material.button.MaterialButtonToggleGroup>
+
                         <!-- Кнопки быстрого управления WARP 3.1 -->
                         <LinearLayout
                             android:layout_width="match_parent"

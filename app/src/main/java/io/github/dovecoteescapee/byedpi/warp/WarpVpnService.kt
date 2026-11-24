@@ -409,25 +409,31 @@ class WarpVpnService : VpnService() {
                 // Initial background ping check after start
                 delay(1500)
                 var initialPing = pingTunnel(3500)
+                val isMasque = WarpConfigManager.isMasqueMode(this@WarpVpnService)
+                val modeLabel = if (isMasque) "MASQUE HTTP/3" else "AWG 3.1"
                 if (initialPing < 0) {
-                    // Quick failover at launch if initial endpoint is blocked
-                    Log.w(TAG, "Initial ping failed, attempting immediate failover to alternate port...")
-                    val curConf = WarpConfigManager.currentConfig.value
-                    val curEp = WarpConfigManager.extractEndpoint(curConf)
-                    val altEp = WarpEndpointOptimizer.getNextCandidateEndpoint(curEp)
-                    val newConf = WarpEndpointOptimizer.optimizeConfigString(curConf, altEp)
-                    WarpConfigManager.saveConfig(this@WarpVpnService, newConf)
-                    _connectionStatus.value = "Смена узла на $altEp..."
-                    startForegroundNotification("WARP: Смена узла ($altEp)...")
-                    stopTunnelInternal()
-                    delay(300)
-                    if (_isRunning.value && !isUserExplicitStop) {
-                        startTunnelInternal()
+                    if (!isMasque) {
+                        // Quick failover at launch if initial endpoint is blocked
+                        Log.w(TAG, "Initial ping failed, attempting immediate failover to alternate port...")
+                        val curConf = WarpConfigManager.currentConfig.value
+                        val curEp = WarpConfigManager.extractEndpoint(curConf)
+                        val altEp = WarpEndpointOptimizer.getNextCandidateEndpoint(curEp)
+                        val newConf = WarpEndpointOptimizer.optimizeConfigString(curConf, altEp)
+                        WarpConfigManager.saveConfig(this@WarpVpnService, newConf)
+                        _connectionStatus.value = "Смена узла на $altEp..."
+                        startForegroundNotification("WARP: Смена узла ($altEp)...")
+                        stopTunnelInternal()
+                        delay(300)
+                        if (_isRunning.value && !isUserExplicitStop) {
+                            startTunnelInternal()
+                        }
+                        return@launch
+                    } else {
+                        Log.w(TAG, "Initial ping failed in MASQUE mode, will continue watchdog checks")
                     }
-                    return@launch
                 } else {
                     _warpPingMs.value = initialPing
-                    startForegroundNotification("WARP активен (${initialPing}ms)")
+                    startForegroundNotification("WARP $modeLabel (${initialPing}ms)")
                 }
 
                 var consecutiveFailures = 0
@@ -437,30 +443,36 @@ class WarpVpnService : VpnService() {
                     if (!_isRunning.value || isUserExplicitStop) break
 
                     val ping = pingTunnel(3500)
+                    val currentIsMasque = WarpConfigManager.isMasqueMode(this@WarpVpnService)
+                    val currentModeLabel = if (currentIsMasque) "MASQUE HTTP/3" else "AWG 3.1"
                     if (ping >= 0) {
                         consecutiveFailures = 0
                         _warpPingMs.value = ping
-                        _connectionStatus.value = "Подключен (WARP активен)"
-                        startForegroundNotification("WARP активен (${ping}ms)")
+                        _connectionStatus.value = "Подключен ($currentModeLabel)"
+                        startForegroundNotification("WARP $currentModeLabel (${ping}ms)")
                     } else {
                         _warpPingMs.value = -1L
                         consecutiveFailures++
                         Log.w(TAG, "WARP packet loss detected (failure $consecutiveFailures/2)")
 
-                        // Новая стратегия 1.6: если 2 проверки подряд потеря пакетов (блокировка порта ТСПУ),
-                        // выполняем ротацию на следующий порт из пула (500 <-> 4500 <-> 1701 <-> 8854)
                         if (consecutiveFailures >= 2 && !isUserExplicitStop && _isRunning.value) {
                             consecutiveFailures = 0
-                            val currentConf = WarpConfigManager.currentConfig.value
-                            val currentEp = WarpConfigManager.extractEndpoint(currentConf)
-                            val nextEp = WarpEndpointOptimizer.getNextCandidateEndpoint(currentEp)
-                            Log.i(TAG, "Failover: rotating blocked port $currentEp -> $nextEp")
-                            val newConf = WarpEndpointOptimizer.optimizeConfigString(currentConf, nextEp)
-                            WarpConfigManager.saveConfig(this@WarpVpnService, newConf)
-                            _connectionStatus.value = "Смена порта на $nextEp..."
-                            startForegroundNotification("WARP: Смена порта ($nextEp)...")
+                            if (!currentIsMasque) {
+                                val currentConf = WarpConfigManager.currentConfig.value
+                                val currentEp = WarpConfigManager.extractEndpoint(currentConf)
+                                val nextEp = WarpEndpointOptimizer.getNextCandidateEndpoint(currentEp)
+                                Log.i(TAG, "Failover: rotating blocked port $currentEp -> $nextEp")
+                                val newConf = WarpEndpointOptimizer.optimizeConfigString(currentConf, nextEp)
+                                WarpConfigManager.saveConfig(this@WarpVpnService, newConf)
+                                _connectionStatus.value = "Смена порта на $nextEp..."
+                                startForegroundNotification("WARP: Смена порта ($nextEp)...")
+                            } else {
+                                Log.i(TAG, "Failover: reconnecting MASQUE HTTP/3 session...")
+                                _connectionStatus.value = "Переподключение MASQUE..."
+                                startForegroundNotification("WARP: Переподключение MASQUE...")
+                            }
                             
-                            // Перезапуск туннеля на новый порт
+                            // Перезапуск туннеля
                             stopTunnelInternal()
                             delay(400)
                             if (_isRunning.value && !isUserExplicitStop) {
@@ -675,6 +687,19 @@ class WarpVpnService : VpnService() {
         io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.setUnderlyingPhysicalNetworks(this@WarpVpnService)
         tunFd = pfd
 
+        if (isMasqueMode) {
+            Log.i(TAG, "Starting Cloudflare WARP via MASQUE (RFC 9298 HTTP/3)...")
+            val masqueConfig = WarpConfigManager.getMasqueConfig(this@WarpVpnService)
+            WarpMasqueClient.start(this@WarpVpnService, pfd, masqueConfig)
+            _isRunning.value = true
+            val statusText = "Подключен (WARP MASQUE HTTP/3)"
+            _connectionStatus.value = statusText
+            startForegroundNotification("🟢 $statusText: ${masqueConfig.endpointHost}:${masqueConfig.endpointPort}")
+            Log.i(TAG, "WARP MASQUE tunnel successfully activated on port ${masqueConfig.endpointPort}")
+            startWatchdog()
+            return
+        }
+
         // Используем высокоскоростное нативное ядро GoBackend с обходом ТСПУ (AWG 3.1) и защитой сокетов
         val uapi = AwgUapiFormatter.toUapi(finalParsed)
         Log.d(TAG, "Starting GoBackend.awgTurnOn with UAPI length: ${uapi.length} for endpoint: $resolvedEndpoint")
@@ -696,7 +721,7 @@ class WarpVpnService : VpnService() {
         if (sockV6 >= 0) protect(sockV6)
 
         _isRunning.value = true
-        val statusText = if (isMasqueMode) "Подключен (WARP MASQUE / AWG 3.1)" else "Подключен (WARP активен)"
+        val statusText = "Подключен (WARP AWG 3.1)"
         _connectionStatus.value = statusText
         startForegroundNotification("🟢 $statusText: ${parsed.peerEndpoint ?: "Cloudflare"}")
         Log.i(TAG, "WARP tunnel successfully activated. Handle: $handle")
@@ -711,6 +736,7 @@ class WarpVpnService : VpnService() {
         watchdogJob?.cancel()
         _connectionStatus.value = "Приостановлен"
         try {
+            WarpMasqueClient.stop()
             if (tunnelHandle >= 0) {
                 GoBackend.awgTurnOff(tunnelHandle)
             }
@@ -830,8 +856,10 @@ class WarpVpnService : VpnService() {
             stopIntent
         ).build()
 
+        val isMasque = WarpConfigManager.isMasqueMode(this)
+        val title = if (isMasque) "Cloudflare WARP (MASQUE HTTP/3)" else "Cloudflare WARP (AmneziaWG 3.1)"
         val builder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Cloudflare WARP (AmneziaWG)")
+            .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)

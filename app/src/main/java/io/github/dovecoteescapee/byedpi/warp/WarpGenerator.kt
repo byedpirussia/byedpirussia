@@ -99,10 +99,10 @@ Endpoint = $endpoint
         val peerPub: String,
         val clientIpv4: String,
         val clientIpv6: String,
-        val endpoint: String = "162.159.192.1:500",
+        val endpoint: String = "engage.cloudflareclient.com:443",
         val sni: String = "engage.cloudflareclient.com",
         val path: String = "/cdn-cgi/warp/masque",
-        val network: String = "h2",
+        val network: String = "h3",
         val rawYaml: String = "",
         val deliveryId: String = "",
         val fileName: String = "warp_masque.yaml",
@@ -116,8 +116,11 @@ Endpoint = $endpoint
 
         fun toMasqueConfig(): WarpMasqueClient.MasqueConfig {
             val parts = endpoint.split(":")
-            val host = parts[0].ifBlank { "162.159.192.1" }
-            val port = if (parts.size > 1) parts[1].toIntOrNull() ?: 500 else 500
+            val host = parts[0].ifBlank { "engage.cloudflareclient.com" }
+            val port = if (parts.size > 1) {
+                val p = parts[1].toIntOrNull() ?: 443
+                if (p == 500) 443 else p
+            } else 443
             return WarpMasqueClient.MasqueConfig(
                 privateKey = privKey,
                 peerPublicKey = peerPub,
@@ -315,13 +318,13 @@ Endpoint = $endpoint
 
         // Резервный профиль с рабочим конфигом
         val fallback = WarpMasqueProfile(
-            privKey = "MHcCAQEEIDE5yxWgh3iSdFY7L0/FNl6PE5W+BE7Iro3F2DiLpIxjoAoGCCqGSM49AwEHoUQDQgAEpcogcn86X0sa/KXi2UiBXv34IAKlXwcXPPfdXhK4Q9RMQHGAHRSpIT+fafmZJ0lV+RJukKJLSxEwWdDURtRlxg==",
-            peerPub = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w==",
+            privKey = "KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8=",
+            peerPub = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
             clientIpv4 = "172.16.0.2",
-            clientIpv6 = "2606:4700:110:8700:31d8:595c:36c3:8014",
-            endpoint = "162.159.192.1:500",
+            clientIpv6 = "2606:4700:110:8655:e6ef:f746:2058:dac0",
+            endpoint = "engage.cloudflareclient.com:443",
             sni = "engage.cloudflareclient.com",
-            network = "h2",
+            network = "h3",
             workingAwgConfig = awgConfigText
         )
         Result.success(fallback)

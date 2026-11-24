@@ -49,12 +49,12 @@ AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = 162.159.192.1:500
 PersistentKeepalive = 25"""
 
-    const val DEFAULT_MASQUE_ENDPOINT = "162.159.192.1:500"
+    const val DEFAULT_MASQUE_ENDPOINT = "engage.cloudflareclient.com:443"
 
     private val _currentConfig = MutableStateFlow(DEFAULT_CONFIG)
     val currentConfig: StateFlow<String> = _currentConfig
 
-    private val _isMasqueMode = MutableStateFlow(false)
+    private val _isMasqueMode = MutableStateFlow(true)
     val isMasqueModeFlow: StateFlow<Boolean> = _isMasqueMode
 
     fun init(context: Context) {
@@ -80,14 +80,14 @@ PersistentKeepalive = 25"""
             }
         }
 
-        // По умолчанию стабильный AmneziaWG 3.1 (GoBackend) с обходом ТСПУ
-        val isMasque = prefs.getBoolean(KEY_WARP_MODE, false)
+        // По умолчанию надежный и устойчивый к блокировкам MASQUE HTTP/3
+        val isMasque = prefs.getBoolean(KEY_WARP_MODE, true)
         _isMasqueMode.value = isMasque
     }
 
     fun isMasqueMode(context: Context): Boolean {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_WARP_MODE, false)
+            .getBoolean(KEY_WARP_MODE, true)
     }
 
     fun setMasqueMode(context: Context, enabled: Boolean) {
@@ -97,8 +97,14 @@ PersistentKeepalive = 25"""
     }
 
     fun getMasqueEndpoint(context: Context): String {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val ep = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getString(KEY_MASQUE_ENDPOINT, DEFAULT_MASQUE_ENDPOINT) ?: DEFAULT_MASQUE_ENDPOINT
+        if (ep.endsWith(":500")) {
+            val updated = ep.replace(":500", ":443")
+            setMasqueEndpoint(context, updated)
+            return updated
+        }
+        return ep
     }
 
     fun setMasqueEndpoint(context: Context, endpoint: String) {
@@ -116,7 +122,10 @@ PersistentKeepalive = 25"""
         val endpoint = getMasqueEndpoint(context)
         val parts = endpoint.split(":")
         val host = parts[0].ifBlank { "engage.cloudflareclient.com" }
-        val port = if (parts.size > 1) parts[1].toIntOrNull() ?: 443 else 443
+        val port = if (parts.size > 1) {
+            val p = parts[1].toIntOrNull() ?: 443
+            if (p == 500) 443 else p
+        } else 443
 
         return WarpMasqueClient.MasqueConfig(
             privateKey = privKey,

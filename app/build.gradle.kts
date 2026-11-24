@@ -10,10 +10,10 @@ android {
         applicationId = "com.byedpifork.russia"
         minSdk = 26
         targetSdk = 35
-        versionCode = 42
+        versionCode = 43
         val randomBuild4 = (1000..9999).random()
         val randomBuild2 = (10..99).random()
-        versionName = "1.6.8.2build$randomBuild4.$randomBuild2"
+        versionName = "1.6.9build$randomBuild4.$randomBuild2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
