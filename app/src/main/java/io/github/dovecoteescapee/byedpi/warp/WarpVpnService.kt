@@ -688,14 +688,14 @@ class WarpVpnService : VpnService() {
         tunFd = pfd
 
         if (isMasqueMode) {
-            Log.i(TAG, "Starting Cloudflare WARP via MASQUE (RFC 9298 HTTP/3)...")
+            Log.i(TAG, "Starting Cloudflare WARP via Core (V2Ray/Xray WireGuard Anycast)...")
             val masqueConfig = WarpConfigManager.getMasqueConfig(this@WarpVpnService)
             WarpMasqueClient.start(this@WarpVpnService, pfd, masqueConfig)
             _isRunning.value = true
-            val statusText = "Подключен (WARP MASQUE HTTP/3)"
+            val statusText = "Подключен (WARP Core)"
             _connectionStatus.value = statusText
             startForegroundNotification("🟢 $statusText: ${masqueConfig.endpointHost}:${masqueConfig.endpointPort}")
-            Log.i(TAG, "WARP MASQUE tunnel successfully activated on port ${masqueConfig.endpointPort}")
+            Log.i(TAG, "WARP Core tunnel successfully activated on port ${masqueConfig.endpointPort}")
             startWatchdog()
             return
         }

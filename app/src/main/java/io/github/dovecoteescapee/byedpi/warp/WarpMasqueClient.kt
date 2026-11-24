@@ -37,8 +37,8 @@ object WarpMasqueClient {
         val peerPublicKey: String,
         val clientIpv4: String = "172.16.0.2",
         val clientIpv6: String = "2606:4700:110:8700:31d8:595c:36c3:8014",
-        val endpointHost: String = "engage.cloudflareclient.com",
-        val endpointPort: Int = 443,
+        val endpointHost: String = "162.159.192.1",
+        val endpointPort: Int = 500,
         val sni: String = "engage.cloudflareclient.com",
         val path: String = "/cdn-cgi/warp/masque"
     )
@@ -203,6 +203,9 @@ object WarpMasqueClient {
         val resolvedIp = resolveEndpointIp(config.endpointHost)
 
         // Главный MASQUE / WireGuard Outbound к Cloudflare
+        // Cloudflare Anycast принимает WireGuard на портах 500, 4500, 2408 (на 443 порт дропает сырой Wireguard)
+        val effectivePort = if (config.endpointPort == 443) 500 else config.endpointPort
+
         val masqueOutbound = JSONObject().apply {
             put("tag", "masque-out")
             put("protocol", "wireguard")
@@ -215,7 +218,7 @@ object WarpMasqueClient {
                 put("peers", JSONArray().apply {
                     put(JSONObject().apply {
                         put("publicKey", config.peerPublicKey)
-                        put("endpoint", "$resolvedIp:${config.endpointPort}")
+                        put("endpoint", "$resolvedIp:$effectivePort")
                     })
                 })
                 put("mtu", 1280)

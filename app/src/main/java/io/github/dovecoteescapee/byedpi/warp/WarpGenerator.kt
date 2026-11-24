@@ -116,11 +116,11 @@ Endpoint = $endpoint
 
         fun toMasqueConfig(): WarpMasqueClient.MasqueConfig {
             val parts = endpoint.split(":")
-            val host = parts[0].ifBlank { "engage.cloudflareclient.com" }
+            val host = parts[0].ifBlank { "162.159.192.1" }
             val port = if (parts.size > 1) {
-                val p = parts[1].toIntOrNull() ?: 443
-                if (p == 500) 443 else p
-            } else 443
+                val p = parts[1].toIntOrNull() ?: 500
+                if (p == 443) 500 else p
+            } else 500
             return WarpMasqueClient.MasqueConfig(
                 privateKey = privKey,
                 peerPublicKey = peerPub,
@@ -322,7 +322,7 @@ Endpoint = $endpoint
             peerPub = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
             clientIpv4 = "172.16.0.2",
             clientIpv6 = "2606:4700:110:8655:e6ef:f746:2058:dac0",
-            endpoint = "engage.cloudflareclient.com:443",
+            endpoint = "162.159.192.1:500",
             sni = "engage.cloudflareclient.com",
             network = "h3",
             workingAwgConfig = awgConfigText

@@ -1324,7 +1324,7 @@ class MainActivity : BaseActivity() {
         if (binding.m3WarpProtocolGroup.checkedButtonId != expectedButtonId) {
             binding.m3WarpProtocolGroup.check(expectedButtonId)
         }
-        val protoTag = if (isMasque) "MASQUE HTTP/3" else "AmneziaWG 3.1"
+        val protoTag = if (isMasque) "WARP Core" else "AmneziaWG 3.1"
         if (isWarpRunning) {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)
