@@ -239,6 +239,7 @@ gradlew.bat assembleRelease
 - **[Xray-core](https://github.com/XTLS/Xray-core)** — универсальное ядро сетевых прокси протоколов (VLESS Reality, Shadowsocks, Trojan, VMess).
 - **[OpenFlux](https://github.com/p1neappleXpress/OpenFlux)** от p1neappleXpress — инновационная технология обхода белых списков (Б/С) через Яндекс Документы, Волгу, Mail.ru, Cups.online Centrifugo и MAX/OneMe WebRTC.
 - **[OpenFluxAndroid](https://github.com/p1neappleXpress/OpenFlux)** — официальный мобильный клиент и наработки OpenFLUX для платформы Android.
+- **[Hiddify (hiddify-core)](https://github.com/hiddify/hiddify-core)** — нативное ядро на базе sing-box (`hiddify-core.aar`) с поддержкой полноценного протокола Cloudflare WARP MASQUE (RFC 9484 CONNECT-IP over HTTP/3 & HTTP/2).
 
 ---
 
