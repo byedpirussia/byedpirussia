@@ -6,9 +6,6 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import io.github.dovecoteescapee.byedpi.core.TProxyService
 import kotlinx.coroutines.*
-import libv2ray.CoreCallbackHandler
-import libv2ray.CoreController
-import libv2ray.Libv2ray
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -18,33 +15,31 @@ import java.net.Socket
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Встроенный MASQUE (RFC 9298, CONNECT-UDP over HTTP/3) клиент Cloudflare WARP.
- * Интегрирован с существующим Core / V2Ray модулем и локальным hev-socks5-tunnel (TProxy).
- * Инкапсулирует весь трафик устройства в защищенные HTTPS/HTTP3 сессии (порт 443)
- * к Anycast-серверам Cloudflare, полностью обходя блокировки WireGuard сигнатур ТСПУ / РКН.
+ * Встроенный MASQUE (RFC 9484, CONNECT-IP over HTTP/3 & HTTP/2) клиент Cloudflare WARP
+ * на базе нативного движка Hiddify Core (`hiddify-core.aar`) и локального hev-socks5-tunnel (TProxy).
+ * Инкапсулирует трафик устройства в защищенные HTTPS/HTTP3 сессии (порт 443) к Anycast-серверам Cloudflare.
  */
 object WarpMasqueClient {
 
     private const val TAG = "WarpMasqueClient"
     const val LOCAL_SOCKS_PORT = 10855
 
-    private var coreController: CoreController? = null
     private val isRunning = AtomicBoolean(false)
-    private var clientScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     data class MasqueConfig(
         val privateKey: String,
         val peerPublicKey: String,
         val clientIpv4: String = "172.16.0.2",
         val clientIpv6: String = "2606:4700:110:8700:31d8:595c:36c3:8014",
-        val endpointHost: String = "162.159.192.1",
-        val endpointPort: Int = 500,
-        val sni: String = "engage.cloudflareclient.com",
-        val path: String = "/cdn-cgi/warp/masque"
+        val endpointHost: String = "162.159.198.2",
+        val endpointPort: Int = 443,
+        val sni: String = "4pda.to",
+        val path: String = "/cdn-cgi/warp/masque",
+        val rawYaml: String = ""
     )
 
     /**
-     * Запускает встроенный MASQUE-клиент через Core и связывает TUN интерфейс с локальным SOCKS5.
+     * Запускает нативный MASQUE-клиент через Hiddify Core и связывает TUN интерфейс с локальным SOCKS5.
      */
     suspend fun start(
         vpnService: VpnService,
@@ -56,56 +51,19 @@ object WarpMasqueClient {
             stop()
         }
 
-        Log.i(TAG, "Инициализация MASQUE-клиента для Cloudflare WARP (${config.endpointHost}:${config.endpointPort})...")
+        Log.i(TAG, "Инициализация нативного MASQUE-клиента Hiddify Core (${config.endpointHost}:${config.endpointPort})...")
 
-        // 1. Инициализация Core Environment и распаковка geoip/geosite при наличии
-        try {
-            val assetDir = File(vpnService.filesDir, "xray_assets").apply { mkdirs() }
-            for (assetName in listOf("geoip.dat", "geosite.dat")) {
-                val targetFile = File(assetDir, assetName)
-                if (!targetFile.exists() || targetFile.length() == 0L) {
-                    try {
-                        vpnService.assets.open(assetName).use { input ->
-                            targetFile.outputStream().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
-            Libv2ray.initCoreEnv(assetDir.absolutePath, "")
-        } catch (e: Exception) {
-            Log.w(TAG, "initCoreEnv notice: ${e.message}")
-        }
+        // 1. Генерация sing-box JSON конфигурации для Hiddify Core с нативным outbound/masque
+        val singBoxConfigJson = generateMasqueConfigJson(config, LOCAL_SOCKS_PORT)
+        Log.d(TAG, "Generated Hiddify MASQUE config:\n$singBoxConfigJson")
 
-        // 2. Генерация оптимизированной конфигурации для Core с MASQUE/WireGuard outbound
-        val coreConfigJson = generateCoreConfigJson(config, LOCAL_SOCKS_PORT)
-        Log.d(TAG, "Generated MASQUE Core config:\n$coreConfigJson")
-
-        // 3. Запуск Core Controller
-        val callback = object : CoreCallbackHandler {
-            override fun onEmitStatus(status: Long, msg: String?): Long {
-                Log.d(TAG, "MASQUE Core emit: status=$status, msg=$msg")
-                return 0
-            }
-            override fun startup(): Long {
-                Log.i(TAG, "MASQUE Core successfully started")
-                return 0
-            }
-            override fun shutdown(): Long {
-                Log.i(TAG, "MASQUE Core shutdown")
-                return 0
-            }
-        }
-
-        val controller = Libv2ray.newCoreController(callback)
-        coreController = controller
-        controller.startLoop(coreConfigJson, 0)
+        // 2. Запуск Hiddify CommandServer
+        WarpMasqueHiddify.start(vpnService, singBoxConfigJson)
 
         // Даем ядру время привязать сокет SOCKS5
         delay(350)
 
-        // 4. Запуск hev-socks5-tunnel (TProxy) для проксирования всего трафика TUN интерфейса в SOCKS5
+        // 3. Запуск hev-socks5-tunnel (TProxy) для проксирования всего трафика TUN интерфейса в SOCKS5
         val tun2socksConfig = """
         | misc:
         |   task-stack-size: 81920
@@ -121,13 +79,13 @@ object WarpMasqueClient {
         }
 
         TProxyService.TProxyStartService(configFile.absolutePath, tunPfd.fd)
-        Log.i(TAG, "hev-socks5-tunnel успешно подключен к локальному MASQUE Core порту $LOCAL_SOCKS_PORT")
+        Log.i(TAG, "hev-socks5-tunnel успешно подключен к локальному MASQUE Hiddify порту $LOCAL_SOCKS_PORT")
 
         isRunning.set(true)
     }
 
     /**
-     * Останавливает MASQUE-клиент и освобождает ресурсы hev-socks5-tunnel и Core.
+     * Останавливает MASQUE-клиент и освобождает ресурсы hev-socks5-tunnel и Hiddify Core.
      */
     fun stop() {
         if (!isRunning.getAndSet(false)) return
@@ -140,11 +98,10 @@ object WarpMasqueClient {
         }
 
         try {
-            coreController?.stopLoop()
+            WarpMasqueHiddify.stop()
         } catch (e: Exception) {
-            Log.w(TAG, "Ошибка остановки CoreController: ${e.message}")
+            Log.w(TAG, "Ошибка остановки WarpMasqueHiddify: ${e.message}")
         }
-        coreController = null
         Log.i(TAG, "MASQUE-клиент остановлен")
     }
 
@@ -160,152 +117,120 @@ object WarpMasqueClient {
     }
 
     /**
-     * Создает JSON конфигурацию для встроенного Core с:
+     * Создает sing-box JSON конфигурацию для Hiddify Core с:
      * - SOCKS5 Inbound на 127.0.0.1:localPort
-     * - MASQUE / WireGuard Outbound к Cloudflare edge (port 443)
-     * - Встроенным DNS резолвером и защитой от утечек
+     * - Нативным MASQUE Outbound к Cloudflare edge (port 443)
+     * - Встроенным DNS резолвером и правилами маршрутизации
      */
-    private fun generateCoreConfigJson(config: MasqueConfig, localPort: Int): String {
+    private fun generateMasqueConfigJson(config: MasqueConfig, localPort: Int): String {
         val root = JSONObject()
 
         // Log
         root.put("log", JSONObject().apply {
-            put("loglevel", "debug")
+            put("level", "info")
+        })
+
+        // DNS
+        root.put("dns", JSONObject().apply {
+            put("servers", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("tag", "dns-remote")
+                    put("address", "https://1.1.1.1/dns-query")
+                    put("detour", "masque-out")
+                })
+                put(JSONObject().apply {
+                    put("tag", "dns-direct")
+                    put("address", "local")
+                    put("detour", "direct")
+                })
+            })
+            put("rules", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("outbound", JSONArray().apply { put("any") })
+                    put("server", "dns-direct")
+                })
+            })
         })
 
         // Inbounds: SOCKS5 на локальном порту
-        val inbounds = JSONArray()
-        val socksInbound = JSONObject().apply {
-            put("tag", "socks-in")
-            put("port", localPort)
-            put("listen", "127.0.0.1")
-            put("protocol", "socks")
-            put("settings", JSONObject().apply {
-                put("auth", "noauth")
-                put("udp", true)
+        root.put("inbounds", JSONArray().apply {
+            put(JSONObject().apply {
+                put("type", "socks")
+                put("tag", "socks-in")
+                put("listen", "127.0.0.1")
+                put("listen_port", localPort)
+                put("sniff", true)
             })
-            put("sniffing", JSONObject().apply {
-                put("enabled", true)
-                put("destOverride", JSONArray().apply {
-                    put("http")
-                    put("tls")
-                    put("quic")
-                })
-            })
-        }
-        inbounds.put(socksInbound)
-        root.put("inbounds", inbounds)
+        })
+
+        val resolvedIp = resolveEndpointIp(config.endpointHost)
+        val effectivePort = if (config.endpointPort <= 0) 443 else config.endpointPort
+        val endpointStr = "$resolvedIp:$effectivePort"
 
         // Outbounds
-        val outbounds = JSONArray()
-
-        // Разрешаем доменное имя эндпоинта в IP заранее, чтобы избежать DNS-дэдлока
-        val resolvedIp = resolveEndpointIp(config.endpointHost)
-
-        // Главный MASQUE / WireGuard Outbound к Cloudflare
-        // Cloudflare Anycast принимает WireGuard на портах 500, 4500, 2408 (на 443 порт дропает сырой Wireguard)
-        val effectivePort = if (config.endpointPort == 443) 500 else config.endpointPort
-
-        val masqueOutbound = JSONObject().apply {
-            put("tag", "masque-out")
-            put("protocol", "wireguard")
-            put("settings", JSONObject().apply {
-                put("secretKey", config.privateKey)
-                put("address", JSONArray().apply {
-                    put("${config.clientIpv4}/32")
-                    put("${config.clientIpv6}/128")
+        root.put("outbounds", JSONArray().apply {
+            // Нативный MASQUE Outbound (RFC 9484 CONNECT-IP over HTTP/3 & HTTP/2)
+            put(JSONObject().apply {
+                put("type", "masque")
+                put("tag", "masque-out")
+                put("server", resolvedIp)
+                put("server_port", effectivePort)
+                put("tls", JSONObject().apply {
+                    put("enabled", true)
+                    put("server_name", config.sni.ifBlank { "engage.cloudflareclient.com" })
                 })
-                put("peers", JSONArray().apply {
-                    put(JSONObject().apply {
-                        put("publicKey", config.peerPublicKey)
-                        put("endpoint", "$resolvedIp:$effectivePort")
-                    })
-                })
-                put("mtu", 1280)
-            })
-            put("streamSettings", JSONObject().apply {
-                put("sockopt", JSONObject().apply {
-                    put("mark", 255)
-                    put("tcpKeepAliveIdle", 30)
-                })
-            })
-        }
-        outbounds.put(masqueOutbound)
-
-        // Direct Outbound
-        val directOutbound = JSONObject().apply {
-            put("tag", "direct")
-            put("protocol", "freedom")
-            put("settings", JSONObject())
-        }
-        outbounds.put(directOutbound)
-
-        // Block Outbound
-        val blockOutbound = JSONObject().apply {
-            put("tag", "block")
-            put("protocol", "blackhole")
-            put("settings", JSONObject())
-        }
-        outbounds.put(blockOutbound)
-
-        root.put("outbounds", outbounds)
-
-        // DNS
-        val dns = JSONObject().apply {
-            put("servers", JSONArray().apply {
-                put("1.1.1.1")
-                put("1.0.0.1")
-                put("https://1.1.1.1/dns-query")
-            })
-        }
-        root.put("dns", dns)
-
-        // Routing: Без geoip:private, используем явные подсети для надежности
-        val routing = JSONObject().apply {
-            put("domainStrategy", "AsIs")
-            val rules = JSONArray()
-
-            // DNS rule
-            rules.put(JSONObject().apply {
-                put("type", "field")
-                put("outboundTag", "masque-out")
-                put("port", "53")
-            })
-
-            // Прямой доступ к локальным адресам (без geoip.dat)
-            rules.put(JSONObject().apply {
-                put("type", "field")
-                put("outboundTag", "direct")
-                put("ip", JSONArray().apply {
-                    put("127.0.0.1/32")
-                    put("10.0.0.0/8")
-                    put("172.16.0.0/12")
-                    put("192.168.0.0/16")
+                put("device", JSONObject().apply {
+                    put("private_key", config.privateKey)
+                    if (config.peerPublicKey.isNotBlank()) {
+                        put("endpoint_pub_key", config.peerPublicKey)
+                    }
+                    put("ipv4", "${config.clientIpv4}/32")
+                    put("ipv6", "${config.clientIpv6}/128")
+                    put("endpoint_v4", endpointStr)
+                    put("endpoint_h2_v4", endpointStr)
                 })
             })
 
-            // Исключенные российские сайты (Банки, Госуслуги, операторы) напрямую
-            val excludeRussianDomains = JSONArray().apply {
-                io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.EXCLUDED_RUSSIAN_DOMAINS.forEach {
-                    put("domain:$it")
+            put(JSONObject().apply {
+                put("type", "direct")
+                put("tag", "direct")
+            })
+
+            put(JSONObject().apply {
+                put("type", "dns")
+                put("tag", "dns-out")
+            })
+
+            put(JSONObject().apply {
+                put("type", "block")
+                put("tag", "block")
+            })
+        })
+
+        // Route
+        root.put("route", JSONObject().apply {
+            put("auto_detect_interface", true)
+            put("final", "masque-out")
+            put("rules", JSONArray().apply {
+                put(JSONObject().apply {
+                    put("protocol", "dns")
+                    put("outbound", "dns-out")
+                })
+                put(JSONObject().apply {
+                    put("ip_is_private", true)
+                    put("outbound", "direct")
+                })
+                val excludedDomains = JSONArray().apply {
+                    io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelManager.EXCLUDED_RUSSIAN_DOMAINS.forEach {
+                        put(it)
+                    }
                 }
-            }
-            rules.put(JSONObject().apply {
-                put("type", "field")
-                put("outboundTag", "direct")
-                put("domain", excludeRussianDomains)
+                put(JSONObject().apply {
+                    put("domain_suffix", excludedDomains)
+                    put("outbound", "direct")
+                })
             })
-
-            // Весь остальной трафик идет через MASQUE
-            rules.put(JSONObject().apply {
-                put("type", "field")
-                put("outboundTag", "masque-out")
-                put("network", "tcp,udp")
-            })
-
-            put("rules", rules)
-        }
-        root.put("routing", routing)
+        })
 
         return root.toString(2)
     }

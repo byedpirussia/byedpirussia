@@ -49,7 +49,21 @@ AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = 162.159.192.1:500
 PersistentKeepalive = 25"""
 
-    const val DEFAULT_MASQUE_ENDPOINT = "162.159.192.1:500"
+    const val DEFAULT_MASQUE_ENDPOINT = "162.159.198.2:443"
+
+    private const val KEY_MASQUE_PRIVKEY = "pref_masque_privkey"
+    private const val KEY_MASQUE_PUBKEY = "pref_masque_pubkey"
+    private const val KEY_MASQUE_IPV4 = "pref_masque_ipv4"
+    private const val KEY_MASQUE_IPV6 = "pref_masque_ipv6"
+    private const val KEY_MASQUE_SNI = "pref_masque_sni"
+    private const val KEY_MASQUE_RAW_YAML = "pref_masque_raw_yaml"
+
+    // Резервные ECDSA P-256 ключи для нативного Cloudflare MASQUE (RFC 9484)
+    private const val FALLBACK_MASQUE_PRIVKEY = "MHcCAQEEINapwsyWJkQhfBxP/uy7gdKCuuYov0LnnLD8VT8qrTa4oAoGCCqGSM49AwEHoUQDQgAEL+4x2m4bQU/OXbynrQMkcgZrZotDlWP99EKFtd0itGTcXwO/0DGlNemoE95ngbcFUHf9VqODh83m1urjO90lP2Q=="
+    private const val FALLBACK_MASQUE_PUBKEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w=="
+    private const val FALLBACK_MASQUE_IPV4 = "172.16.0.2"
+    private const val FALLBACK_MASQUE_IPV6 = "2606:4700:110:8531:949:ea2f:a22b:5b02"
+    private const val FALLBACK_MASQUE_SNI = "4pda.to"
 
     private val _currentConfig = MutableStateFlow(DEFAULT_CONFIG)
     val currentConfig: StateFlow<String> = _currentConfig
@@ -97,15 +111,8 @@ PersistentKeepalive = 25"""
     }
 
     fun getMasqueEndpoint(context: Context): String {
-        val ep = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .getString(KEY_MASQUE_ENDPOINT, DEFAULT_MASQUE_ENDPOINT) ?: DEFAULT_MASQUE_ENDPOINT
-        // Защита от порта 443: Cloudflare Edge не принимает WireGuard на порту 443 (дропает пакеты)
-        if (ep.endsWith(":443") || ep.contains("engage.cloudflareclient.com")) {
-            val updated = "162.159.192.1:500"
-            setMasqueEndpoint(context, updated)
-            return updated
-        }
-        return ep
     }
 
     fun setMasqueEndpoint(context: Context, endpoint: String) {
@@ -113,26 +120,50 @@ PersistentKeepalive = 25"""
             .edit { putString(KEY_MASQUE_ENDPOINT, endpoint.trim()) }
     }
 
+    fun saveMasqueProfile(context: Context, profile: WarpGenerator.WarpMasqueProfile) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+            putString(KEY_MASQUE_PRIVKEY, profile.privKey)
+            putString(KEY_MASQUE_PUBKEY, profile.peerPub)
+            putString(KEY_MASQUE_IPV4, profile.clientIpv4)
+            putString(KEY_MASQUE_IPV6, profile.clientIpv6)
+            putString(KEY_MASQUE_SNI, profile.sni)
+            putString(KEY_MASQUE_ENDPOINT, profile.endpoint)
+            if (profile.rawYaml.isNotBlank()) {
+                putString(KEY_MASQUE_RAW_YAML, profile.rawYaml)
+            }
+        }
+    }
+
     fun getMasqueConfig(context: Context): WarpMasqueClient.MasqueConfig {
-        val raw = _currentConfig.value
-        val privKey = Regex("""(?m)^\s*PrivateKey\s*=\s*(.+)$""").find(raw)?.groupValues?.get(1)?.trim()
-            ?: "KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8="
-        val pubKey = Regex("""(?m)^\s*PublicKey\s*=\s*(.+)$""").find(raw)?.groupValues?.get(1)?.trim()
-            ?: "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val privKey = prefs.getString(KEY_MASQUE_PRIVKEY, null)?.ifBlank { null }
+            ?: FALLBACK_MASQUE_PRIVKEY
+        val pubKey = prefs.getString(KEY_MASQUE_PUBKEY, null)?.ifBlank { null }
+            ?: FALLBACK_MASQUE_PUBKEY
+        val ipv4 = prefs.getString(KEY_MASQUE_IPV4, null)?.ifBlank { null }
+            ?: FALLBACK_MASQUE_IPV4
+        val ipv6 = prefs.getString(KEY_MASQUE_IPV6, null)?.ifBlank { null }
+            ?: FALLBACK_MASQUE_IPV6
+        val sni = prefs.getString(KEY_MASQUE_SNI, null)?.ifBlank { null }
+            ?: FALLBACK_MASQUE_SNI
+        val rawYaml = prefs.getString(KEY_MASQUE_RAW_YAML, "").orEmpty()
 
         val endpoint = getMasqueEndpoint(context)
         val parts = endpoint.split(":")
-        val host = parts[0].ifBlank { "162.159.192.1" }
+        val host = parts[0].ifBlank { "162.159.198.2" }
         val port = if (parts.size > 1) {
-            val p = parts[1].toIntOrNull() ?: 500
-            if (p == 443) 500 else p
-        } else 500
+            parts[1].toIntOrNull() ?: 443
+        } else 443
 
         return WarpMasqueClient.MasqueConfig(
             privateKey = privKey,
             peerPublicKey = pubKey,
+            clientIpv4 = ipv4,
+            clientIpv6 = ipv6,
             endpointHost = host,
-            endpointPort = port
+            endpointPort = port,
+            sni = sni,
+            rawYaml = rawYaml
         )
     }
 

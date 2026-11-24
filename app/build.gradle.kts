@@ -93,6 +93,7 @@ android {
 
 dependencies {
     implementation(files("libs/libv2ray.aar"))
+    implementation(files("libs/hiddify-core.aar"))
     implementation("androidx.fragment:fragment-ktx:1.8.2")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")

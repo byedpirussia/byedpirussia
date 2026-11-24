@@ -116,11 +116,10 @@ Endpoint = $endpoint
 
         fun toMasqueConfig(): WarpMasqueClient.MasqueConfig {
             val parts = endpoint.split(":")
-            val host = parts[0].ifBlank { "162.159.192.1" }
+            val host = parts[0].ifBlank { "162.159.198.2" }
             val port = if (parts.size > 1) {
-                val p = parts[1].toIntOrNull() ?: 500
-                if (p == 443) 500 else p
-            } else 500
+                parts[1].toIntOrNull() ?: 443
+            } else 443
             return WarpMasqueClient.MasqueConfig(
                 privateKey = privKey,
                 peerPublicKey = peerPub,
@@ -129,7 +128,8 @@ Endpoint = $endpoint
                 endpointHost = host,
                 endpointPort = port,
                 sni = sni,
-                path = path
+                path = path,
+                rawYaml = rawYaml
             )
         }
     }
@@ -277,9 +277,9 @@ Endpoint = $endpoint
                     val ipv4 = Regex("""(?m)^\s*ip:\s*([0-9.]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "172.16.0.2"
                     val ipv6 = Regex("""(?m)^\s*ipv6:\s*([0-9a-fA-F:]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "2606:4700:110:8417:b8eb:691f:f8f4:816e"
 
-                    val server = Regex("""(?m)^\s*server:\s*([0-9.]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "162.159.192.1"
-                    val port = Regex("""(?m)^\s*port:\s*([0-9]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim()?.toIntOrNull() ?: 500
-                    val sni = Regex("""(?m)^\s*sni:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "engage.cloudflareclient.com"
+                    val server = Regex("""(?m)^\s*server:\s*([0-9.]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "162.159.198.2"
+                    val port = Regex("""(?m)^\s*port:\s*([0-9]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim()?.toIntOrNull() ?: 443
+                    val sni = Regex("""(?m)^\s*sni:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "4pda.to"
                     val network = Regex("""(?m)^\s*network:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "h2"
 
                     val cleanYaml = importText
@@ -318,13 +318,13 @@ Endpoint = $endpoint
 
         // Резервный профиль с рабочим конфигом
         val fallback = WarpMasqueProfile(
-            privKey = "KZhXqHc7P3P1ahO+iLjv2ZjEu4eUdRPU942JuaEB4X8=",
-            peerPub = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
+            privKey = "MHcCAQEEINapwsyWJkQhfBxP/uy7gdKCuuYov0LnnLD8VT8qrTa4oAoGCCqGSM49AwEHoUQDQgAEL+4x2m4bQU/OXbynrQMkcgZrZotDlWP99EKFtd0itGTcXwO/0DGlNemoE95ngbcFUHf9VqODh83m1urjO90lP2Q==",
+            peerPub = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w==",
             clientIpv4 = "172.16.0.2",
-            clientIpv6 = "2606:4700:110:8655:e6ef:f746:2058:dac0",
-            endpoint = "162.159.192.1:500",
-            sni = "engage.cloudflareclient.com",
-            network = "h3",
+            clientIpv6 = "2606:4700:110:8531:949:ea2f:a22b:5b02",
+            endpoint = "162.159.198.2:443",
+            sni = "4pda.to",
+            network = "h2",
             workingAwgConfig = awgConfigText
         )
         Result.success(fallback)
