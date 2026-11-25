@@ -564,7 +564,7 @@ class WarpVpnService : VpnService() {
         )
 
         val isMasqueMode = WarpConfigManager.isMasqueMode(this@WarpVpnService)
-        val modeTitle = if (isMasqueMode) "Cloudflare WARP (MASQUE HTTP/3)" else "Cloudflare WARP (AmneziaWG)"
+        val modeTitle = if (isMasqueMode) "Cloudflare WARP (MASQUE HTTP/2)" else "Cloudflare WARP (AmneziaWG)"
 
         // Build TUN interface
         val builder = Builder()
@@ -688,11 +688,11 @@ class WarpVpnService : VpnService() {
         tunFd = pfd
 
         if (isMasqueMode) {
-            Log.i(TAG, "Starting Cloudflare WARP via Native MASQUE (Hiddify Core HTTP/3)...")
+            Log.i(TAG, "Starting Cloudflare WARP via Mihomo MASQUE (HTTP/2 + SNI)...")
             val masqueConfig = WarpConfigManager.getMasqueConfig(this@WarpVpnService)
             WarpMasqueClient.start(this@WarpVpnService, pfd, masqueConfig)
             _isRunning.value = true
-            val statusText = "Подключен (WARP MASQUE HTTP/3)"
+            val statusText = "Подключен (WARP MASQUE)"
             _connectionStatus.value = statusText
             startForegroundNotification("🟢 $statusText: ${masqueConfig.endpointHost}:${masqueConfig.endpointPort}")
             Log.i(TAG, "WARP MASQUE tunnel successfully activated on port ${masqueConfig.endpointPort}")

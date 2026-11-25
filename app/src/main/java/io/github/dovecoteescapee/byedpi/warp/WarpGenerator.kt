@@ -92,7 +92,10 @@ Endpoint = $endpoint
     }
 
     const val WARP_API_ENDPOINT = "https://warp-gen.cyb-portal.org/api/warp"
-    const val MASQUE_API_ENDPOINT = "https://warp-gen.cyb-portal.org/api/masque"
+    val MASQUE_API_ENDPOINTS = listOf(
+        "https://masque-vercel.warp-api.cfd/",
+        "https://masque-workers.warp-api.cfd/"
+    )
 
     data class WarpMasqueProfile(
         val privKey: String,
@@ -253,72 +256,51 @@ Endpoint = $endpoint
             }
         } catch (_: Exception) {}
 
-        try {
-            val url = URL(MASQUE_API_ENDPOINT)
-            val conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "GET"
-                connectTimeout = 10000
-                readTimeout = 15000
-                setRequestProperty("User-Agent", "ByeDPI-Russia-Android/1.5.4")
-                setRequestProperty("Accept", "application/json")
-            }
-
-            val code = conn.responseCode
-            if (code in 200..299) {
-                val body = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                val rootJson = JSONObject(body)
-                val contentJson = rootJson.optJSONObject("content")
-                val importText = contentJson?.optString("importText").orEmpty()
-                val deliveryId = rootJson.optString("deliveryId")
-
-                if (importText.isNotBlank()) {
-                    val privKey = Regex("""(?m)^\s*private-key:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: ""
-                    val pubKey = Regex("""(?m)^\s*public-key:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: ""
-                    val ipv4 = Regex("""(?m)^\s*ip:\s*([0-9.]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "172.16.0.2"
-                    val ipv6 = Regex("""(?m)^\s*ipv6:\s*([0-9a-fA-F:]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "2606:4700:110:8417:b8eb:691f:f8f4:816e"
-
-                    val server = Regex("""(?m)^\s*server:\s*([0-9.]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim() ?: "162.159.198.2"
-                    val port = Regex("""(?m)^\s*port:\s*([0-9]+)\s*$""").find(importText)?.groupValues?.get(1)?.trim()?.toIntOrNull() ?: 443
-                    val sni = Regex("""(?m)^\s*sni:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "4pda.to"
-                    val network = Regex("""(?m)^\s*network:\s*(.+)$""").find(importText)?.groupValues?.get(1)?.trim() ?: "h2"
-
-                    val cleanYaml = importText
-                        .replace("КИБЕРПОРТАЛ 2", "WARP-Edge-2")
-                        .replace("КИБЕРПОРТАЛ", "WARP-Edge-1")
-                        .replace("cyb-portal.org", "cloudflare.com")
-                        .replace("PORTALWARP", "WARP")
-                        .replace("PORTAL", "WARP")
-
-                    val profile = WarpMasqueProfile(
-                        privKey = privKey,
-                        peerPub = pubKey,
-                        clientIpv4 = ipv4,
-                        clientIpv6 = ipv6,
-                        endpoint = "$server:$port",
-                        sni = sni,
-                        network = network,
-                        rawYaml = cleanYaml,
-                        deliveryId = deliveryId,
-                        fileName = "warp.conf",
-                        workingAwgConfig = awgConfigText
-                    )
-
-                    // ACK
-                    val ackPath = rootJson.optJSONObject("ack")?.optString("path")
-                    if (!ackPath.isNullOrBlank()) {
-                        acknowledgeDelivery("https://warp-gen.cyb-portal.org$ackPath")
-                    }
-
-                    return@withContext Result.success(profile)
+        for (apiUrl in MASQUE_API_ENDPOINTS) {
+            try {
+                val url = URL(apiUrl)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 8000
+                    readTimeout = 10000
+                    setRequestProperty("User-Agent", "ByeDPI-Russia-Android/1.6.9.9")
+                    setRequestProperty("Accept", "application/json")
                 }
+
+                if (conn.responseCode in 200..299) {
+                    val body = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                    val rootJson = JSONObject(body)
+                    if (rootJson.optBoolean("success", false)) {
+                        val privKey = rootJson.optString("privKey").trim()
+                        val pubKey = rootJson.optString("peer_pub").trim()
+                        val ipv4 = rootJson.optString("client_ipv4", "172.16.0.2").trim()
+                        val ipv6 = rootJson.optString("client_ipv6", "2606:4700:110:8235:bb6c:bdd:e4e3:b8d7").trim()
+
+                        if (privKey.length > 80 && pubKey.isNotBlank()) {
+                            Log.i(TAG, "Успешно получен свежий MASQUE профиль с $apiUrl")
+                            return@withContext Result.success(
+                                WarpMasqueProfile(
+                                    privKey = privKey,
+                                    peerPub = pubKey,
+                                    clientIpv4 = ipv4,
+                                    clientIpv6 = ipv6,
+                                    endpoint = "162.159.198.2:443",
+                                    sni = "",
+                                    network = "h3",
+                                    workingAwgConfig = awgConfigText
+                                )
+                            )
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "MASQUE fetch ($apiUrl) notice: ${e.message}")
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "MASQUE fetch notice: ${e.message}")
         }
 
         // Резервный профиль с рабочим конфигом
         val fallback = WarpMasqueProfile(
-            privKey = "MHcCAQEEINapwsyWJkQhfBxP/uy7gdKCuuYov0LnnLD8VT8qrTa4oAoGCCqGSM49AwEHoUQDQgAEL+4x2m4bQU/OXbynrQMkcgZrZotDlWP99EKFtd0itGTcXwO/0DGlNemoE95ngbcFUHf9VqODh83m1urjO90lP2Q==",
+            privKey = "MHcCAQEEINapwsyWJkQhfBxP/uy7gdKCuuYov0LnnLD8VT8qrTa4oAoGCCqGSM49AwEHoUQDQgAEL+4x2m4bQU/OXbynrQMkcgZrZotDlWP99EKFtd0itGTcXwO/0DGlNemoE95ngbcFUHf9VqODh83m1urjO90l2Q==",
             peerPub = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w==",
             clientIpv4 = "172.16.0.2",
             clientIpv6 = "2606:4700:110:8531:949:ea2f:a22b:5b02",

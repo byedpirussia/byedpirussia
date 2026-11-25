@@ -59,7 +59,7 @@ PersistentKeepalive = 25"""
     private const val KEY_MASQUE_RAW_YAML = "pref_masque_raw_yaml"
 
     // Резервные ECDSA P-256 ключи для нативного Cloudflare MASQUE (RFC 9484)
-    private const val FALLBACK_MASQUE_PRIVKEY = "MHcCAQEEINapwsyWJkQhfBxP/uy7gdKCuuYov0LnnLD8VT8qrTa4oAoGCCqGSM49AwEHoUQDQgAEL+4x2m4bQU/OXbynrQMkcgZrZotDlWP99EKFtd0itGTcXwO/0DGlNemoE95ngbcFUHf9VqODh83m1urjO90lP2Q=="
+    private const val FALLBACK_MASQUE_PRIVKEY = "MHcCAQEEINapwsyWJkQhfBxP/uy7gdKCuuYov0LnnLD8VT8qrTa4oAoGCCqGSM49AwEHoUQDQgAEL+4x2m4bQU/OXbynrQMkcgZrZotDlWP99EKFtd0itGTcXwO/0DGlNemoE95ngbcFUHf9VqODh83m1urjO90l2Q=="
     private const val FALLBACK_MASQUE_PUBKEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w=="
     private const val FALLBACK_MASQUE_IPV4 = "172.16.0.2"
     private const val FALLBACK_MASQUE_IPV6 = "2606:4700:110:8531:949:ea2f:a22b:5b02"
@@ -136,10 +136,10 @@ PersistentKeepalive = 25"""
 
     fun getMasqueConfig(context: Context): WarpMasqueClient.MasqueConfig {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val privKey = prefs.getString(KEY_MASQUE_PRIVKEY, null)?.ifBlank { null }
-            ?: FALLBACK_MASQUE_PRIVKEY
-        val pubKey = prefs.getString(KEY_MASQUE_PUBKEY, null)?.ifBlank { null }
-            ?: FALLBACK_MASQUE_PUBKEY
+        val savedPriv = prefs.getString(KEY_MASQUE_PRIVKEY, null)?.trim().orEmpty()
+        val privKey = if (savedPriv.length > 80) savedPriv else ""
+        val savedPub = prefs.getString(KEY_MASQUE_PUBKEY, null)?.trim().orEmpty()
+        val pubKey = if (savedPub.length > 80) savedPub else ""
         val ipv4 = prefs.getString(KEY_MASQUE_IPV4, null)?.ifBlank { null }
             ?: FALLBACK_MASQUE_IPV4
         val ipv6 = prefs.getString(KEY_MASQUE_IPV6, null)?.ifBlank { null }
@@ -151,9 +151,8 @@ PersistentKeepalive = 25"""
         val endpoint = getMasqueEndpoint(context)
         val parts = endpoint.split(":")
         val host = parts[0].ifBlank { "162.159.198.2" }
-        val port = if (parts.size > 1) {
-            parts[1].toIntOrNull() ?: 443
-        } else 443
+        val parsedPort = if (parts.size > 1) parts[1].toIntOrNull() ?: 443 else 443
+        val port = if (parsedPort != 443) 443 else parsedPort
 
         return WarpMasqueClient.MasqueConfig(
             privateKey = privKey,

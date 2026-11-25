@@ -868,6 +868,47 @@ class AdvancedSettingsActivity : BaseActivity() {
             }
         }
 
+        binding.btnWarpMasqueGenerate.setOnClickListener {
+            binding.btnWarpMasqueGenerate.isEnabled = false
+            binding.btnWarpMasqueGenerate.text = "Генерация MASQUE..."
+            Toast.makeText(this, "Генерация нового профиля MASQUE...", Toast.LENGTH_SHORT).show()
+
+            lifecycleScope.launch {
+                val result = WarpGenerator.generateMasqueConfig()
+                binding.btnWarpMasqueGenerate.isEnabled = true
+                binding.btnWarpMasqueGenerate.text = "⚡ Сгенерировать WARP MASQUE"
+
+                result.onSuccess { profile ->
+                    WarpConfigManager.saveMasqueProfile(this@AdvancedSettingsActivity, profile)
+                    Toast.makeText(this@AdvancedSettingsActivity, "Профиль MASQUE сохранён!", Toast.LENGTH_SHORT).show()
+
+                    val wasWarpRunning = WarpVpnService.isRunning.value
+                    MaterialAlertDialogBuilder(this@AdvancedSettingsActivity)
+                        .setTitle("Новый WARP MASQUE сгенерирован!")
+                        .setMessage(
+                            "Сервер: ${profile.endpoint}\n" +
+                            "SNI: ${profile.sni}\n" +
+                            "IPv4: ${profile.clientIpv4}\n\n" +
+                            "ECDSA-ключи MASQUE сохранены и готовы к запуску!"
+                        )
+                        .setPositiveButton(if (wasWarpRunning) "Переподключить" else "Готово") { _, _ ->
+                            if (wasWarpRunning) {
+                                WarpVpnService.stop(this@AdvancedSettingsActivity)
+                                WarpVpnService.start(this@AdvancedSettingsActivity)
+                            }
+                        }
+                        .setNegativeButton("ОК", null)
+                        .show()
+                }.onFailure { err ->
+                    Toast.makeText(
+                        this@AdvancedSettingsActivity,
+                        "Ошибка генерации MASQUE: ${err.message ?: "таймаут"}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
         binding.btnWarpImport.setOnClickListener {
             showWarpImportDialog()
         }

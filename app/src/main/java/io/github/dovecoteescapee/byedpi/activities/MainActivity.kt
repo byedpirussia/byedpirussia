@@ -84,10 +84,12 @@ class MainActivity : BaseActivity() {
             }
         }
 
+    private var warpConnectJob: kotlinx.coroutines.Job? = null
+
     private val warpVpnRegister =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == RESULT_OK) {
-                WarpVpnService.start(this)
+                startWarpWithUiFeedback()
             } else {
                 Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_SHORT).show()
             }
@@ -302,7 +304,95 @@ class MainActivity : BaseActivity() {
         if (intentPrepare != null) {
             warpVpnRegister.launch(intentPrepare)
         } else {
-            WarpVpnService.start(this)
+            startWarpWithUiFeedback()
+        }
+    }
+
+    private fun startWarpWithUiFeedback() {
+        warpConnectJob?.cancel()
+        WarpVpnService.start(this)
+
+        // Пульсирующая анимация иконки WARP на время подключения
+        val pulseX = android.animation.ObjectAnimator.ofFloat(binding.m3IconBoxWarp, "scaleX", 1f, 1.12f, 1f).apply {
+            duration = 900
+            repeatCount = android.animation.ValueAnimator.INFINITE
+        }
+        val pulseY = android.animation.ObjectAnimator.ofFloat(binding.m3IconBoxWarp, "scaleY", 1f, 1.12f, 1f).apply {
+            duration = 900
+            repeatCount = android.animation.ValueAnimator.INFINITE
+        }
+        val pulseAlpha = android.animation.ObjectAnimator.ofFloat(binding.m3IconWarp, "alpha", 1f, 0.35f, 1f).apply {
+            duration = 900
+            repeatCount = android.animation.ValueAnimator.INFINITE
+        }
+        val animSet = android.animation.AnimatorSet().apply {
+            playTogether(pulseX, pulseY, pulseAlpha)
+            start()
+        }
+
+        warpConnectJob = lifecycleScope.launch {
+            val stages = listOf(
+                "⚡ Инициализация ядра...",
+                "⚡ Рукопожатие HTTP/3...",
+                "⚡ Настройка туннеля...",
+                "⚡ Проверка маршрута..."
+            )
+            val startTime = System.currentTimeMillis()
+            var tick = 0
+            try {
+                var connected = false
+                for (attempt in 1..10) {
+                    if (attempt > 1) {
+                        WarpVpnService.stop(this@MainActivity)
+                        delay(500L)
+                        WarpVpnService.start(this@MainActivity)
+                    }
+                    val startTime = System.currentTimeMillis()
+                    while (System.currentTimeMillis() - startTime < 10_000L) {
+                        val stageText = stages[(tick / 3) % stages.size]
+                        binding.m3SubWarp.text = if (attempt > 1) "$stageText ($attempt/10)" else stageText
+                        tick++
+                        if (WarpVpnService.isRunning.value) {
+                            val pingOk = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                try {
+                                    java.net.Socket().use { s ->
+                                        s.connect(java.net.InetSocketAddress("8.8.8.8", 53), 2000)
+                                        true
+                                    }
+                                } catch (_: Exception) {
+                                    false
+                                }
+                            }
+                            if (pingOk) {
+                                connected = true
+                                break
+                            }
+                        }
+                        delay(350L)
+                    }
+                    if (connected) {
+                        updateM3State()
+                        return@launch
+                    }
+                }
+                if (!connected && !isFinishing && !isDestroyed) {
+                    WarpVpnService.stop(this@MainActivity)
+                    updateM3State()
+                    com.google.android.material.dialog.MaterialAlertDialogBuilder(this@MainActivity)
+                        .setTitle("Не удалось подключиться")
+                        .setMessage("Не удалось установить соединение за 10 попыток (8.8.8.8 недоступен). Подробности ошибки записаны в системный лог (adb logcat).")
+                        .setPositiveButton("Попробовать ещё раз") { _, _ ->
+                            startWarpVpn()
+                        }
+                        .setNegativeButton("Не сейчас", null)
+                        .show()
+                }
+            } finally {
+                animSet.cancel()
+                binding.m3IconBoxWarp.scaleX = 1f
+                binding.m3IconBoxWarp.scaleY = 1f
+                binding.m3IconWarp.alpha = 1f
+            }
         }
     }
 
@@ -1002,6 +1092,8 @@ class MainActivity : BaseActivity() {
         binding.m3SwitchWarp.setOnClickListener { toggleWarp() }
         binding.m3CardWarp.setOnClickListener { toggleWarp() }
 
+        binding.m3BtnWarpModeMasque.alpha = 0.55f
+
         val isMasqueInitial = WarpConfigManager.isMasqueMode(this)
         if (isMasqueInitial) {
             binding.m3WarpProtocolGroup.check(R.id.m3_btn_warp_mode_masque)
@@ -1012,6 +1104,27 @@ class MainActivity : BaseActivity() {
         binding.m3WarpProtocolGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
             val newIsMasque = (checkedId == R.id.m3_btn_warp_mode_masque)
+            if (newIsMasque && !WarpConfigManager.isMasqueMode(this)) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("MASQUE (Beta)")
+                    .setMessage("Режим MASQUE находится в бета-тестировании и может не работать у некоторых провайдеров. Рекомендуется использовать AmneziaWG 3.1.")
+                    .setPositiveButton("Включить (Beta)") { _, _ ->
+                        WarpConfigManager.setMasqueMode(this, true)
+                        Toast.makeText(this, R.string.m3_warp_proto_switched_masque, Toast.LENGTH_SHORT).show()
+                        if (WarpVpnService.isRunning.value) {
+                            WarpVpnService.stop(this)
+                            binding.root.postDelayed({ startWarpWithUiFeedback() }, 400)
+                        }
+                    }
+                    .setNegativeButton("Оставить AmneziaWG 3.1") { _, _ ->
+                        binding.m3WarpProtocolGroup.check(R.id.m3_btn_warp_mode_awg)
+                    }
+                    .setOnCancelListener {
+                        binding.m3WarpProtocolGroup.check(R.id.m3_btn_warp_mode_awg)
+                    }
+                    .show()
+                return@addOnButtonCheckedListener
+            }
             if (WarpConfigManager.isMasqueMode(this) != newIsMasque) {
                 WarpConfigManager.setMasqueMode(this, newIsMasque)
                 val msgRes = if (newIsMasque) R.string.m3_warp_proto_switched_masque else R.string.m3_warp_proto_switched_awg
@@ -1324,7 +1437,7 @@ class MainActivity : BaseActivity() {
         if (binding.m3WarpProtocolGroup.checkedButtonId != expectedButtonId) {
             binding.m3WarpProtocolGroup.check(expectedButtonId)
         }
-        val protoTag = if (isMasque) "WARP Core" else "AmneziaWG 3.1"
+        val protoTag = if (isMasque) "MASQUE" else "AmneziaWG 3.1"
         if (isWarpRunning) {
             binding.m3IconBoxWarp.setCardBackgroundColor(colorPrimaryContainer)
             binding.m3IconWarp.imageTintList = ColorStateList.valueOf(colorPrimary)
