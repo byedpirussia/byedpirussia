@@ -503,6 +503,21 @@
                         android:textAllCaps="false"
                         app:cornerRadius="14dp" />
 
+                    <!-- Кнопка 1.2: Локальный генератор WARP (без внешних API) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_warp_generate_local"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:paddingVertical="10dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Локальный генератор WARP (без внешних API)"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        app:cornerRadius="14dp" />
+
                     <!-- Кнопка 1.5: Генерация WARP MASQUE -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_warp_masque_generate"

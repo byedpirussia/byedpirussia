@@ -868,6 +868,42 @@ class AdvancedSettingsActivity : BaseActivity() {
             }
         }
 
+        binding.btnWarpGenerateLocal.setOnClickListener {
+            binding.btnWarpGenerateLocal.isEnabled = false
+            binding.btnWarpGenerateLocal.text = "Генерация на устройстве..."
+            Toast.makeText(this, "Генерация ключей и регистрация в Cloudflare...", Toast.LENGTH_SHORT).show()
+
+            lifecycleScope.launch {
+                val result = WarpGenerator.generateLocalAwgConfig(socksPort = 1080)
+                binding.btnWarpGenerateLocal.isEnabled = true
+                binding.btnWarpGenerateLocal.text = "Локальный генератор WARP (без внешних API)"
+
+                result.onSuccess { newConf ->
+                    WarpConfigManager.saveConfig(this@AdvancedSettingsActivity, newConf)
+                    Toast.makeText(this@AdvancedSettingsActivity, R.string.warp_generated_success, Toast.LENGTH_SHORT).show()
+
+                    val wasWarpRunning = WarpVpnService.isRunning.value
+                    MaterialAlertDialogBuilder(this@AdvancedSettingsActivity)
+                        .setTitle("Локальный WARP сгенерирован!")
+                        .setMessage("Ключи созданы на устройстве и зарегистрированы в Cloudflare.\nКонфиг сохранён и готов к запуску!")
+                        .setPositiveButton(if (wasWarpRunning) "Переподключить" else "Готово") { _, _ ->
+                            if (wasWarpRunning) {
+                                WarpVpnService.stop(this@AdvancedSettingsActivity)
+                                WarpVpnService.start(this@AdvancedSettingsActivity)
+                            }
+                        }
+                        .setNegativeButton("ОК", null)
+                        .show()
+                }.onFailure { err ->
+                    Toast.makeText(
+                        this@AdvancedSettingsActivity,
+                        "Ошибка локальной генерации: ${err.message ?: "нет связи с Cloudflare"}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
         binding.btnWarpMasqueGenerate.setOnClickListener {
             binding.btnWarpMasqueGenerate.isEnabled = false
             binding.btnWarpMasqueGenerate.text = "Генерация MASQUE..."

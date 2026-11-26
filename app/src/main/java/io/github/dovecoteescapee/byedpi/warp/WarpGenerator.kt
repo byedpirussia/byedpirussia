@@ -327,4 +327,164 @@ Endpoint = $endpoint
             }
         }
     }
+
+    /**
+     * Локальный генератор AmneziaWG 3.1 конфига без внешних сторонних API.
+     * Генерирует Curve25519 ключи на устройстве и регистрирует их напрямую в Cloudflare API.
+     * При неудаче прямого соединения автоматически пробует через локальный SOCKS5-прокси ByeDPI.
+     */
+    suspend fun generateLocalAwgConfig(socksPort: Int = 1080): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val (privKey, pubKey) = generateCurve25519KeyPair()
+            val payload = JSONObject().apply {
+                put("key", pubKey)
+                put("install_id", "")
+                put("fcm_token", "")
+                put("tos", java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).apply {
+                    timeZone = java.util.TimeZone.getTimeZone("UTC")
+                }.format(java.util.Date()))
+                put("model", "Android")
+                put("serial_number", "")
+                put("locale", "en_US")
+            }.toString()
+
+            val regUrl = URL("https://api.cloudflareclient.com/v0a2158/reg")
+
+            fun tryRegister(proxy: java.net.Proxy?): String? {
+                val conn = (if (proxy != null) regUrl.openConnection(proxy) else regUrl.openConnection()) as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.connectTimeout = 8000
+                conn.readTimeout = 10000
+                conn.doOutput = true
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+                conn.setRequestProperty("User-Agent", "okhttp/3.12.1")
+                conn.setRequestProperty("CF-Client-Version", "a-6.11-2223")
+                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
+                if (conn.responseCode in 200..299) {
+                    return conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                }
+                return null
+            }
+
+            var responseBody = try {
+                tryRegister(null)
+            } catch (e: Exception) {
+                Log.w(TAG, "Direct Cloudflare reg failed: ${e.message}, trying via ByeDPI SOCKS5...")
+                null
+            }
+
+            if (responseBody == null) {
+                val socksProxy = java.net.Proxy(
+                    java.net.Proxy.Type.SOCKS,
+                    java.net.InetSocketAddress("127.0.0.1", socksPort)
+                )
+                responseBody = tryRegister(socksProxy)
+            }
+
+            if (responseBody.isNullOrBlank()) {
+                return@withContext Result.failure(Exception("Не удалось зарегистрировать ключ в Cloudflare (ни напрямую, ни через ByeDPI)"))
+            }
+
+            val json = JSONObject(responseBody)
+            val configObj = json.getJSONObject("config")
+            val ifaceObj = configObj.getJSONObject("interface")
+            val addresses = ifaceObj.getJSONObject("addresses")
+            val v4 = addresses.optString("v4", "172.16.0.2")
+            val v6 = addresses.optString("v6", "2606:4700:110:8000::2")
+            val peerObj = configObj.getJSONArray("peers").getJSONObject(0)
+            val peerPub = peerObj.optString("public_key", "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=")
+            val endpoint = WarpEndpointOptimizer.CANDIDATE_ENDPOINTS.firstOrNull() ?: "162.159.192.1:500"
+
+            val awgConfig = """
+                [Interface]
+                PrivateKey = $privKey
+                Address = $v4/32, $v6/128
+                DNS = 1.1.1.1, 1.0.0.1
+                MTU = 1280
+                Jc = 4
+                Jmin = 40
+                Jmax = 70
+                S1 = 0
+                S2 = 0
+                H1 = 1
+                H2 = 2
+                H3 = 3
+                H4 = 4
+
+                [Peer]
+                PublicKey = $peerPub
+                AllowedIPs = 0.0.0.0/0, ::/0
+                Endpoint = $endpoint
+                PersistentKeepalive = 25
+            """.trimIndent()
+
+            Result.success(awgConfig)
+        } catch (e: Exception) {
+            Log.e(TAG, "Local AWG generation failed", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Генерация пары ключей Curve25519 (X25519, RFC 7748) локально на устройстве.
+     */
+    private fun generateCurve25519KeyPair(): Pair<String, String> {
+        val priv = ByteArray(32)
+        java.security.SecureRandom().nextBytes(priv)
+        priv[0] = (priv[0].toInt() and 248).toByte()
+        priv[31] = (priv[31].toInt() and 127).toByte()
+        priv[31] = (priv[31].toInt() or 64).toByte()
+
+        val pub = x25519BasePoint(priv)
+        val privB64 = android.util.Base64.encodeToString(priv, android.util.Base64.NO_WRAP)
+        val pubB64 = android.util.Base64.encodeToString(pub, android.util.Base64.NO_WRAP)
+        return privB64 to pubB64
+    }
+
+    private fun x25519BasePoint(scalar: ByteArray): ByteArray {
+        val p = java.math.BigInteger.ONE.shiftLeft(255).subtract(java.math.BigInteger.valueOf(19))
+        val a24 = java.math.BigInteger.valueOf(121665)
+
+        var x1 = java.math.BigInteger.valueOf(9)
+        var x2 = java.math.BigInteger.ONE
+        var z2 = java.math.BigInteger.ZERO
+        var x3 = x1
+        var z3 = java.math.BigInteger.ONE
+        var swap = 0
+
+        for (t in 254 downTo 0) {
+            val kT = ((scalar[t / 8].toInt() shr (t and 7)) and 1)
+            swap = swap xor kT
+            if (swap != 0) {
+                val tx = x2; x2 = x3; x3 = tx
+                val tz = z2; z2 = z3; z3 = tz
+            }
+            swap = kT
+
+            val a = x2.add(z2).mod(p)
+            val aa = a.multiply(a).mod(p)
+            val b = x2.subtract(z2).mod(p)
+            val bb = b.multiply(b).mod(p)
+            val e = aa.subtract(bb).mod(p)
+            val c = x3.add(z3).mod(p)
+            val d = x3.subtract(z3).mod(p)
+            val da = d.multiply(a).mod(p)
+            val cb = c.multiply(b).mod(p)
+            x3 = da.add(cb).modPow(java.math.BigInteger.valueOf(2), p)
+            z3 = x1.multiply(da.subtract(cb).modPow(java.math.BigInteger.valueOf(2), p)).mod(p)
+            x2 = aa.multiply(bb).mod(p)
+            z2 = e.multiply(aa.add(a24.multiply(e))).mod(p)
+        }
+        if (swap != 0) {
+            val tx = x2; x2 = x3; x3 = tx
+            val tz = z2; z2 = z3; z3 = tz
+        }
+        val res = x2.multiply(z2.modInverse(p)).mod(p)
+        val out = ByteArray(32)
+        val bytes = res.toByteArray()
+        for (i in 0 until minOf(32, bytes.size)) {
+            out[i] = bytes[bytes.size - 1 - i]
+        }
+        return out
+    }
 }

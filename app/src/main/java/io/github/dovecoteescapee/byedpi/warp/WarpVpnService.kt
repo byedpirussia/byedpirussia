@@ -147,6 +147,29 @@ class WarpVpnService : VpnService() {
                     }
                 } catch (_: Exception) {}
             }
+            // 2. HTTP generate_204 check (like v1.6.4)
+            val httpUrls = listOf(
+                "http://cp.cloudflare.com/generate_204",
+                "http://connectivitycheck.gstatic.com/generate_204"
+            )
+            for (urlStr in httpUrls) {
+                try {
+                    val urlStart = System.currentTimeMillis()
+                    val url = java.net.URL(urlStr)
+                    val conn = (url.openConnection() as java.net.HttpURLConnection).apply {
+                        connectTimeout = timeoutMs
+                        readTimeout = timeoutMs
+                        instanceFollowRedirects = false
+                        requestMethod = "GET"
+                        useCaches = false
+                    }
+                    val code = conn.responseCode
+                    conn.disconnect()
+                    if (code in 200..399) {
+                        return@withContext (System.currentTimeMillis() - urlStart)
+                    }
+                } catch (_: Exception) {}
+            }
             -1L
         }
 
