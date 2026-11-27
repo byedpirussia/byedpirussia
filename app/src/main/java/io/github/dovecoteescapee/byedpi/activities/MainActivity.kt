@@ -1387,7 +1387,7 @@ class MainActivity : BaseActivity() {
         val isTgRunning = TgWsProxyService.isRunning.value
         val isAnyRunning = isByeDpiRunning || isWarpRunning || isVlessRunning || isTgRunning
 
-        val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
+        val colorPrimary = io.github.dovecoteescapee.byedpi.utility.AppearanceManager.getAccentColor(this)
         val colorPrimaryContainer = getThemeColor(com.google.android.material.R.attr.colorPrimaryContainer)
         val colorOnPrimaryContainer = getThemeColor(com.google.android.material.R.attr.colorOnPrimaryContainer)
         val colorSurface = getThemeColor(com.google.android.material.R.attr.colorSurface)

@@ -248,7 +248,9 @@ class UnifiedSettingsActivity : BaseActivity() {
     }
 
     private fun showAwgToolsDialog() {
+        val failoverState = if (WarpConfigManager.isAutoFailoverEnabled(this)) "Вкл" else "Выкл"
         val items = arrayOf(
+            "Автосмена узлов: $failoverState (нажмите, чтобы переключить)",
             "Подобрать лучший узел WARP",
             "Сгенерировать WARP MASQUE",
             "Открыть конфиг в AmneziaWG",
@@ -260,6 +262,11 @@ class UnifiedSettingsActivity : BaseActivity() {
             .setItems(items) { _, which ->
                 when (which) {
                     0 -> {
+                        val next = !WarpConfigManager.isAutoFailoverEnabled(this)
+                        WarpConfigManager.setAutoFailoverEnabled(this, next)
+                        Toast.makeText(this, if (next) "Автосмена узлов включена" else "Автосмена узлов отключена", Toast.LENGTH_SHORT).show()
+                    }
+                    1 -> {
                         Toast.makeText(this, "Подбор лучшего узла...", Toast.LENGTH_SHORT).show()
                         lifecycleScope.launch {
                             val best = io.github.dovecoteescapee.byedpi.warp.WarpEndpointOptimizer.findBestEndpoint(2000)
@@ -271,7 +278,7 @@ class UnifiedSettingsActivity : BaseActivity() {
                             Toast.makeText(this@UnifiedSettingsActivity, "Выбран узел: ${best.first} (${best.second}ms)", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    1 -> {
+                    2 -> {
                         Toast.makeText(this, "Генерация MASQUE...", Toast.LENGTH_SHORT).show()
                         lifecycleScope.launch {
                             val res = WarpGenerator.generateMasqueConfig()
@@ -283,14 +290,14 @@ class UnifiedSettingsActivity : BaseActivity() {
                             }
                         }
                     }
-                    2 -> {
+                    3 -> {
                         val sendIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, WarpConfigManager.currentConfig.value)
                         }
                         startActivity(Intent.createChooser(sendIntent, "Открыть конфиг WARP"))
                     }
-                    3 -> {
+                    4 -> {
                         val et = android.widget.EditText(this).apply {
                             hint = "Вставьте текст конфига [Interface]..."
                         }
@@ -309,7 +316,7 @@ class UnifiedSettingsActivity : BaseActivity() {
                             .setNegativeButton("Отмена", null)
                             .show()
                     }
-                    4 -> {
+                    5 -> {
                         val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("WARP Config", WarpConfigManager.currentConfig.value))
                         Toast.makeText(this, "Конфиг WARP скопирован в буфер", Toast.LENGTH_SHORT).show()

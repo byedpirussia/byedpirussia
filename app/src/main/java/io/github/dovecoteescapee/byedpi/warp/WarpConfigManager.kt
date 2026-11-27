@@ -104,6 +104,17 @@ PersistentKeepalive = 25"""
             .getBoolean(KEY_WARP_MODE, false)
     }
 
+    fun isAutoFailoverEnabled(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean("pref_auto_failover", true)
+    }
+
+    fun setAutoFailoverEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+            putBoolean("pref_auto_failover", enabled)
+        }
+    }
+
     fun setMasqueMode(context: Context, enabled: Boolean) {
         _isMasqueMode.value = enabled
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

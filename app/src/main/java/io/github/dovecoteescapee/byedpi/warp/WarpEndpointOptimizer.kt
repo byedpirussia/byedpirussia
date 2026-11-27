@@ -103,7 +103,20 @@ object WarpEndpointOptimizer {
             val rtt = System.currentTimeMillis() - start
             if (rtt in 1..timeoutMs) rtt else -1L
         } catch (_: Exception) {
-            -1L
+            try {
+                val port = parts[1].trim().toIntOrNull() ?: return@withContext -1L
+                val targetAddr = InetAddress.getByName(host)
+                val udpStart = System.currentTimeMillis()
+                DatagramSocket().use { udpSocket ->
+                    udpSocket.soTimeout = timeoutMs
+                    val probeData = byteArrayOf(0x01, 0x00, 0x00, 0x00)
+                    udpSocket.send(DatagramPacket(probeData, probeData.size, targetAddr, port))
+                }
+                val rtt = System.currentTimeMillis() - udpStart
+                if (rtt in 1..timeoutMs) rtt else -1L
+            } catch (_: Exception) {
+                -1L
+            }
         }
     }
 

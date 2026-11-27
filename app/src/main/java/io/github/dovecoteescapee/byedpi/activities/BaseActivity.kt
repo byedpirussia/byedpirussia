@@ -21,6 +21,9 @@ abstract class BaseActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) {
+            AppearanceManager.applyThemeAndLocale(this)
+        }
         super.onCreate(savedInstanceState)
     }
 

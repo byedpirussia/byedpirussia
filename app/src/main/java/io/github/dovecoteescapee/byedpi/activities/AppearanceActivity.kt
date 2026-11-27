@@ -24,13 +24,13 @@ class AppearanceActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAppearanceBinding
 
-    private val presetColors = listOf(
-        0xFF3F51B5.toInt(), // Indigo
-        0xFF00897B.toInt(), // Teal / Emerald
-        0xFFD32F2F.toInt(), // Crimson
-        0xFFEF6C00.toInt(), // Amber
-        0xFF0284C7.toInt(), // Sky / Cyan
-        0xFF7B1FA2.toInt()  // Purple
+    private val presetThemes = listOf(
+        "blue" to 0xFF3F51B5.toInt(),    // Indigo
+        "emerald" to 0xFF00897B.toInt(), // Teal / Emerald
+        "crimson" to 0xFFD32F2F.toInt(), // Crimson
+        "amber" to 0xFFEF6C00.toInt(),   // Amber
+        "cyan" to 0xFF0284C7.toInt(),    // Sky / Cyan
+        "purple" to 0xFF7B1FA2.toInt()   // Purple
     )
 
     private val fontPickerLauncher = registerForActivityResult(
@@ -86,7 +86,7 @@ class AppearanceActivity : AppCompatActivity() {
         val sizePx = dpToPx(38)
         val marginPx = dpToPx(8)
 
-        presetColors.forEach { color ->
+        presetThemes.forEach { (themeKey, color) ->
             val circle = View(this).apply {
                 layoutParams = LinearLayout.LayoutParams(sizePx, sizePx).apply {
                     marginEnd = marginPx
@@ -100,6 +100,8 @@ class AppearanceActivity : AppCompatActivity() {
                 }
                 setOnClickListener {
                     AppearanceManager.setAccentColor(this@AppearanceActivity, color)
+                    androidx.preference.PreferenceManager.getDefaultSharedPreferences(this@AppearanceActivity)
+                        .edit().putString("accent_color", themeKey).apply()
                     setupColorPresets()
                     updatePreview()
                     showRestartBanner()
@@ -200,6 +202,7 @@ class AppearanceActivity : AppCompatActivity() {
                 else -> "system"
             }
             AppearanceManager.setThemeMode(this, mode)
+            AppearanceManager.applyThemeAndLocale(this)
             updatePreview()
             showRestartBanner()
         }

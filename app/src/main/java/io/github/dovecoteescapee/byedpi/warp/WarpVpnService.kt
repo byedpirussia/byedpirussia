@@ -161,6 +161,8 @@ class WarpVpnService : VpnService() {
         }
     }
 
+    private var consecutiveFailovers = 0
+
     override fun onCreate() {
         super.onCreate()
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
@@ -415,8 +417,9 @@ class WarpVpnService : VpnService() {
                 val isMasque = WarpConfigManager.isMasqueMode(this@WarpVpnService)
                 val modeLabel = if (isMasque) "MASQUE HTTP/3" else "AWG 3.1"
                 if (initialPing < 0) {
-                    if (!isMasque) {
-                        // Quick failover at launch if initial endpoint is blocked
+                    if (!isMasque && WarpConfigManager.isAutoFailoverEnabled(this@WarpVpnService) && consecutiveFailovers < 3) {
+                        consecutiveFailovers++
+                        // Quick failover at launch if initial endpoint is blocked (max 3 attempts)
                         Log.w(TAG, "Initial ping failed, attempting immediate failover to alternate port...")
                         val curConf = WarpConfigManager.currentConfig.value
                         val curEp = WarpConfigManager.extractEndpoint(curConf)
@@ -458,7 +461,7 @@ class WarpVpnService : VpnService() {
                         consecutiveFailures++
                         Log.w(TAG, "WARP packet loss detected (failure $consecutiveFailures/2)")
 
-                        if (consecutiveFailures >= 2 && !isUserExplicitStop && _isRunning.value) {
+                        if (consecutiveFailures >= 2 && !isUserExplicitStop && _isRunning.value && WarpConfigManager.isAutoFailoverEnabled(this@WarpVpnService)) {
                             consecutiveFailures = 0
                             if (!currentIsMasque) {
                                 val currentConf = WarpConfigManager.currentConfig.value

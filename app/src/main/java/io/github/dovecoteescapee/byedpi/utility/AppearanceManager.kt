@@ -136,18 +136,28 @@ object AppearanceManager {
 
     fun applyPostInflation(activity: Activity) {
         val root = activity.window.decorView.findViewById<ViewGroup>(android.R.id.content) ?: return
-        val tf = getActiveTypeface(activity)
-        if (tf != null) {
-            applyTypefaceRecursive(root, tf)
+        if (getThemeMode(activity) == "amoled") {
+            activity.window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.BLACK))
         }
+        val tf = getActiveTypeface(activity)
+        val accent = getAccentColor(activity)
+        applyStyleRecursive(root, tf, accent)
     }
 
-    private fun applyTypefaceRecursive(view: View, tf: Typeface) {
-        if (view is TextView) {
+    private fun applyStyleRecursive(view: View, tf: Typeface?, accent: Int) {
+        if (tf != null && view is TextView) {
             view.typeface = tf
-        } else if (view is ViewGroup) {
+        }
+        if (view is com.google.android.material.switchmaterial.SwitchMaterial || view is com.google.android.material.materialswitch.MaterialSwitch) {
+            if (view is androidx.appcompat.widget.SwitchCompat) {
+                view.thumbTintList = android.content.res.ColorStateList.valueOf(accent)
+            }
+        } else if (view is com.google.android.material.button.MaterialButton && view.strokeWidth == 0) {
+            view.backgroundTintList = android.content.res.ColorStateList.valueOf(accent)
+        }
+        if (view is ViewGroup) {
             for (i in 0 until view.childCount) {
-                applyTypefaceRecursive(view.getChildAt(i), tf)
+                applyStyleRecursive(view.getChildAt(i), tf, accent)
             }
         }
     }
