@@ -1,6 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Базовая тема Material Design 3 (По умолчанию - Blue/Indigo) -->
+    <style name="AppTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/google_sans</item>
+        <item name="fontFamily">@font/google_sans</item>
+    </style>
+
     <style name="Theme.ByeDPI" parent="Theme.Material3.DayNight">
+        <item name="android:fontFamily">@font/google_sans</item>
+        <item name="fontFamily">@font/google_sans</item>
+        <item name="android:textViewStyle">@style/AppTextViewStyle</item>
         <item name="colorPrimary">#3F51B5</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorPrimaryContainer">#E0E4FF</item>

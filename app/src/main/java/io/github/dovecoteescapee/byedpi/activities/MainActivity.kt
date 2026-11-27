@@ -170,7 +170,15 @@ class MainActivity : BaseActivity() {
 
     private var currentAccent: String? = null
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        val scaledConfig = io.github.dovecoteescapee.byedpi.utility.AppearanceManager.applyFontScale(newBase, newBase.resources.configuration)
+        super.attachBaseContext(newBase.createConfigurationContext(scaledConfig))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null) {
+            io.github.dovecoteescapee.byedpi.utility.AppearanceManager.applyThemeAndLocale(this)
+        }
         applyAccentTheme(noActionBar = true)
         currentAccent = getPreferences().getString("accent_color", "dynamic")
         setMaterial3UiMode(true)
@@ -178,13 +186,19 @@ class MainActivity : BaseActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        io.github.dovecoteescapee.byedpi.utility.AppearanceManager.applyPostInflation(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             binding.appBarLayout.setPadding(0, statusBars.top, 0, 0)
-            binding.scrollView.setPadding(0, 0, 0, navBars.bottom)
+            binding.scrollView.setPadding(0, 0, 0, navBars.bottom + (96 * resources.displayMetrics.density).toInt())
             binding.camouflageOverlay.setPadding(0, statusBars.top, 0, navBars.bottom)
+            val navLp = binding.floatingBottomNav.layoutParams as? android.view.ViewGroup.MarginLayoutParams
+            if (navLp != null) {
+                navLp.bottomMargin = navBars.bottom + (16 * resources.displayMetrics.density).toInt()
+                binding.floatingBottomNav.layoutParams = navLp
+            }
             insets
         }
 
@@ -751,6 +765,10 @@ class MainActivity : BaseActivity() {
                 true
             }
 
+            R.id.action_appearance -> {
+                startActivity(Intent(this, AppearanceActivity::class.java))
+                true
+            }
             R.id.action_settings -> {
                 if (status == AppStatus.Halted) {
                     val intent = Intent(this, SettingsActivity::class.java)
@@ -1214,8 +1232,24 @@ class MainActivity : BaseActivity() {
             openTelegramWithVpnCheck()
         }
 
-        binding.m3CardAdvanced.setOnClickListener {
-            startActivity(Intent(this, AdvancedSettingsActivity::class.java))
+        binding.m3CardAdvanced.visibility = android.view.View.GONE
+        binding.navHome.setOnClickListener {
+            binding.scrollView.smoothScrollTo(0, 0)
+        }
+        binding.navSettings.setOnClickListener {
+            startActivity(Intent(this, UnifiedSettingsActivity::class.java))
+            @Suppress("DEPRECATION")
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+        binding.navCore.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+            @Suppress("DEPRECATION")
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        }
+        binding.navAppearance.setOnClickListener {
+            startActivity(Intent(this, AppearanceActivity::class.java))
+            @Suppress("DEPRECATION")
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         binding.m3CardSplitTunnel.setOnClickListener {
@@ -1273,7 +1307,7 @@ class MainActivity : BaseActivity() {
         TvNavigationHelper.setupCardFocus(binding.m3CardVless) { toggleVless() }
         TvNavigationHelper.setupCardFocus(binding.m3CardTg) { toggleTgProxy() }
         TvNavigationHelper.setupCardFocus(binding.m3CardAdvanced) {
-            startActivity(Intent(this, AdvancedSettingsActivity::class.java))
+            startActivity(Intent(this, UnifiedSettingsActivity::class.java))
         }
         TvNavigationHelper.setupCardFocus(binding.m3CardSplitTunnel) {
             startActivity(Intent(this, io.github.dovecoteescapee.byedpi.splittunnel.SplitTunnelActivity::class.java))
@@ -1517,14 +1551,59 @@ class MainActivity : BaseActivity() {
             binding.autoToolPing.setTextColor(colorOutline)
         }
 
+        val radiusPx = io.github.dovecoteescapee.byedpi.utility.AppearanceManager.getCardRadiusDp(this) * resources.displayMetrics.density
+        listOf(
+            binding.m3CardByedpi,
+            binding.m3CardWarp,
+            binding.m3CardVless,
+            binding.m3CardTg,
+            binding.m3CardAdvanced,
+            binding.m3CardSplitTunnel
+        ).forEach { it.radius = radiusPx }
+
+        if (io.github.dovecoteescapee.byedpi.utility.AppearanceManager.isPrivacyMode(this)) {
+            val ipRegex = Regex("""\b\d{1,3}(?:\.\d{1,3}){3}(?::\d+)?\b""")
+            listOf(binding.m3SubByedpi, binding.m3SubWarp, binding.m3SubVless, binding.m3SubTg).forEach { tv ->
+                tv.text = ipRegex.replace(tv.text, "•••.•••.•••.•••")
+            }
+        }
+
         updateRealtimeTrafficSpeed()
     }
 
     private var lastRxBytes: Long = 0L
     private var lastTxBytes: Long = 0L
     private var lastSpeedCheckTime: Long = 0L
+    private var serviceStartTimeMs: Long = 0L
 
     private fun updateRealtimeTrafficSpeed() {
+        val isAnyRunning = appStatus.first == AppStatus.Running ||
+            WarpVpnService.isRunning.value ||
+            VlessVpnService.isRunning.value ||
+            TgWsProxyService.isRunning.value
+
+        if (!isAnyRunning) {
+            lastRxBytes = 0L
+            lastTxBytes = 0L
+            lastSpeedCheckTime = 0L
+            serviceStartTimeMs = 0L
+            binding.tvSpeedDown.text = "0.0 КБ/с"
+            binding.tvSpeedUp.text = "0.0 КБ/с"
+            return
+        }
+
+        if (serviceStartTimeMs == 0L) {
+            serviceStartTimeMs = System.currentTimeMillis()
+        }
+        val elapsedSec = (System.currentTimeMillis() - serviceStartTimeMs) / 1000L
+        val h = elapsedSec / 3600
+        val m = (elapsedSec % 3600) / 60
+        val s = elapsedSec % 60
+        val uptimeStr = String.format(java.util.Locale.US, "%02d:%02d:%02d", h, m, s)
+        if (!binding.m3StatusBadgeText.text.contains("⏱")) {
+            binding.m3StatusBadgeText.text = "${binding.m3StatusBadgeText.text}  •  ⏱ $uptimeStr"
+        }
+
         val now = System.currentTimeMillis()
         val totalRx = android.net.TrafficStats.getTotalRxBytes()
         val totalTx = android.net.TrafficStats.getTotalTxBytes()

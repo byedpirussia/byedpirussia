@@ -7,29 +7,14 @@
     <androidx.preference.PreferenceCategory
         android:title="@string/general_category">
 
-        <DropDownPreference
-            android:key="app_theme"
-            android:title="@string/theme_settings"
-            android:entries="@array/themes"
-            android:entryValues="@array/themes_entries"
-            android:defaultValue="system"
-            app:useSimpleSummaryProvider="true" />
-
-        <DropDownPreference
-            android:key="accent_color"
-            android:title="@string/accent_color_setting"
-            android:entries="@array/accent_colors"
-            android:entryValues="@array/accent_colors_entries"
-            android:defaultValue="dynamic"
-            app:useSimpleSummaryProvider="true" />
-
-        <DropDownPreference
-            android:key="app_language"
-            android:title="@string/language_setting"
-            android:entries="@array/languages"
-            android:entryValues="@array/languages_entries"
-            android:defaultValue="system"
-            app:useSimpleSummaryProvider="true" />
+        <Preference
+            android:key="open_appearance"
+            android:title="Настройки оформления переехали"
+            android:summary="Нажмите, чтобы перейти в новый раздел оформления">
+            <intent
+                android:targetPackage="com.byedpifork.russia"
+                android:targetClass="io.github.dovecoteescapee.byedpi.activities.AppearanceActivity" />
+        </Preference>
 
         <DropDownPreference
             android:key="byedpi_mode"

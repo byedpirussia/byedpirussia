@@ -101,6 +101,16 @@
             android:label="@string/title_advanced_settings"
             android:theme="@style/Theme.ByeDPI.NoActionBar"
             android:exported="false" />
+        <activity
+            android:name=".activities.AppearanceActivity"
+            android:label="Оформление"
+            android:theme="@style/Theme.ByeDPI.NoActionBar"
+            android:exported="false" />
+        <activity
+            android:name=".activities.UnifiedSettingsActivity"
+            android:label="Настройки"
+            android:theme="@style/Theme.ByeDPI.NoActionBar"
+            android:exported="false" />
 
         <activity
             android:name=".activities.ExperimentalSettingsActivity"

@@ -125,29 +125,9 @@ class WarpVpnService : VpnService() {
         }
 
         /**
-         * Pings through the active VPN tunnel using genuine HTTP generate_204 and DNS roundtrips.
+         * Pings through the active VPN tunnel using genuine HTTP generate_204.
          */
         suspend fun pingTunnel(timeoutMs: Int = 3000): Long = withContext(Dispatchers.IO) {
-            val realPing = io.github.dovecoteescapee.byedpi.utility.RealPingTester.measureTunnelRealPing(timeoutMs = timeoutMs)
-            if (realPing > 0) return@withContext realPing
-
-            // Fallback: direct DNS TCP probe
-            val start = System.currentTimeMillis()
-            val fastTargets = listOf(
-                InetSocketAddress("1.1.1.1", 443),
-                InetSocketAddress("1.0.0.1", 443),
-                InetSocketAddress("8.8.8.8", 443)
-            )
-            for (target in fastTargets) {
-                try {
-                    Socket().use { socket ->
-                        socket.connect(target, timeoutMs)
-                        val duration = System.currentTimeMillis() - start
-                        if (duration >= 0) return@withContext duration
-                    }
-                } catch (_: Exception) {}
-            }
-            // 2. HTTP generate_204 check (like v1.6.4)
             val httpUrls = listOf(
                 "http://cp.cloudflare.com/generate_204",
                 "http://connectivitycheck.gstatic.com/generate_204"

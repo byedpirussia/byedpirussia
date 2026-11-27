@@ -12,7 +12,7 @@ android {
         targetSdk = 35
         versionCode = 43
         val randomBuild4 = (1000..9999).random()
-        versionName = "1.7beta1"
+        versionName = "1.7beta2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

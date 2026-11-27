@@ -239,23 +239,6 @@ Endpoint = $endpoint
     suspend fun generateMasqueConfig(): Result<WarpMasqueProfile> = withContext(Dispatchers.IO) {
         var awgConfigText = WarpConfigManager.DEFAULT_CONFIG
 
-        // Получаем свежий рабочий WARP конфиг
-        try {
-            val warpRes = (URL(WARP_API_ENDPOINT).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 8000
-                readTimeout = 10000
-                setRequestProperty("User-Agent", "ByeDPI-Russia-Android/1.5.4")
-            }
-            if (warpRes.responseCode in 200..299) {
-                val body = warpRes.inputStream.bufferedReader().use(BufferedReader::readText)
-                val json = JSONObject(body)
-                val txt = json.optJSONObject("content")?.optString("importText").orEmpty()
-                if (txt.isNotBlank()) {
-                    awgConfigText = txt.replace("engage.cloudflareclient.com:500", "162.159.192.1:500")
-                }
-            }
-        } catch (_: Exception) {}
-
         for (apiUrl in MASQUE_API_ENDPOINTS) {
             try {
                 val url = URL(apiUrl)
@@ -374,11 +357,18 @@ Endpoint = $endpoint
             }
 
             if (responseBody == null) {
-                val socksProxy = java.net.Proxy(
-                    java.net.Proxy.Type.SOCKS,
-                    java.net.InetSocketAddress("127.0.0.1", socksPort)
-                )
-                responseBody = tryRegister(socksProxy)
+                responseBody = try {
+                    val socksProxy = java.net.Proxy(
+                        java.net.Proxy.Type.SOCKS,
+                        java.net.InetSocketAddress("127.0.0.1", socksPort)
+                    )
+                    tryRegister(socksProxy)
+                } catch (e: Exception) {
+                    Log.w(TAG, "ByeDPI SOCKS5 reg failed: ${e.message}")
+                    return@withContext Result.failure(
+                        Exception("Нет связи с Cloudflare. Включите ByeDPI и попробуйте снова.")
+                    )
+                }
             }
 
             if (responseBody.isNullOrBlank()) {

@@ -27,6 +27,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_appearance"
+        android:orderInCategory="3"
+        android:title="Оформление"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="2"
         android:title="@string/title_settings"

@@ -35,34 +35,23 @@ class MainSettingsFragment : PreferenceFragmentCompat() {
             updatePreferences()
         }
 
+    override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setDivider(null)
+        setDividerHeight(0)
+        listView?.apply {
+            clipToPadding = false
+            val pad = (12 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+        }
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.main_settings, rootKey)
 
         setEditTextPreferenceListener("dns_ip") {
             it.isBlank() || checkNotLocalIp(it)
         }
-
-        findPreferenceNotNull<DropDownPreference>("app_theme")
-            .setOnPreferenceChangeListener { _, newValue ->
-                setTheme(newValue as String)
-                true
-            }
-
-        findPreferenceNotNull<DropDownPreference>("accent_color")
-            .setOnPreferenceChangeListener { _, _ ->
-                activity?.recreate()
-                true
-            }
-
-        findPreferenceNotNull<DropDownPreference>("app_language")
-            .setOnPreferenceChangeListener { _, newValue ->
-                context?.let { ctx ->
-                    ctx.setLanguageSelected(true)
-                    ctx.setAppLanguage(newValue as String)
-                }
-                activity?.recreate()
-                true
-            }
 
         findPreference<Preference>("app_camouflage")?.let { pref ->
             val fakeUiPref = findPreference<SwitchPreference>("pref_camouflage_fake_ui_enabled")
