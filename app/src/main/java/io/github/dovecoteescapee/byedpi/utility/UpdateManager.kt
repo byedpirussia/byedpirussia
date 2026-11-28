@@ -49,8 +49,9 @@ object UpdateManager {
                     json.optString("apkUrlXray", "")
                 }
 
+                val currentVer = BuildConfig.VERSION_NAME.substringBefore("-")
                 if (remoteVersion.isNotBlank() &&
-                    remoteVersion != BuildConfig.VERSION_NAME &&
+                    remoteVersion != currentVer &&
                     apkUrl.isNotBlank()
                 ) {
                     withContext(Dispatchers.Main) {
@@ -79,51 +80,73 @@ object UpdateManager {
         changelog: String,
         apkUrl: String
     ) {
+        val cachedFile = File(activity.cacheDir, "update_${version}.apk")
+        if (cachedFile.exists() && cachedFile.length() > 1024 * 1024) {
+            MaterialAlertDialogBuilder(activity)
+                .setTitle("Обновление $version уже скачано")
+                .setMessage("Файл обновления уже загружен и готов к установке.\n\n$changelog")
+                .setPositiveButton("Установить") { _, _ ->
+                    installApk(activity, cachedFile)
+                }
+                .setNegativeButton("Позже", null)
+                .show()
+            return
+        }
+
         MaterialAlertDialogBuilder(activity)
             .setTitle("Доступно обновление $version")
             .setMessage(changelog.ifBlank { "Доступна новая версия приложения." })
             .setPositiveButton("Обновить") { _, _ ->
-                downloadAndInstall(activity, apkUrl)
+                downloadAndInstall(activity, version, apkUrl)
             }
             .setNegativeButton("Позже", null)
             .show()
     }
 
-    private fun downloadAndInstall(activity: Activity, apkUrl: String) {
+    private fun downloadAndInstall(activity: Activity, version: String, apkUrl: String) {
         val pad = (24 * activity.resources.displayMetrics.density).toInt()
-        val tv = TextView(activity).apply {
-            text = "Скачивание обновления..."
+        val tvInfo = TextView(activity).apply {
+            text = "Пока идет обновление, вы можете до сих пор пользоваться приложением. Нажмите \"ОК\", чтобы вернуться в приложение, скачка продолжится, уведомлим вас окном когда обновление скачается, чтобы вы могли его установить."
+            textSize = 13f
+        }
+        val tvProgress = TextView(activity).apply {
+            text = "Подготовка... 0%"
             textSize = 14f
+            setPadding(0, pad / 2, 0, 0)
         }
         val pb = ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal).apply {
             isIndeterminate = false
             max = 100
-            setPadding(0, pad / 2, 0, 0)
+            setPadding(0, pad / 3, 0, 0)
         }
         val box = android.widget.LinearLayout(activity).apply {
             orientation = android.widget.LinearLayout.VERTICAL
             setPadding(pad, pad, pad, pad)
-            addView(tv)
+            addView(tvInfo)
+            addView(tvProgress)
             addView(pb)
         }
 
         val dlg = MaterialAlertDialogBuilder(activity)
-            .setTitle("Загрузка APK")
+            .setTitle("Загрузка $version")
             .setView(box)
-            .setCancelable(false)
+            .setPositiveButton("ОК", null)
             .show()
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val outFile = File(activity.cacheDir, "update.apk")
+                val tmpFile = File(activity.cacheDir, "update_${version}.tmp")
+                val finalFile = File(activity.cacheDir, "update_${version}.apk")
                 val conn = (URL(apkUrl).openConnection() as HttpURLConnection).apply {
                     instanceFollowRedirects = true
                     connectTimeout = 15000
                     readTimeout = 30000
                 }
                 val total = conn.contentLength.coerceAtLeast(1)
+                var lastUiUpdate = 0L
+                var lastBytes = 0L
                 conn.inputStream.use { input ->
-                    outFile.outputStream().use { output ->
+                    tmpFile.outputStream().use { output ->
                         val buf = ByteArray(16384)
                         var downloaded = 0L
                         while (true) {
@@ -131,21 +154,46 @@ object UpdateManager {
                             if (n <= 0) break
                             output.write(buf, 0, n)
                             downloaded += n
-                            val pct = ((downloaded * 100) / total).toInt().coerceIn(0, 100)
-                            withContext(Dispatchers.Main) {
-                                pb.progress = pct
-                                tv.text = "Скачано: $pct%"
+                            val now = System.currentTimeMillis()
+                            if (now - lastUiUpdate >= 400) {
+                                val dtSec = ((now - lastUiUpdate).coerceAtLeast(1)) / 1000.0
+                                val speedBytes = if (lastUiUpdate > 0) ((downloaded - lastBytes) / dtSec).toLong() else 0L
+                                val speedStr = if (speedBytes >= 1024 * 1024) {
+                                    String.format(java.util.Locale.US, "%.1f МБ/с", speedBytes / (1024.0 * 1024.0))
+                                } else {
+                                    String.format(java.util.Locale.US, "%.0f КБ/с", speedBytes / 1024.0)
+                                }
+                                val pct = ((downloaded * 100) / total).toInt().coerceIn(0, 100)
+                                lastUiUpdate = now
+                                lastBytes = downloaded
+                                withContext(Dispatchers.Main) {
+                                    if (dlg.isShowing) {
+                                        pb.progress = pct
+                                        tvProgress.text = "Скачано: $pct%  •  $speedStr"
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                if (finalFile.exists()) finalFile.delete()
+                tmpFile.renameTo(finalFile)
                 withContext(Dispatchers.Main) {
-                    dlg.dismiss()
-                    installApk(activity, outFile)
+                    if (dlg.isShowing) dlg.dismiss()
+                    if (!activity.isFinishing && !activity.isDestroyed) {
+                        MaterialAlertDialogBuilder(activity)
+                            .setTitle("Обновление $version скачано")
+                            .setMessage("Загрузка завершена! Нажмите «Установить», чтобы обновить приложение.")
+                            .setPositiveButton("Установить") { _, _ ->
+                                installApk(activity, finalFile)
+                            }
+                            .setNegativeButton("Позже", null)
+                            .show()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    dlg.dismiss()
+                    if (dlg.isShowing) dlg.dismiss()
                     Toast.makeText(activity, "Ошибка загрузки: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
