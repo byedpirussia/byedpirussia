@@ -429,4 +429,8 @@
     <string name="adv_experimental_active">Активно опций: %1$d (Экономия, QUIC, MTU и др.)</string>
     <string name="adv_kernel_title">Параметры ядра и прокси</string>
     <string name="adv_kernel_subtitle">IP-адрес, порты, DNS, размеры буфера и TTL</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_core">Core</string>
+    <string name="nav_appearance">Appearance</string>
 </resources>

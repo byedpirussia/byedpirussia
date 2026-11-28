@@ -58,6 +58,11 @@ class SettingsActivity : BaseActivity() {
             loadSettings()
             Toast.makeText(this, "Настройки сброшены", Toast.LENGTH_SHORT).show()
         }
+
+        binding.btnCheckUpdates.setOnClickListener {
+            Toast.makeText(this, "Проверка обновлений...", Toast.LENGTH_SHORT).show()
+            io.github.dovecoteescapee.byedpi.utility.UpdateManager.checkForUpdates(this, manual = true)
+        }
     }
 
     private fun setupAccordion(header: View, content: View, arrow: TextView) {

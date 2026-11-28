@@ -62,6 +62,7 @@ class UnifiedSettingsActivity : BaseActivity() {
                 binding.btnAwgGenLocal.isEnabled = true
                 res.onSuccess { conf ->
                     WarpConfigManager.saveConfig(this@UnifiedSettingsActivity, conf)
+                    WarpConfigManager.addWarpToHistory(this@UnifiedSettingsActivity, conf, "Вручную (локально)")
                     Toast.makeText(this@UnifiedSettingsActivity, "Локальный WARP сгенерирован!", Toast.LENGTH_SHORT).show()
                 }.onFailure { err ->
                     Toast.makeText(this@UnifiedSettingsActivity, err.message ?: "Ошибка", Toast.LENGTH_LONG).show()
@@ -75,7 +76,9 @@ class UnifiedSettingsActivity : BaseActivity() {
                 val res = WarpGenerator.generateConfig()
                 binding.btnAwgGenExt.isEnabled = true
                 res.onSuccess { profile ->
-                    WarpConfigManager.saveConfig(this@UnifiedSettingsActivity, profile.toAmneziaWgConfig())
+                    val conf = profile.toAmneziaWgConfig()
+                    WarpConfigManager.saveConfig(this@UnifiedSettingsActivity, conf)
+                    WarpConfigManager.addWarpToHistory(this@UnifiedSettingsActivity, conf, "Вручную")
                     Toast.makeText(this@UnifiedSettingsActivity, "Новый WARP сгенерирован!", Toast.LENGTH_SHORT).show()
                 }.onFailure { err ->
                     Toast.makeText(this@UnifiedSettingsActivity, err.message ?: "Ошибка", Toast.LENGTH_LONG).show()
@@ -113,6 +116,63 @@ class UnifiedSettingsActivity : BaseActivity() {
                     }
                 }
                 .show()
+        }
+
+        renderWarpTunnelsList()
+    }
+
+    private fun renderWarpTunnelsList() {
+        val container = binding.warpTunnelsList
+        container.removeAllViews()
+        val history = WarpConfigManager.getWarpHistory(this)
+        val currentConf = WarpConfigManager.currentConfig.value
+        val accent = io.github.dovecoteescapee.byedpi.utility.AppearanceManager.getAccentColor(this)
+
+        if (history.isEmpty()) {
+            val emptyTv = android.widget.TextView(this).apply {
+                text = "Список пуст — сгенерируйте или импортируйте конфиг"
+                textSize = 13f
+                alpha = 0.7f
+            }
+            container.addView(emptyTv)
+            return
+        }
+
+        val sdf = java.text.SimpleDateFormat("dd.MM HH:mm", java.util.Locale.getDefault())
+        val padV = (10 * resources.displayMetrics.density).toInt()
+        val dotSize = (10 * resources.displayMetrics.density).toInt()
+
+        history.forEach { entry ->
+            val isActive = entry.config == currentConf
+            val row = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(0, padV, 0, padV)
+                setOnClickListener {
+                    WarpConfigManager.saveConfig(this@UnifiedSettingsActivity, entry.config)
+                    renderWarpTunnelsList()
+                    Toast.makeText(this@UnifiedSettingsActivity, "Туннель переключён!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            val dot = View(this).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(dotSize, dotSize).apply {
+                    marginEnd = (12 * resources.displayMetrics.density).toInt()
+                }
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(if (isActive) accent else 0xFF888888.toInt())
+                }
+            }
+            val time = if (entry.timestampMs > 0) sdf.format(java.util.Date(entry.timestampMs)) else "—"
+            val ep = WarpConfigManager.extractEndpoint(entry.config)
+            val tv = android.widget.TextView(this).apply {
+                text = "$ep  •  $time (${entry.source})"
+                textSize = 14f
+                if (isActive) setTypeface(typeface, android.graphics.Typeface.BOLD)
+            }
+            row.addView(dot)
+            row.addView(tv)
+            container.addView(row)
         }
     }
 
@@ -249,8 +309,11 @@ class UnifiedSettingsActivity : BaseActivity() {
 
     private fun showAwgToolsDialog() {
         val failoverState = if (WarpConfigManager.isAutoFailoverEnabled(this)) "Вкл" else "Выкл"
+        val autoGenState = if (WarpConfigManager.isAutoGen24hEnabled(this)) "Вкл" else "Выкл"
         val items = arrayOf(
-            "Автосмена узлов: $failoverState (нажмите, чтобы переключить)",
+            "Список конфигов WARP (выбрать)",
+            "Автогенерация каждые 24ч: $autoGenState",
+            "Автосмена узлов: $failoverState",
             "Подобрать лучший узел WARP",
             "Сгенерировать WARP MASQUE",
             "Открыть конфиг в AmneziaWG",
@@ -261,12 +324,18 @@ class UnifiedSettingsActivity : BaseActivity() {
             .setTitle("Инструменты AWG 3.1 / WARP")
             .setItems(items) { _, which ->
                 when (which) {
-                    0 -> {
+                    0 -> showWarpHistoryDialog()
+                    1 -> {
+                        val next = !WarpConfigManager.isAutoGen24hEnabled(this)
+                        WarpConfigManager.setAutoGen24hEnabled(this, next)
+                        Toast.makeText(this, if (next) "Автогенерация 24ч включена" else "Автогенерация 24ч отключена", Toast.LENGTH_SHORT).show()
+                    }
+                    2 -> {
                         val next = !WarpConfigManager.isAutoFailoverEnabled(this)
                         WarpConfigManager.setAutoFailoverEnabled(this, next)
                         Toast.makeText(this, if (next) "Автосмена узлов включена" else "Автосмена узлов отключена", Toast.LENGTH_SHORT).show()
                     }
-                    1 -> {
+                    3 -> {
                         Toast.makeText(this, "Подбор лучшего узла...", Toast.LENGTH_SHORT).show()
                         lifecycleScope.launch {
                             val best = io.github.dovecoteescapee.byedpi.warp.WarpEndpointOptimizer.findBestEndpoint(2000)
@@ -278,7 +347,7 @@ class UnifiedSettingsActivity : BaseActivity() {
                             Toast.makeText(this@UnifiedSettingsActivity, "Выбран узел: ${best.first} (${best.second}ms)", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    2 -> {
+                    4 -> {
                         Toast.makeText(this, "Генерация MASQUE...", Toast.LENGTH_SHORT).show()
                         lifecycleScope.launch {
                             val res = WarpGenerator.generateMasqueConfig()
@@ -290,14 +359,14 @@ class UnifiedSettingsActivity : BaseActivity() {
                             }
                         }
                     }
-                    3 -> {
+                    5 -> {
                         val sendIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, WarpConfigManager.currentConfig.value)
                         }
                         startActivity(Intent.createChooser(sendIntent, "Открыть конфиг WARP"))
                     }
-                    4 -> {
+                    6 -> {
                         val et = android.widget.EditText(this).apply {
                             hint = "Вставьте текст конфига [Interface]..."
                         }
@@ -308,6 +377,7 @@ class UnifiedSettingsActivity : BaseActivity() {
                                 val txt = et.text.toString().trim()
                                 if (txt.contains("[Interface]")) {
                                     WarpConfigManager.saveConfig(this, txt)
+                                    WarpConfigManager.addWarpToHistory(this, txt, "Импорт")
                                     Toast.makeText(this, "Конфиг импортирован!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(this, "Неверный формат конфига", Toast.LENGTH_SHORT).show()
@@ -316,13 +386,36 @@ class UnifiedSettingsActivity : BaseActivity() {
                             .setNegativeButton("Отмена", null)
                             .show()
                     }
-                    5 -> {
+                    7 -> {
                         val clipboard = getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("WARP Config", WarpConfigManager.currentConfig.value))
                         Toast.makeText(this, "Конфиг WARP скопирован в буфер", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
+            .show()
+    }
+
+    private fun showWarpHistoryDialog() {
+        val history = WarpConfigManager.getWarpHistory(this)
+        if (history.isEmpty()) {
+            Toast.makeText(this, "Список конфигов пуст — сгенерируйте или импортируйте WARP", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val sdf = java.text.SimpleDateFormat("dd.MM HH:mm", java.util.Locale.getDefault())
+        val labels = history.map { entry ->
+            val time = if (entry.timestampMs > 0) sdf.format(java.util.Date(entry.timestampMs)) else "—"
+            val ep = WarpConfigManager.extractEndpoint(entry.config)
+            "$time • ${entry.source}\n$ep"
+        }.toTypedArray()
+
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("Сохранённые конфиги WARP")
+            .setItems(labels) { _, idx ->
+                WarpConfigManager.saveConfig(this, history[idx].config)
+                Toast.makeText(this, "Конфиг переключён!", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Закрыть", null)
             .show()
     }
 }

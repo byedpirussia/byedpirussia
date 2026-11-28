@@ -106,13 +106,82 @@ PersistentKeepalive = 25"""
 
     fun isAutoFailoverEnabled(context: Context): Boolean {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean("pref_auto_failover", true)
+            .getBoolean("pref_auto_failover", false)
     }
 
     fun setAutoFailoverEnabled(context: Context, enabled: Boolean) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
             putBoolean("pref_auto_failover", enabled)
         }
+    }
+
+    fun isAutoGen24hEnabled(context: Context): Boolean {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean("pref_auto_gen_24h", true)
+    }
+
+    fun setAutoGen24hEnabled(context: Context, enabled: Boolean) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+            putBoolean("pref_auto_gen_24h", enabled)
+        }
+    }
+
+    fun getLastAutoGenTime(context: Context): Long {
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getLong("pref_last_auto_gen_ms", 0L)
+    }
+
+    fun setLastAutoGenTime(context: Context, timeMs: Long) {
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+            putLong("pref_last_auto_gen_ms", timeMs)
+        }
+    }
+
+    data class SavedWarpEntry(
+        val config: String,
+        val timestampMs: Long,
+        val source: String
+    )
+
+    fun addWarpToHistory(context: Context, config: String, source: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val arr = try {
+            org.json.JSONArray(prefs.getString("pref_warp_history", "[]") ?: "[]")
+        } catch (_: Exception) {
+            org.json.JSONArray()
+        }
+        val obj = org.json.JSONObject().apply {
+            put("config", config)
+            put("ts", System.currentTimeMillis())
+            put("source", source)
+        }
+        val newArr = org.json.JSONArray()
+        newArr.put(obj)
+        for (i in 0 until minOf(arr.length(), 29)) {
+            newArr.put(arr.get(i))
+        }
+        prefs.edit { putString("pref_warp_history", newArr.toString()) }
+    }
+
+    fun getWarpHistory(context: Context): List<SavedWarpEntry> {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val arr = try {
+            org.json.JSONArray(prefs.getString("pref_warp_history", "[]") ?: "[]")
+        } catch (_: Exception) {
+            return emptyList()
+        }
+        val list = mutableListOf<SavedWarpEntry>()
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            list.add(
+                SavedWarpEntry(
+                    config = o.optString("config", ""),
+                    timestampMs = o.optLong("ts", 0L),
+                    source = o.optString("source", "Вручную")
+                )
+            )
+        }
+        return list
     }
 
     fun setMasqueMode(context: Context, enabled: Boolean) {

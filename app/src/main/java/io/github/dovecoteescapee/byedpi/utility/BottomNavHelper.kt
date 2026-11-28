@@ -18,8 +18,15 @@ import io.github.dovecoteescapee.byedpi.activities.UnifiedSettingsActivity
 object BottomNavHelper {
     enum class Tab { HOME, SETTINGS, CORE, APPEARANCE }
 
+    fun isAndroidTv(activity: Activity): Boolean {
+        val uiModeManager = activity.getSystemService(android.content.Context.UI_MODE_SERVICE) as? android.app.UiModeManager
+        return uiModeManager?.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION ||
+            activity.packageManager.hasSystemFeature(android.content.pm.PackageManager.FEATURE_LEANBACK)
+    }
+
     fun setup(activity: Activity, activeTab: Tab) {
         val navCard = activity.findViewById<View>(R.id.floating_bottom_nav) ?: return
+        val isTv = isAndroidTv(activity)
 
         ViewCompat.setOnApplyWindowInsetsListener(navCard) { v, insets ->
             val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
@@ -53,6 +60,15 @@ object BottomNavHelper {
                 text?.setTypeface(text.typeface, Typeface.BOLD)
             } else {
                 container.background = null
+            }
+
+            if (isTv) {
+                container.isFocusable = true
+                container.isFocusableInTouchMode = false
+                container.setOnFocusChangeListener { v, hasFocus ->
+                    v.scaleX = if (hasFocus) 1.08f else 1.0f
+                    v.scaleY = if (hasFocus) 1.08f else 1.0f
+                }
             }
 
             container.setOnClickListener {

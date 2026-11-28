@@ -40,7 +40,7 @@
                 android:id="@+id/nav_home_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Главная"
+                android:text="@string/nav_home"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -65,7 +65,7 @@
                 android:id="@+id/nav_settings_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Настройки"
+                android:text="@string/nav_settings"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -90,7 +90,7 @@
                 android:id="@+id/nav_core_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ядро"
+                android:text="@string/nav_core"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -115,7 +115,7 @@
                 android:id="@+id/nav_appearance_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Оформление"
+                android:text="@string/nav_appearance"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="11sp" />
         </LinearLayout>

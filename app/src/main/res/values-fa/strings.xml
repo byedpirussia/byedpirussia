@@ -429,4 +429,8 @@
     <string name="adv_experimental_active">گزینه‌های فعال: %1$d (باتری، QUIC، MTU و غ)</string>
     <string name="adv_kernel_title">تنظیمات هسته و پروکسی</string>
     <string name="adv_kernel_subtitle">آدرس IP، پورت‌ها، DNS، اندازه بافر و TTL</string>
+    <string name="nav_home">خانه</string>
+    <string name="nav_settings">تنظیمات</string>
+    <string name="nav_core">هسته</string>
+    <string name="nav_appearance">ظاهر</string>
 </resources>

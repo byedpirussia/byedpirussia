@@ -1014,7 +1014,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Главная"
+                    android:text="@string/nav_home"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -1038,7 +1038,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Настройки"
+                    android:text="@string/nav_settings"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -1061,7 +1061,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ядро"
+                    android:text="@string/nav_core"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -1084,7 +1084,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Оформление"
+                    android:text="@string/nav_appearance"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:textSize="11sp" />
             </LinearLayout>

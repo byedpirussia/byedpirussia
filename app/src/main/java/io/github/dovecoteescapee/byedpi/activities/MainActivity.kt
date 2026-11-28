@@ -187,6 +187,27 @@ class MainActivity : BaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         io.github.dovecoteescapee.byedpi.utility.AppearanceManager.applyPostInflation(this)
+        io.github.dovecoteescapee.byedpi.utility.UpdateManager.checkForUpdates(this)
+        if (io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.isAutoGen24hEnabled(this)) {
+            val lastGen = io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.getLastAutoGenTime(this)
+            if (System.currentTimeMillis() - lastGen >= 24L * 3600L * 1000L) {
+                lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    io.github.dovecoteescapee.byedpi.warp.WarpGenerator.generateConfig().onSuccess { profile ->
+                        val conf = profile.toAmneziaWgConfig()
+                        io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.saveConfig(this@MainActivity, conf)
+                        io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.addWarpToHistory(
+                            this@MainActivity,
+                            conf,
+                            "Автоматически (24ч)"
+                        )
+                        io.github.dovecoteescapee.byedpi.warp.WarpConfigManager.setLastAutoGenTime(
+                            this@MainActivity,
+                            System.currentTimeMillis()
+                        )
+                    }
+                }
+            }
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())

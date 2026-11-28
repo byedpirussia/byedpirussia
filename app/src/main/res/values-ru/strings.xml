@@ -253,4 +253,8 @@
     <string name="disguise_pause">Пауза</string>
     <string name="disguise_reset">Сброс</string>
     <string name="disguise_unlocked_toast">Камуфляж разблокирован ✓</string>
+    <string name="nav_home">Главная</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_core">Ядро</string>
+    <string name="nav_appearance">Оформление</string>
 </resources>
